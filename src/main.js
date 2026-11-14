@@ -2,6 +2,7 @@ import { CONFIG } from "./config.js";
 import { S } from "./strings.js";
 import { createAuth } from "./services/auth.js";
 import { createGoalsRepo } from "./services/goalsRepo.js";
+import { createSharingApi } from "./services/sharingApi.js";
 import { createNotificationsRepo } from "./services/notificationsRepo.js";
 import { createAuthScreen } from "./components/AuthScreen.js";
 import { showToast } from "./components/ui/Toast.js";
@@ -24,6 +25,7 @@ function showApp() {
   mount(createGoalsScreen({
     repo: createGoalsRepo(CONFIG),
     notifRepo: createNotificationsRepo(CONFIG),
+    sharing: createSharingApi(CONFIG), /* null in demo mode: invitations are never simulated locally */
     auth: auth,
     onLogout: function () { auth.signOut().then(function () { showAuth(); }).catch(function () { showToast(S["error.signOutFailed"]); }); }
   }));

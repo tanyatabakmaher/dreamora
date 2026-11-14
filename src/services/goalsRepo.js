@@ -1,6 +1,7 @@
 /* Goals storage. Same interface for both backends: load() -> Promise<goal[]>, save(goal), remove(id).
    "local" keeps goals in this browser (demo). "remote" keeps them per account in the database (row level security limits each user to their own rows). */
 import { getClient } from "./supabaseClient.js";
+import { createSharingApi } from "./sharingApi.js";
 import { addMonths, toISODate } from "../lib/calc.js";
 import { todayDate } from "../lib/format.js";
 import { uid } from "../lib/dom.js";
@@ -50,23 +51,29 @@ export function createLocalRepo() {
 function toRow(g) {
   return { id: g.id, name: g.name, emoji: g.emoji || null, image: g.image || null, target_amount: g.targetAmount, initial_amount: g.initialAmount || 0,
     monthly_deposit: g.monthlyDeposit, track_id: g.trackId, annual_return_pct: g.annualReturnPct, start_date: g.startDate, created_at: g.createdAt || new Date().toISOString(),
-    visibility: g.visibility === "shared" ? "shared" : "private", members: Array.isArray(g.members) ? g.members : [],
     notified_milestone_pct: g.notifiedMilestonePct === undefined ? null : g.notifiedMilestonePct };
 }
 function fromRow(r) {
   return { id: r.id, name: r.name, emoji: r.emoji || "", image: r.image || null, targetAmount: Number(r.target_amount), initialAmount: Number(r.initial_amount),
     monthlyDeposit: Number(r.monthly_deposit), trackId: r.track_id, annualReturnPct: Number(r.annual_return_pct), startDate: r.start_date, createdAt: r.created_at,
-    visibility: r.visibility === "shared" ? "shared" : "private", members: Array.isArray(r.members) ? r.members : [],
+    members: [], myRole: "owner",
     notifiedMilestonePct: r.notified_milestone_pct === null || r.notified_milestone_pct === undefined ? undefined : r.notified_milestone_pct };
 }
 function ok(r) { if (r.error) throw r.error; return r; }
 
 export function createRemoteRepo(config) {
   var client = function () { return getClient(config); };
+  var sharing = createSharingApi(config);
+  /* Goals come back with the participants and the signed-in user's permission on each (members never include the user themselves). */
+  function withSharing(goals) {
+    return sharing.loadMembers(goals.map(function (g) { return g.id; })).then(function (map) {
+      return goals.map(function (g) { var e = map[g.id]; return e ? Object.assign(g, { members: e.members, myRole: e.myRole }) : g; });
+    }).catch(function () { return goals; }); /* a failed lookup shows the goals without participants rather than nothing */
+  }
   return {
     load: function () {
       return client().then(function (c) { return c.from("goals").select("*").order("created_at", { ascending: true }); })
-        .then(ok).then(function (r) { return r.data.map(fromRow).filter(validGoal); });
+        .then(ok).then(function (r) { return withSharing(r.data.map(fromRow).filter(validGoal)); });
     },
     save: function (g) { return client().then(function (c) { return c.from("goals").upsert(toRow(g)); }).then(ok); },
     remove: function (id) { return client().then(function (c) { return c.from("goals").delete().eq("id", id); }).then(ok); }

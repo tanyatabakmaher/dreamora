@@ -1,5 +1,5 @@
 import { esc, fromHTML, uid } from "../lib/dom.js";
-import { sharingOf } from "../lib/share.js";
+import { diffMembers, hasChanges, permissionsOf } from "../lib/share.js";
 import { toISODate } from "../lib/calc.js";
 import { todayDate } from "../lib/format.js";
 import { S } from "../strings.js";
@@ -10,8 +10,10 @@ import { createModal } from "./ui/Modal.js";
 import { IconPicker, wireIconPicker } from "./IconPicker.js";
 import { updatePlanSummary } from "./PlanSummary.js";
 import { trackTagText } from "./TrackTag.js";
+import { createSharingSection } from "./SharingSection.js";
 
-/* Create / edit a goal in a bottom sheet. onSave(goal), onDelete(goal, openerEl). open(goal|null, openerEl). */
+/* Create / edit a goal in a bottom sheet. onSave(goal, sharingDiff|null) may return a promise when sharing changed (the dialog then waits and stays open on failure),
+   onDelete(goal, openerEl, closeForm). o.sharing = true shows the sharing section; o.ownEmail() gives the signed-in email. open(goal|null, openerEl). */
 var IDS = { name: "gf-name", target: "gf-target", initial: "gf-initial", monthly: "gf-monthly", ret: "gf-return", start: "gf-start" };
 var ORDER = ["name", "target", "initial", "monthly", "ret", "start"];
 
@@ -31,12 +33,16 @@ export function createGoalForm(o) {
     '<div class="hint" id="gf-track-hint" style="margin: -6px 0 14px;" hidden></div>' +
     Field({ id: IDS.start, label: S["form.startDate"], type: "date", num: true }) +
     '<div class="summary" id="gf-summary" aria-live="polite"></div>' +
+    '<div id="gf-sharing-slot"></div><p class="hint" id="gf-readonly" hidden>' + esc(S["share.readonly"]) + "</p>" +
     '<div class="actions">' + Button({ id: "gf-save", type: "submit", label: S["form.save"], grow: true }) +
     Button({ id: "gf-cancel", variant: "ghost", label: S["form.cancel"] }) +
     Button({ id: "gf-delete", variant: "danger", label: S["action.delete"], hidden: true }) + "</div></form>");
   var $ = function (id) { return form.querySelector("#" + id); };
   var modal = createModal({ sheet: form });
   var picker = wireIconPicker(form, EMOJI_SUGGESTED);
+  var sharing = o.sharing ? createSharingSection({ ownEmail: function () { return o.ownEmail ? o.ownEmail() : ""; } }) : null;
+  if (sharing) $("gf-sharing-slot").appendChild(sharing.el);
+  var perms = permissionsOf(null);
   var state = null, attempted = false, touched = {};
 
   function num(v) { return v === "" || v === null || v === undefined ? NaN : Number(v); }
@@ -89,13 +95,19 @@ export function createGoalForm(o) {
     var first = ORDER.find(function (k) { return r.errs[k]; });
     if (first) { $(IDS[first]).focus(); return; }
     if (!r.plan || r.plan.status === "unreachable" || r.plan.status === "tooFar") { $("gf-summary").scrollIntoView({ block: "nearest" }); return; }
-    var v = read(), icon = picker.get(), sharing = sharingOf(state);
-    o.onSave({
+    if (!perms.canEdit) return;
+    var v = read(), icon = picker.get();
+    var diff = sharing && perms.canManageSharing ? diffMembers(sharing.getSaved(), sharing.getDraft()) : null;
+    var goal = {
       id: state.id, name: v.name, emoji: icon.emoji, image: icon.image, targetAmount: v.target, initialAmount: v.initial,
-      monthlyDeposit: v.monthly, trackId: $("gf-track").value, annualReturnPct: v.ret, startDate: v.start, createdAt: state.createdAt,
-      /* Sharing is not editable in Phase 1: new goals are private, edits keep what the goal has. A future sharing section only needs to change `state` before this point. */
-      visibility: sharing.visibility, members: sharing.members
-    });
+      monthlyDeposit: v.monthly, trackId: $("gf-track").value, annualReturnPct: v.ret, startDate: v.start, createdAt: state.createdAt
+    };
+    var res = o.onSave(goal, diff && hasChanges(diff) ? diff : null);
+    if (res && typeof res.then === "function") {
+      var btn = $("gf-save"); btn.disabled = true; sharing.setError("");
+      res.then(function () { modal.close(); }, function () { btn.disabled = false; sharing.setError(S["share.error.saveFailed"]); });
+      return;
+    }
     modal.close();
   });
   $("gf-close").addEventListener("click", function () { modal.close(); });
@@ -119,11 +131,18 @@ export function createGoalForm(o) {
       $(IDS.ret).value = state.annualReturnPct === null || state.annualReturnPct === "" ? "" : state.annualReturnPct;
       $(IDS.start).value = state.startDate;
       picker.set({ emoji: state.emoji, image: state.image });
-      $("gf-delete").hidden = !editing;
+      perms = permissionsOf(editing ? state : null);
+      Array.prototype.forEach.call(form.querySelectorAll("input:not([type=file]), select#gf-track"), function (i) { if (!i.closest(".sharing")) i.disabled = !perms.canEdit; });
+      picker.setDisabled(!perms.canEdit);
+      $("gf-save").hidden = !perms.canEdit; $("gf-save").disabled = false;
+      $("gf-readonly").hidden = perms.canEdit;
+      if (sharing) { sharing.set(editing ? state.members : [], perms.canManageSharing); sharing.el.hidden = !perms.canManageSharing && !(state.members && state.members.length); }
+      $("gf-delete").hidden = !editing || !perms.canDelete;
       trackHint();
       refresh();
-      modal.open(openerEl, "#" + IDS.name);
+      modal.open(openerEl, perms.canEdit ? "#" + IDS.name : "#gf-close");
     },
+    isOpen: function () { return modal.isOpen(); },
     destroy: function () { modal.destroy(); }
   };
 }

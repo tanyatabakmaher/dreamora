@@ -28,3 +28,10 @@
 .nt-empty .icon { width: 40px; height: 40px; margin-bottom: var(--space-12); }
 .nt-empty h3 { margin: 0 0 var(--space-4); font-size: 18px; font-weight: 500; color: var(--color-text); }
 .nt-empty p { margin: 0; font-size: 14px; }
+
+/* Share request: accept / decline under the text */
+.nt-row { border-bottom: 1px solid var(--color-border); }
+.nt-row .nt-item { border-bottom: 0; }
+.nt-actions { display: flex; gap: 8px; align-items: center; padding: 0 16px 12px 16px; padding-inline-start: 68px; }
+.nt-actions .btn { min-height: 44px; padding: 0 20px; }
+.nt-state { font-size: 13px; color: var(--color-text-muted); }

@@ -7,7 +7,7 @@ import { createModal } from "./ui/Modal.js";
 import { CloseIcon, BellIcon, GiftIcon, ConfettiIcon, UsersIcon } from "./ui/Icons.js";
 
 /* Full notifications list, no filters. Sections by date, newest first; unread = purple dot + light background.
-   o.onOpen(notification) when an item is pressed (the caller marks it read and shows the goal), o.onMarkAll(). open(list, today, openerEl, top) / update(list, today). */
+   o.onRespond(notification, accept) for share requests; o.onOpen(notification) when an item is pressed (the caller marks it read and shows the goal), o.onMarkAll(). open(list, today, openerEl, top) / update(list, today). */
 var TYPES = {
   milestone: { icon: GiftIcon, tone: "milestone" },
   achieved: { icon: ConfettiIcon, tone: "achieved" },
@@ -22,10 +22,17 @@ function sentence(n, withMarkup) {
 export function NotificationItem(n) {
   var t = TYPES[n.type] || TYPES.milestone, date = fmtDate(parseISODate(n.date));
   var aria = (n.read ? "" : S["notif.unreadAria"] + ". ") + sentence(n, false) + ", " + date;
-  return '<button type="button" class="nt-item' + (n.read ? "" : " unread") + '" data-id="' + esc(n.id) + '" aria-label="' + esc(aria) + '">' +
+  var main = '<button type="button" class="nt-item' + (n.read ? "" : " unread") + '" data-id="' + esc(n.id) + '" aria-label="' + esc(aria) + '">' +
     '<span class="nt-icon nt-' + t.tone + '" aria-hidden="true">' + t.icon() + "</span>" +
     '<span class="nt-text"><span class="nt-sentence">' + sentence(n, true) + '</span><span class="nt-date num">' + date + "</span></span>" +
     (n.read ? "" : '<span class="nt-dot" aria-hidden="true"></span>') + "</button>";
+  if (n.type !== "shareRequest" || !n.payload || !n.payload.memberId) return main;
+  var st = n.payload.state || "pending", actions;
+  if (st === "pending") {
+    actions = '<button type="button" class="btn btn-primary nt-accept" data-id="' + esc(n.id) + '">' + S["notif.accept"] + "</button>" +
+      '<button type="button" class="btn btn-ghost nt-decline" data-id="' + esc(n.id) + '">' + S["notif.decline"] + "</button>";
+  } else actions = '<span class="nt-state">' + S[st === "accepted" ? "notif.accepted" : "notif.declined"] + "</span>";
+  return '<div class="nt-row">' + main + '<div class="nt-actions">' + actions + "</div></div>";
 }
 export function createNotificationsScreen(o) {
   var sheet = fromHTML('<div class="sheet nt-sheet" role="dialog" aria-modal="true" aria-labelledby="nt-title">' +
@@ -48,6 +55,12 @@ export function createNotificationsScreen(o) {
     }).join("");
   }
   $("nt-list").addEventListener("click", function (ev) {
+    var r = ev.target.closest(".nt-accept, .nt-decline");
+    if (r) {
+      var rn = current.find(function (x) { return x.id === r.dataset.id; });
+      if (rn && o.onRespond) { Array.prototype.forEach.call(r.parentNode.children, function (c) { c.disabled = true; }); o.onRespond(rn, r.classList.contains("nt-accept")); }
+      return;
+    }
     var b = ev.target.closest(".nt-item"); if (!b) return;
     var n = current.find(function (x) { return x.id === b.dataset.id; });
     if (n) o.onOpen(n);

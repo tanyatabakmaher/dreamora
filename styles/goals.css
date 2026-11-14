@@ -80,3 +80,27 @@
 /* Brief highlight when a card is opened from a notification */
 @keyframes card-flash { 0%, 100% { box-shadow: var(--shadow-card); } 30%, 70% { box-shadow: 0 0 0 3px var(--color-primary), var(--shadow-card); } }
 .card.flash { animation: card-flash 1.5s ease; }
+
+/* Sharing section in the goal dialog */
+.sharing { border-top: 1px solid var(--color-border); margin: 16px 0; padding-top: 14px; }
+.sh-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.sh-head h3 { margin: 0; font-size: 15px; font-weight: 500; }
+.sh-pill { font-size: 12px; font-weight: 500; border-radius: 20px; padding: 3px 10px; }
+.sh-pill.private { background: var(--color-canvas); color: var(--color-text-muted); }
+.sh-pill.shared { background: #FAECE7; color: #993C1D; }
+.sh-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.sh-row { display: flex; align-items: center; gap: 8px; border: 0.5px solid var(--color-border); border-radius: 10px; padding: 6px 8px; }
+.sh-avatar { width: 28px; height: 28px; flex: none; font-size: 12px; }
+.sh-who { flex: 1; min-width: 0; }
+.sh-email-txt { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: end; }
+.sh-status { font-size: 11px; color: var(--color-text-muted); }
+.sh-role { width: auto; min-height: 36px; font-size: 12px; padding: 4px 8px; }
+.sh-rolelabel { font-size: 12px; color: var(--color-text-muted); }
+.sh-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; min-height: 44px; }
+.sh-link svg { width: 16px; height: 16px; }
+.sh-addrow { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+.sh-email { flex: 1; min-width: 0; direction: ltr; }
+.sh-addbtn { min-height: 44px; }
+.sh-help { font-size: 12px; color: var(--color-text-muted); line-height: 1.5; margin: 8px 0 0; }
+.sh-help b { font-weight: 500; color: var(--color-text); }
+.sharing .err { min-height: 0; }
