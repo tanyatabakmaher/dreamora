@@ -90,7 +90,7 @@
 .sh-pill.shared { background: #FAECE7; color: #993C1D; }
 .sh-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
 .sh-row { display: flex; align-items: center; gap: 8px; border: 0.5px solid var(--color-border); border-radius: 10px; padding: 6px 8px; }
-.sh-avatar { width: 28px; height: 28px; flex: none; font-size: 12px; }
+.avatar.sh-avatar { width: 28px; height: 28px; flex: none; font-size: 12px; }
 .sh-who { flex: 1; min-width: 0; }
 .sh-email-txt { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: end; }
 .sh-status { font-size: 11px; color: var(--color-text-muted); }
