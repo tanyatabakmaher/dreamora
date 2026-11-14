@@ -1,11 +1,11 @@
 import { esc } from "../lib/dom.js";
 import { S } from "../strings.js";
 /* Semicircle dial. RTL: 0% on the right, 100% on the left, arc drawn over the top.
-   Traffic-light colors run continuously red -> yellow -> green along the arc; the knob takes the color of its position.
+   One mint color along the arc (no traffic light); the track is the neutral border color.
    Pure: Gauge({ pct, accumulated, target, id }) returns an SVG string. */
 var CX = 100, CY = 100, R = 80;
-var ARC_STOPS = ["#E24B4A", "#EF9F27", "#1D9E75"];   /* bright: arc and knob */
-var TEXT_STOPS = ["#A32D2D", "#854F0B", "#0F6E56"];  /* darker: text on the card surface */
+var ARC_STOPS = ["#78CEB2", "#78CEB2", "#78CEB2"];   /* arc and knob: one mint at every percentage (no traffic light) */
+var TEXT_STOPS = ["#B7E4D2", "#B7E4D2", "#B7E4D2"];  /* lighter mint: text on the card surface */
 
 export function pointOnArc(pct, r) {
   var a = Math.PI * pct / 100;

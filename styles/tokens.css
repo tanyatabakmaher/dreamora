@@ -1,27 +1,53 @@
-/* Pastel Atelier design tokens. Single source of truth for color, spacing, radius, shadow, type. */
+/* Premium Midnight design tokens. Single source of truth for color, spacing, radius, shadow, type.
+   Layers: the named palette first, then the names the components use (--color-*), which point at the palette. Components never hard-code colors. */
 :root {
-  --color-canvas: #FCF9FD;
-  --color-surface: #FFFFFF;
-  --color-lavender: #DCCCED;
-  --color-pink: #F3C6DA;
-  --color-mint: #C9E8DD;
-  --color-sky: #CBE5EF;
-  --color-butter: #F5E6AC;
-  --color-primary: #70508F;
-  --color-primary-hover: #5D407A;
-  --color-primary-pressed: #4B3265;
-  --color-text: #302738;
-  --color-text-muted: #685D70;
-  --color-border: #DED5E5;
-  --color-input-border: #887991;
-  --color-focus: #70508F;
-  --color-success: #27654E;
-  --color-success-bg: #E8F5EE;
-  --color-error: #A33454;
-  --color-error-bg: #FCEBF0;
+  --bg-app: #111C28;
+  --bg-bar: #0C1722;
+  --surface-1: #1F3040;
+  --surface-2: #283B4B;
+  --surface-input: #172735;
+  --accent-mint: #B7E4D2;
+  --accent-mint-strong: #78CEB2;
+  --accent-gold: #EBCB88;
+  --text-primary: #F6F2E9;
+  --text-secondary: #BBC9D1;
+  --text-muted: #8FA3B0;
+  --border: #385061;
+  --border-control: #7F97A8; /* field and control outlines: lighter than --border so they keep 3:1 against the surface */
+  --danger: #E99A96;
+  --success: #9AD8BD;
+  --overlay: #07111DCC;
+
+  --color-canvas: var(--bg-app);
+  --color-bar: var(--bg-bar);
+  --color-surface: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-input-bg: var(--surface-input);
+  --color-lavender: var(--surface-2);
+  --color-sky: var(--surface-2);
+  --color-butter: var(--surface-2);
+  --color-mint: color-mix(in srgb, var(--accent-mint) 20%, var(--surface-1));
+  --color-pink: color-mix(in srgb, var(--accent-gold) 28%, var(--surface-1));
+  --color-primary: var(--accent-gold);
+  --color-primary-hover: #F2D79E;
+  --color-primary-pressed: #D9B872;
+  --color-on-primary: #0C1722;
+  --color-text: var(--text-primary);
+  --color-text-muted: var(--text-secondary);
+  --color-text-faint: var(--text-muted);
+  --color-border: var(--border);
+  --color-input-border: var(--border-control);
+  --color-focus: var(--accent-mint-strong);
+  --color-link: var(--accent-mint-strong);
+  --color-success: var(--success);
+  --color-success-bg: color-mix(in srgb, var(--accent-mint) 14%, var(--surface-1));
+  --color-error: var(--danger);
+  --color-error-bg: color-mix(in srgb, var(--danger) 14%, var(--surface-1));
+  --color-overlay: var(--overlay);
+
   --space-4: 4px; --space-8: 8px; --space-12: 12px; --space-16: 16px; --space-24: 24px; --space-32: 32px; --space-48: 48px;
-  --radius-control: 12px; --radius-card: 20px; --radius-pill: 999px;
-  --shadow-card: 0 8px 24px rgba(48, 39, 56, 0.06);
+  --radius-control: 12px; --radius-card: 18px; --radius-pill: 999px;
+  --shadow-card: 0 6px 20px rgba(7, 17, 29, 0.35);
   --font-ui: "Heebo", "Noto Sans Hebrew", Arial, sans-serif;
-  color-scheme: light;
+  color-scheme: dark;
 }

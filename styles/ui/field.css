@@ -1,7 +1,7 @@
 .field { display: flex; flex-direction: column; gap: var(--space-8); margin-bottom: var(--space-16); }
 .field > label, .field > .lbl { font-weight: 500; font-size: 14px; line-height: 1.5; }
-.input { width: 100%; min-height: 44px; padding: var(--space-8) var(--space-16); border: 1px solid var(--color-input-border); border-radius: var(--radius-control); background: var(--color-surface); }
-.input:focus { border-color: var(--color-primary); }
+.input { width: 100%; min-height: 44px; padding: var(--space-8) var(--space-16); border: 1px solid var(--color-input-border); border-radius: var(--radius-control); background: var(--color-input-bg); }
+.input:focus { border-color: var(--color-focus); }
 .field.invalid .input { border-color: var(--color-error); }
 .err { color: var(--color-error); font-size: 14px; font-weight: 500; min-height: 0; }
 .hint { color: var(--color-text-muted); font-size: 14px; font-weight: 500; }
@@ -9,4 +9,5 @@
 @media (max-width: 420px) { .row2 { grid-template-columns: 1fr; } }
 .pw-wrap { position: relative; }
 .pw-wrap .input { padding-left: 76px; padding-right: var(--space-16); }
-.pw-toggle { position: absolute; inset-inline-end: 4px; top: 0; min-height: 44px; min-width: 44px; padding: 0 var(--space-12); background: none; border: 0; color: var(--color-primary); font-weight: 500; font-size: 14px; }
+.pw-toggle { position: absolute; inset-inline-end: 4px; top: 0; min-height: 44px; min-width: 44px; padding: 0 var(--space-12); background: none; border: 0; color: var(--color-link); font-weight: 500; font-size: 14px; }
+.input::placeholder { color: var(--color-text-faint); opacity: 1; }

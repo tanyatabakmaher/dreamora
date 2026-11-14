@@ -8,7 +8,7 @@ function PreviewCard(name, pct, color) {
 }
 export function createWelcome(o) {
   var el = fromHTML('<section class="auth-view"><div class="auth-mid"><div class="preview" aria-hidden="true">' +
-    PreviewCard("טיול ליפן", 47, "#F3C6DA") + PreviewCard("רכב חדש", 13, "#CBE5EF") + PreviewCard("דירה", 72, "#C9E8DD") +
+    PreviewCard("טיול ליפן", 47, "#EBCB88") + PreviewCard("רכב חדש", 13, "#78CEB2") + PreviewCard("דירה", 72, "#B7E4D2") +
     '</div><div><h2 id="wl-title" tabindex="-1">' + S["auth.welcome.title"] + "</h2><p>" + S["auth.welcome.subtitle"] + "</p></div></div>" +
     '<div class="actions-stack">' + Button({ id: "wl-signup", label: S["auth.signup"], block: true }) +
     Button({ id: "wl-login", variant: "ghost", label: S["auth.login"], block: true }) + "</div></section>");

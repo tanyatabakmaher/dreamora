@@ -2,8 +2,8 @@
 .profile-sheet .sheet-head h2 { font-size: 20px; }
 .photo-row { display: flex; align-items: center; gap: var(--space-16); margin-bottom: var(--space-24); }
 .photo-avatar { position: relative; flex: none; }
-.photo-avatar .avatar { width: 76px; height: 76px; font-size: 32px; background: var(--color-lavender); color: var(--color-text); }
-.cam-badge { position: absolute; bottom: -2px; inset-inline-end: -2px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--color-surface); background: var(--color-primary); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.photo-avatar .avatar { width: 76px; height: 76px; font-size: 32px; background: var(--color-surface-2); color: var(--accent-mint); }
+.cam-badge { position: absolute; bottom: -2px; inset-inline-end: -2px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--color-surface); background: var(--color-primary); color: var(--color-on-primary); display: inline-flex; align-items: center; justify-content: center; padding: 0; }
 .cam-badge::after { content: ""; position: absolute; inset: -8px; }
 .cam-badge .icon { width: 14px; height: 14px; }
 .photo-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 0; min-width: 0; }
