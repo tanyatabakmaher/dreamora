@@ -884,7 +884,7 @@ if (typeof module !== "undefined") {
   var supa = {
     getSession: function () { return client().auth.getSession().then(function (r) { return r.data.session ? { email: r.data.session.user.email } : null; }); },
     signUp: function (name, email, pw) {
-      return client().auth.signUp({ email: email, password: pw, options: { data: { name: name } } })
+      return client().auth.signUp({ email: email, password: pw, options: { data: { name: name }, emailRedirectTo: window.location.href.split("#")[0] } })
         .then(function (r) { if (r.error) throw r.error; return { session: !!r.data.session }; });
     },
     signIn: function (email, pw) {
@@ -1007,6 +1007,10 @@ if (typeof module !== "undefined") {
   });
 
   setMode("login");
+  if (/error_code=otp_expired|error=access_denied/.test(window.location.hash)) {
+    try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
+    var eb = $("authErr"); eb.textContent = "הקישור במייל כבר נוצל או פג תוקפו. אפשר להתחבר, או לבקש קישור חדש."; open("login"); eb.hidden = false;
+  }
   auth.getSession().then(function (s) { if (s) enter(); }).catch(function () {});
 })();
 </script>
