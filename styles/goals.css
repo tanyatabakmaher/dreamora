@@ -23,8 +23,9 @@
 .badge { flex: none; align-self: flex-start; background: var(--color-success-bg); color: var(--color-success); font-weight: 500; font-size: 14px; line-height: 1.5; padding: var(--space-4) var(--space-12); border-radius: var(--radius-pill); white-space: nowrap; }
 .gauge { width: 100%; max-width: 260px; margin: 0 auto; }
 .gauge svg { display: block; width: 100%; height: auto; overflow: visible; }
-.g-track { fill: none; stroke: var(--color-border); stroke-width: 7; stroke-linecap: round; }
-.g-fill { fill: none; stroke-width: 7; stroke-linecap: round; transition: stroke-dasharray .4s ease; }
+.g-track { fill: var(--color-border); stroke: none; }
+.g-fill { stroke: none; }
+.g-sep { stroke: var(--color-surface); stroke-width: 1.5; }
 .g-pct { font-size: 15px; font-weight: 500; fill: var(--color-text); font-variant-numeric: tabular-nums; }
 .g-amount { font-size: 24px; font-weight: 500; fill: var(--color-text); font-variant-numeric: tabular-nums; }
 .g-sub { font-size: 12px; fill: var(--color-text-muted); }
