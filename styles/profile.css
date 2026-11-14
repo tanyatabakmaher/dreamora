@@ -1,0 +1,18 @@
+/* Profile dialog: modal on desktop, full-screen sheet on mobile */
+.profile-sheet .sheet-head h2 { font-size: 20px; }
+.photo-row { display: flex; align-items: center; gap: var(--space-16); margin-bottom: var(--space-24); }
+.photo-avatar { position: relative; flex: none; }
+.photo-avatar .avatar { width: 76px; height: 76px; font-size: 32px; background: var(--color-lavender); color: var(--color-text); }
+.cam-badge { position: absolute; bottom: -2px; inset-inline-end: -2px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--color-surface); background: var(--color-primary); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.cam-badge::after { content: ""; position: absolute; inset: -8px; }
+.cam-badge .icon { width: 14px; height: 14px; }
+.photo-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 0; min-width: 0; }
+.photo-actions .linkbtn { text-decoration: none; font-weight: 500; font-size: 14px; }
+.photo-actions .danger-link { color: var(--color-error); }
+.photo-actions .hint { font-size: 12px; }
+.input[readonly] { background: var(--color-canvas); color: var(--color-text-muted); border-color: var(--color-border); cursor: default; }
+@media (max-width: 639px) {
+  .overlay:has(.profile-sheet) { align-items: stretch; padding: 0; }
+  .profile-sheet { max-width: none; max-height: none; height: 100%; border-radius: 0; }
+}
+@media (min-width: 640px) { .profile-sheet { max-width: 420px; } }

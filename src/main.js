@@ -3,6 +3,7 @@ import { S } from "./strings.js";
 import { createAuth } from "./services/auth.js";
 import { createGoalsRepo } from "./services/goalsRepo.js";
 import { createAuthScreen } from "./components/AuthScreen.js";
+import { showToast } from "./components/ui/Toast.js";
 import { createGoalsScreen } from "./components/GoalsScreen.js";
 
 var root = document.getElementById("app");
@@ -21,7 +22,8 @@ function showAuth(initialError) {
 function showApp() {
   mount(createGoalsScreen({
     repo: createGoalsRepo(CONFIG),
-    onLogout: function () { auth.signOut().then(function () { showAuth(); }); }
+    auth: auth,
+    onLogout: function () { auth.signOut().then(function () { showAuth(); }).catch(function () { showToast(S["error.signOutFailed"]); }); }
   }));
 }
 

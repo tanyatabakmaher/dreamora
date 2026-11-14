@@ -5,12 +5,27 @@ import { showToast } from "./ui/Toast.js";
 import { createGoalList } from "./GoalList.js";
 import { createGoalForm } from "./GoalForm.js";
 import { createConfirm } from "./ConfirmDialog.js";
+import { createAppHeader } from "./AppHeader.js";
+import { createProfileDialog } from "./ProfileDialog.js";
+import { PlusIcon } from "./ui/Icons.js";
 
-/* The main screen: header, goal list, goal form and delete confirmation. repo = goals storage, onLogout() */
+/* The main screen: brand bar, title row, goal list, goal form, profile dialog, delete confirmation.
+   o.repo = goals storage, o.auth = auth service (getProfile / updateProfile), o.onLogout() */
 export function createGoalsScreen(o) {
-  var el = fromHTML('<div><div class="wrap"><header class="top"><h1>' + S["home.title"] + '</h1><div class="top-actions">' +
-    Button({ id: "gs-logout", variant: "ghost", label: S["home.logout"] }) + Button({ id: "gs-add", label: S["home.addGoal"] }) +
-    '</div></header></div><footer class="foot">' + S["disclaimer"] + "</footer></div>");
+  var el = fromHTML('<div><div class="wrap"><div class="titlebar"><h1>' + S["home.title"] + "</h1>" +
+    Button({ id: "gs-add", label: S["home.addGoal"], icon: PlusIcon(), extraClass: "add-btn" }) +
+    '</div></div><footer class="foot">' + S["disclaimer"] + "</footer></div>");
+  var profile = { name: "", email: "", photo: null, phone: "" };
+  var profileDialog = createProfileDialog({
+    save: function (p) { return o.auth.updateProfile(p); },
+    onSaved: function (p) { profile = p; header.setProfile(p); }
+  });
+  var header = createAppHeader({
+    onProfile: function (opener) { profileDialog.open(profile, opener); },
+    onLogout: function () { o.onLogout(); }
+  });
+  el.insertBefore(header.el, el.firstChild);
+  o.auth.getProfile().then(function (p) { profile = p; header.setProfile(p); }).catch(function () {});
   var goals = [];
   var list = createGoalList({
     onAdd: function (opener) { form.open(null, opener); },
@@ -40,9 +55,8 @@ export function createGoalsScreen(o) {
     }
   });
   el.querySelector("#gs-add").addEventListener("click", function () { form.open(null, this); });
-  el.querySelector("#gs-logout").addEventListener("click", function () { o.onLogout(); });
   o.repo.load().then(function (l) { goals = l; })
     .catch(function () { goals = []; showToast(S["load.failed"]); })
     .then(function () { list.render(goals); });
-  return { el: el, destroy: function () { form.destroy(); confirm.destroy(); el.remove(); } };
+  return { el: el, destroy: function () { form.destroy(); confirm.destroy(); profileDialog.destroy(); header.destroy(); el.remove(); } };
 }

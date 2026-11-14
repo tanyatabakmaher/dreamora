@@ -23,6 +23,7 @@ src/
   components/
     ui/                 יחידות חוזרות: Button, Field, PasswordField, Message, Modal, Toast, Logo
     Gauge, GoalCard, GoalList, GoalForm, IconPicker, PlanSummary, ConfirmDialog
+    AppHeader (brand bar), ProfileDialog; ui/Avatar, ui/Menu (add menu items there)
     Welcome, AuthForm, AuthScreen, GoalsScreen
 tests/calc.test.js      בדיקות לחישובים
 supabase/001_goals.sql  סכמת הטבלה והרשאות (RLS)

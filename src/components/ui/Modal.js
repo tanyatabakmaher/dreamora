@@ -40,6 +40,15 @@ export function createModal(o) {
       overlay.remove();
     }
   };
+  overlay.addEventListener("keydown", function (ev) { /* keep Tab inside the dialog */
+    if (ev.key !== "Tab") return;
+    var f = Array.prototype.filter.call(overlay.querySelectorAll('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])'),
+      function (n) { return !n.disabled && !n.hidden && n.offsetParent !== null; });
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+    else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+  });
   overlay.addEventListener("mousedown", function (ev) { if (ev.target === overlay) api.close(); });
   return api;
 }
