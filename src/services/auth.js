@@ -3,6 +3,7 @@
    getProfile() -> {name,email,photo,phone}, updateProfile({name,photo,phone}) -> the saved profile.
    signUp/signIn resolve {session:boolean}. oauth/magic reject {demo:true} in demo mode. */
 import { getClient } from "./supabaseClient.js";
+import { createImageStore } from "./imageStore.js";
 
 var DEMO_KEY = "savings_demo_session_v1";
 var DEMO_PROFILE_KEY = "savings_profile_v1";
@@ -44,6 +45,7 @@ function createSupabaseAuth(config) {
   var back = function () { return window.location.href.split("#")[0]; };
   function ok(r) { if (r.error) throw r.error; return r; }
   function client() { return getClient(config); }
+  var images = createImageStore(config), knownPhoto = null;
   return {
     getSession: function () {
       return client().then(function (c) { return c.auth.getSession(); })
@@ -60,6 +62,7 @@ function createSupabaseAuth(config) {
           return c.from("profiles").select("name,phone,photo").eq("id", u.id).maybeSingle().then(function (res) {
             if (res.error) throw res.error;
             var row = res.data || {};
+            knownPhoto = row.photo || null;
             return { name: row.name || (u.user_metadata && u.user_metadata.name) || "", email: u.email, photo: row.photo || null, phone: row.phone || "" };
           });
         });
@@ -71,9 +74,13 @@ function createSupabaseAuth(config) {
         return c.auth.getSession().then(function (r) {
           var u = r.data.session && r.data.session.user;
           if (!u) throw new Error("no session");
-          return c.from("profiles").upsert({ id: u.id, name: cl.name || null, phone: cl.phone || null, photo: cl.photo }).then(function (res) {
-            if (res.error) throw res.error;
-            return { name: cl.name, email: u.email, photo: cl.photo, phone: cl.phone };
+          return images.resolve(cl.photo).then(function (photo) {
+            return c.from("profiles").upsert({ id: u.id, name: cl.name || null, phone: cl.phone || null, photo: photo }).then(function (res) {
+              if (res.error) throw res.error;
+              if (knownPhoto && knownPhoto !== photo) images.discard(knownPhoto);
+              knownPhoto = photo;
+              return { name: cl.name, email: u.email, photo: photo, phone: cl.phone };
+            });
           });
         });
       });

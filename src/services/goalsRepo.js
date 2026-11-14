@@ -2,6 +2,7 @@
    "local" keeps goals in this browser (demo). "remote" keeps them per account in the database (row level security limits each user to their own rows). */
 import { getClient } from "./supabaseClient.js";
 import { createSharingApi } from "./sharingApi.js";
+import { createImageStore } from "./imageStore.js";
 import { addMonths, toISODate } from "../lib/calc.js";
 import { todayDate } from "../lib/format.js";
 import { uid } from "../lib/dom.js";
@@ -64,6 +65,8 @@ function ok(r) { if (r.error) throw r.error; return r; }
 export function createRemoteRepo(config) {
   var client = function () { return getClient(config); };
   var sharing = createSharingApi(config);
+  var images = createImageStore(config);
+  var known = {}; /* goal id -> picture currently stored, so a replaced or removed picture can be deleted */
   /* Goals come back with the participants and the signed-in user's permission on each (members never include the user themselves). */
   function withSharing(goals) {
     return sharing.loadMembers(goals.map(function (g) { return g.id; })).then(function (map) {
@@ -73,10 +76,25 @@ export function createRemoteRepo(config) {
   return {
     load: function () {
       return client().then(function (c) { return c.from("goals").select("*").order("created_at", { ascending: true }); })
-        .then(ok).then(function (r) { return withSharing(r.data.map(fromRow).filter(validGoal)); });
+        .then(ok).then(function (r) {
+          var goals = r.data.map(fromRow).filter(validGoal);
+          goals.forEach(function (g) { known[g.id] = g.image; });
+          return withSharing(goals);
+        });
     },
-    save: function (g) { return client().then(function (c) { return c.from("goals").upsert(toRow(g)); }).then(ok); },
-    remove: function (id) { return client().then(function (c) { return c.from("goals").delete().eq("id", id); }).then(ok); }
+    save: function (g) {
+      /* A new picture is uploaded first and the goal keeps its URL; an old file that is no longer used is deleted afterwards. */
+      return images.resolve(g.image).then(function (url) {
+        g.image = url;
+        return client().then(function (c) { return c.from("goals").upsert(toRow(g)); }).then(ok).then(function () {
+          if (known[g.id] && known[g.id] !== url) images.discard(known[g.id]);
+          known[g.id] = url;
+        });
+      });
+    },
+    remove: function (id) {
+      return client().then(function (c) { return c.from("goals").delete().eq("id", id); }).then(ok).then(function () { images.discard(known[id]); delete known[id]; });
+    }
   };
 }
 
