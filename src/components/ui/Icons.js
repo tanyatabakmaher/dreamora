@@ -15,3 +15,4 @@ export function ConfettiIcon() { return svg('<path d="M4 20l4.5-12.5 8 8z"/><pat
 export function UsersIcon() { return svg('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'); }
 export function UserPlusIcon() { return svg('<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/>'); }
 export function CoinsIcon() { return svg('<circle cx="9" cy="9" r="6"/><path d="M15.5 7.2A6 6 0 1 1 7.2 15.5M7 9h4M9 7v4"/>'); }
+export function MenuIcon() { return svg('<path d="M4 6h16M4 12h16M4 18h16"/>'); }

@@ -3,18 +3,17 @@ import { S } from "../strings.js";
 import { BRAND_NAME } from "../brand.js";
 import { Avatar } from "./ui/Avatar.js";
 import { HeaderLogo } from "./ui/Logo.js";
-import { GearIcon, LogoutIcon, BellIcon } from "./ui/Icons.js";
+import { MenuIcon, LogoutIcon, BellIcon } from "./ui/Icons.js";
 import { badgeText } from "../lib/notifications.js";
 import { createMenu } from "./ui/Menu.js";
 
-/* The purple brand bar, laid out for right-to-left: logo + wordmark at the start (right); at the end (left) one group of controls read from the logo outwards:
-   settings, notifications bell with unread badge, a divider, then the profile (name and avatar, avatar on the outer edge, opens the profile).
+/* The purple brand bar, laid out for right-to-left: logo + wordmark at the start (right); at the end (left) the menu button (opens a dropdown from the right edge) then the logo; at the end (left): notifications bell with unread badge, a divider, then the profile (name and avatar, avatar on the outer edge, opens the profile).
    o.onProfile(openerEl), o.onNotifications(openerEl), o.onLogout(). setUnread(count). setProfile({name, photo}) refreshes the avatar and name. */
 export function createAppHeader(o) {
   var el = fromHTML('<div class="appbar"><div class="appbar-in">' +
-    '<div class="appbar-brand">' + HeaderLogo({ size: 30 }) + '<span class="appbar-word">' + esc(BRAND_NAME) + "</span></div>" +
+    '<div class="appbar-start"><div class="menu-wrap"><button type="button" class="gear-btn" id="ah-settings" aria-label="' + esc(S["header.menuAria"]) + '">' + MenuIcon() + "</button></div>" +
+    '<div class="appbar-brand">' + HeaderLogo({ size: 30 }) + '<span class="appbar-word">' + esc(BRAND_NAME) + "</span></div></div>" +
     '<div class="appbar-end">' +
-    '<div class="menu-wrap"><button type="button" class="gear-btn" id="ah-settings" aria-label="' + esc(S["header.settingsAria"]) + '">' + GearIcon() + "</button></div>" +
     '<button type="button" class="bell-btn" id="ah-bell" aria-haspopup="dialog">' + BellIcon() + '<span class="bell-badge" id="ah-badge" hidden></span></button>' +
     '<span class="appbar-sep" aria-hidden="true"></span>' +
     '<button type="button" class="profile-btn" id="ah-profile" aria-label="' + esc(S["header.profileAria"]) + '"></button></div></div></div>');

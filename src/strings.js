@@ -88,6 +88,7 @@ export const S = {
   "notif.empty.subtitle": "נעדכן אתכם כשתגיעו לאבן דרך",
   "notif.failed": "לא הצלחנו לעדכן את ההתראות. נסו שוב",
   "header.profileAria": "פתיחת הגדרות פרופיל",
+  "header.menuAria": "תפריט",
   "header.settingsAria": "הגדרות",
   "menu.logout": "התנתקות",
   "profile.title": "הגדרות פרופיל",
