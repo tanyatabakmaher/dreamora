@@ -67,6 +67,7 @@ export function createGoalsScreen(o) {
   o.auth.getProfile().then(function (p) { profile = p; header.setProfile(p); }).catch(function () {});
   var goals = [];
   var list = createGoalList({
+    canShare: function () { return !!o.sharing; },
     onAdd: function (opener) { form.open(null, opener); },
     onEdit: function (g, opener) { if (g) form.open(g, opener); }
   });

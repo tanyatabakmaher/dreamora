@@ -104,3 +104,10 @@
 .sh-help { font-size: 12px; color: var(--color-text-muted); line-height: 1.5; margin: 8px 0 0; }
 .sh-help b { font-weight: 500; color: var(--color-text); }
 .sharing .err { min-height: 0; }
+
+/* Filter row above the goal list */
+.filter-row { display: flex; gap: var(--space-8); margin-bottom: var(--space-16); flex-wrap: wrap; }
+.filter-chip { min-height: 44px; padding: 0 var(--space-16); border-radius: var(--radius-pill); border: 1px solid var(--color-primary); background: var(--color-surface); color: var(--color-primary); font-size: 14px; font-weight: 500; }
+.filter-chip:hover { background: var(--color-lavender); color: var(--color-text); }
+.filter-chip.on { background: var(--color-primary); color: #FFFFFF; }
+.filter-empty { text-align: center; color: var(--color-text-muted); margin: var(--space-32) 0; }

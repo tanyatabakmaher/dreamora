@@ -4,10 +4,11 @@ import { S } from "../strings.js";
 import { Gauge } from "./Gauge.js";
 import { GoalCard } from "./GoalCard.js";
 import { Button } from "./ui/Button.js";
-/* The grid of goal cards, or the empty state. render(goals) redraws; events go out through onAdd / onEdit(goal, element). */
+import { filterGoals, isShared } from "../lib/share.js";
+/* The grid of goal cards, or the empty state, with a filter row (all / private / shared) when o.canShare() is true or any goal is shared. render(goals) redraws; events go out through onAdd / onEdit(goal, element). */
 export function createGoalList(o) {
   var el = fromHTML('<main id="main"></main>');
-  var goals = [];
+  var goals = [], filter = "all";
   function findGoal(id) { return goals.find(function (g) { return g.id === id; }); }
   function render(list) {
     goals = list;
@@ -17,11 +18,19 @@ export function createGoalList(o) {
       return;
     }
     var today = todayDate();
-    el.innerHTML = '<div class="grid">' + goals.map(function (g) { return GoalCard(g, today); }).join("") + "</div>";
+    var showFilter = (o.canShare && o.canShare()) || goals.some(isShared);
+    if (!showFilter) filter = "all";
+    var shown = filterGoals(goals, filter);
+    var chips = showFilter ? '<div class="filter-row" role="group" aria-label="' + S["filter.aria"] + '">' + ["all", "private", "shared"].map(function (k) {
+      return '<button type="button" class="filter-chip' + (filter === k ? " on" : "") + '" data-filter="' + k + '" aria-pressed="' + String(filter === k) + '">' + S["filter." + k] + "</button>";
+    }).join("") + "</div>" : "";
+    el.innerHTML = chips + (shown.length ? '<div class="grid">' + shown.map(function (g) { return GoalCard(g, today); }).join("") + "</div>"
+      : '<p class="filter-empty">' + S["filter.empty." + filter] + "</p>");
   }
   /* Bring a goal's card into view and flash it briefly (no flash with reduced motion). Returns false if the goal is not shown. */
   function reveal(id) {
     var card = el.querySelector('.card[data-id="' + String(id).replace(/"/g, "") + '"]');
+    if (!card && filter !== "all") { filter = "all"; render(goals); card = el.querySelector('.card[data-id="' + String(id).replace(/"/g, "") + '"]'); } /* a filtered-out goal: show everything */
     if (!card) return false;
     var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     card.scrollIntoView({ block: "center", behavior: calm ? "auto" : "smooth" });
@@ -30,6 +39,8 @@ export function createGoalList(o) {
     return true;
   }
   el.addEventListener("click", function (ev) {
+    var f = ev.target.closest("[data-filter]");
+    if (f) { filter = f.dataset.filter; render(goals); var again = el.querySelector('[data-filter="' + filter + '"]'); if (again) again.focus(); return; }
     var add = ev.target.closest('[data-action="add"]');
     if (add) { o.onAdd(add); return; }
     var card = ev.target.closest(".card");

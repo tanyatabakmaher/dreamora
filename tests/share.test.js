@@ -1,4 +1,4 @@
-import { getShareIndicator, isShared, validateMemberEmail, diffMembers, hasChanges, permissionsOf, memberLabel } from "../src/lib/share.js";
+import { filterGoals, getShareIndicator, isShared, validateMemberEmail, diffMembers, hasChanges, permissionsOf, memberLabel } from "../src/lib/share.js";
 import { ShareIndicator } from "../src/components/ShareIndicator.js";
 import { groupSharing } from "../src/services/sharingApi.js";
 import { NotificationItem } from "../src/components/NotificationsScreen.js";
@@ -37,4 +37,8 @@ const req = { id: "n1", goalId: "g", goalName: "טיול", type: "shareRequest",
 const rq = NotificationItem(req);
 check("request has accept/decline", rq.includes("nt-accept") && rq.includes("nt-decline") && rq.includes("אישור") && rq.includes("דחייה"), rq);
 check("answered request has no buttons", !NotificationItem({ ...req, payload: { ...req.payload, state: "accepted" } }).includes("nt-accept") && NotificationItem({ ...req, payload: { ...req.payload, state: "accepted" } }).includes("אישרתם"));
+const gl = [{ id: "a", members: [] }, { id: "b", members: [m("x")] }, { id: "c" }];
+check("filter all", filterGoals(gl, "all").length === 3);
+check("filter private", eq(filterGoals(gl, "private").map((g) => g.id), ["a", "c"]));
+check("filter shared", eq(filterGoals(gl, "shared").map((g) => g.id), ["b"]));
 console.log(fail === 0 ? "ALL PASSED" : fail + " FAILED"); process.exit(fail ? 1 : 0);
