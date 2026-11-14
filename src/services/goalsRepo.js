@@ -49,11 +49,13 @@ export function createLocalRepo() {
 
 function toRow(g) {
   return { id: g.id, name: g.name, emoji: g.emoji || null, image: g.image || null, target_amount: g.targetAmount, initial_amount: g.initialAmount || 0,
-    monthly_deposit: g.monthlyDeposit, track_id: g.trackId, annual_return_pct: g.annualReturnPct, start_date: g.startDate, created_at: g.createdAt || new Date().toISOString() };
+    monthly_deposit: g.monthlyDeposit, track_id: g.trackId, annual_return_pct: g.annualReturnPct, start_date: g.startDate, created_at: g.createdAt || new Date().toISOString(),
+    visibility: g.visibility === "shared" ? "shared" : "private", members: Array.isArray(g.members) ? g.members : [] };
 }
 function fromRow(r) {
   return { id: r.id, name: r.name, emoji: r.emoji || "", image: r.image || null, targetAmount: Number(r.target_amount), initialAmount: Number(r.initial_amount),
-    monthlyDeposit: Number(r.monthly_deposit), trackId: r.track_id, annualReturnPct: Number(r.annual_return_pct), startDate: r.start_date, createdAt: r.created_at };
+    monthlyDeposit: Number(r.monthly_deposit), trackId: r.track_id, annualReturnPct: Number(r.annual_return_pct), startDate: r.start_date, createdAt: r.created_at,
+    visibility: r.visibility === "shared" ? "shared" : "private", members: Array.isArray(r.members) ? r.members : [] };
 }
 function ok(r) { if (r.error) throw r.error; return r; }
 

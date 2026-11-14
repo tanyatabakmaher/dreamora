@@ -25,8 +25,8 @@ src/
     Gauge, GoalCard, GoalList, GoalForm, IconPicker, PlanSummary, ConfirmDialog
     AppHeader (brand bar), ProfileDialog; ui/Avatar, ui/Menu (add menu items there)
     Welcome, AuthForm, AuthScreen, GoalsScreen
-tests/calc.test.js      בדיקות לחישובים
-supabase/001_goals.sql  סכמת הטבלה והרשאות (RLS)
+tests/                 בדיקות: חישובים, מד, ולידציה, סימון שיתוף
+supabase/              סכמות SQL (001 מטרות, 002 פרופילים, 003 נראות ומשתתפים) עם הרשאות RLS
 ```
 
 ## כללים לעדכון

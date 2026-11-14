@@ -1,4 +1,5 @@
 import { esc, fromHTML, uid } from "../lib/dom.js";
+import { sharingOf } from "../lib/share.js";
 import { toISODate } from "../lib/calc.js";
 import { todayDate } from "../lib/format.js";
 import { S } from "../strings.js";
@@ -88,10 +89,12 @@ export function createGoalForm(o) {
     var first = ORDER.find(function (k) { return r.errs[k]; });
     if (first) { $(IDS[first]).focus(); return; }
     if (!r.plan || r.plan.status === "unreachable" || r.plan.status === "tooFar") { $("gf-summary").scrollIntoView({ block: "nearest" }); return; }
-    var v = read(), icon = picker.get();
+    var v = read(), icon = picker.get(), sharing = sharingOf(state);
     o.onSave({
       id: state.id, name: v.name, emoji: icon.emoji, image: icon.image, targetAmount: v.target, initialAmount: v.initial,
-      monthlyDeposit: v.monthly, trackId: $("gf-track").value, annualReturnPct: v.ret, startDate: v.start, createdAt: state.createdAt
+      monthlyDeposit: v.monthly, trackId: $("gf-track").value, annualReturnPct: v.ret, startDate: v.start, createdAt: state.createdAt,
+      /* Sharing is not editable in Phase 1: new goals are private, edits keep what the goal has. A future sharing section only needs to change `state` before this point. */
+      visibility: sharing.visibility, members: sharing.members
     });
     modal.close();
   });
