@@ -9,7 +9,7 @@ function onKey(ev) {
 export function createModal(o) {
   if (!wired) { document.addEventListener("keydown", onKey); wired = true; }
   var overlay = document.createElement("div");
-  overlay.className = "overlay" + (o.center ? " center" : "");
+  overlay.className = "overlay" + (o.center ? " center" : "") + (o.className ? " " + o.className : "");
   overlay.hidden = true;
   overlay.appendChild(o.sheet);
   document.body.appendChild(overlay);
@@ -17,7 +17,8 @@ export function createModal(o) {
   var api = {
     el: overlay,
     isOpen: function () { return !overlay.hidden; },
-    open: function (openerEl, focusSel) {
+    open: function (openerEl, focusSel, top) {
+      overlay.style.top = top ? top + "px" : ""; /* optional: leave the area above visible */
       opener = openerEl || null;
       document.body.appendChild(overlay); /* last opened sits on top */
       overlay.hidden = false;

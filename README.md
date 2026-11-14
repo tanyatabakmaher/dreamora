@@ -23,10 +23,10 @@ src/
   components/
     ui/                 יחידות חוזרות: Button, Field, PasswordField, Message, Modal, Toast, Logo
     Gauge, GoalCard, GoalList, GoalForm, IconPicker, PlanSummary, ConfirmDialog
-    AppHeader (brand bar), ProfileDialog; ui/Avatar, ui/Menu (add menu items there)
+    AppHeader (brand bar + bell), ProfileDialog, NotificationsScreen, ShareIndicator; ui/Avatar, ui/Menu (add menu items there)
     Welcome, AuthForm, AuthScreen, GoalsScreen
 tests/                 בדיקות: חישובים, מד, ולידציה, סימון שיתוף
-supabase/              סכמות SQL (001 מטרות, 002 פרופילים, 003 נראות ומשתתפים) עם הרשאות RLS
+supabase/              סכמות SQL 001-004 (מטרות, פרופילים, נראות ומשתתפים, התראות) עם הרשאות RLS
 ```
 
 ## כללים לעדכון

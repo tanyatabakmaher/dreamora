@@ -77,3 +77,6 @@
 .mini-avatar.tone-0 { background: var(--color-pink); }
 .mini-avatar.tone-1 { background: var(--color-mint); }
 .mini-avatar.more { direction: ltr; unicode-bidi: isolate; background: var(--color-canvas); color: var(--color-text-muted); }
+/* Brief highlight when a card is opened from a notification */
+@keyframes card-flash { 0%, 100% { box-shadow: var(--shadow-card); } 30%, 70% { box-shadow: 0 0 0 3px var(--color-primary), var(--shadow-card); } }
+.card.flash { animation: card-flash 1.5s ease; }

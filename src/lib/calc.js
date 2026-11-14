@@ -67,6 +67,19 @@ export function nextMilestone(progressPct) {
   return null;
 }
 
+// Largest milestone less than or equal to progressPct, or 0.
+export function currentMilestone(progressPct) {
+  let cur = 0;
+  for (const m of MILESTONES) if (m <= progressPct + 1e-9) cur = m;
+  return cur;
+}
+
+// Months until the balance reaches milestone m (25/50/75/100) of the target. null when it can never get there.
+export function milestoneMonth(m, T, P, PMT, annualPct) {
+  const r = monthsToGoal(T * m / 100, P, PMT, annualPct);
+  return r.status === "unreachable" ? null : r.months;
+}
+
 // Whole days from today to targetDate, never negative; null when there is no target date.
 export function daysRemaining(today, targetDate) {
   if (!targetDate) return null;

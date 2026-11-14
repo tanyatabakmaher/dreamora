@@ -19,6 +19,16 @@ export function createGoalList(o) {
     var today = todayDate();
     el.innerHTML = '<div class="grid">' + goals.map(function (g) { return GoalCard(g, today); }).join("") + "</div>";
   }
+  /* Bring a goal's card into view and flash it briefly (no flash with reduced motion). Returns false if the goal is not shown. */
+  function reveal(id) {
+    var card = el.querySelector('.card[data-id="' + String(id).replace(/"/g, "") + '"]');
+    if (!card) return false;
+    var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    card.scrollIntoView({ block: "center", behavior: calm ? "auto" : "smooth" });
+    if (!calm) { card.classList.add("flash"); setTimeout(function () { card.classList.remove("flash"); }, 1500); }
+    card.focus({ preventScroll: true });
+    return true;
+  }
   el.addEventListener("click", function (ev) {
     var add = ev.target.closest('[data-action="add"]');
     if (add) { o.onAdd(add); return; }
@@ -30,5 +40,5 @@ export function createGoalList(o) {
     var card = ev.target.closest(".card");
     if (card && ev.target === card) { ev.preventDefault(); o.onEdit(findGoal(card.dataset.id), card); }
   });
-  return { el: el, render: render };
+  return { el: el, render: render, reveal: reveal };
 }

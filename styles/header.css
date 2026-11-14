@@ -21,3 +21,8 @@
 .menu-item { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 0 12px; border: 0; border-radius: 8px; background: none; font-size: 14px; text-align: start; }
 .menu-item:hover, .menu-item:focus-visible { background: var(--color-canvas); }
 .menu-item.danger { color: var(--color-error); }
+/* Notifications bell */
+.bell-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: transparent; border: 1px solid rgba(255,255,255,.55); color: #FFFFFF; }
+.bell-btn:hover, .bell-btn[aria-expanded="true"] { background: rgba(255,255,255,.16); }
+.bell-btn .icon { width: 18px; height: 18px; }
+.bell-badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #E24B4A; color: #FFFFFF; font-size: 11px; font-weight: 500; line-height: 18px; text-align: center; }
