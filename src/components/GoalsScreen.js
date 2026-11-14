@@ -20,10 +20,14 @@ export function createGoalsScreen(o) {
   var confirm = createConfirm({ title: S["delete.confirm.title"], body: S["delete.confirm.body"], yes: S["delete.confirm.yes"], no: S["delete.confirm.no"] });
   var form = createGoalForm({
     onSave: function (g) {
+      var prev = goals.slice();
       var i = goals.findIndex(function (x) { return x.id === g.id; });
       if (i >= 0) goals[i] = g; else goals.push(g);
       list.render(goals);
-      o.repo.save(g).catch(function () { showToast(S["save.failed"]); });
+      o.repo.save(g).catch(function (e) {
+        goals = prev; list.render(goals); /* undo the optimistic change */
+        showToast(e && e.storage ? S["error.storageFull"] : S["save.failed"]);
+      });
     },
     onDelete: function (g, openerEl, closeForm) {
       confirm.ask(openerEl).then(function (yes) {

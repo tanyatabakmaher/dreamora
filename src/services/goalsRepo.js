@@ -25,9 +25,9 @@ function seedExamples() {
 
 export function createLocalRepo() {
   function rd(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
-  function wr(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
+  function wr(k, v) { try { window.localStorage.setItem(k, v); return true; } catch (e) { return false; } }
   var list = null;
-  function persist() { wr(KEY, JSON.stringify(list)); }
+  function persist() { return wr(KEY, JSON.stringify(list)); }
   return {
     load: function () {
       var arr = [], raw = rd(KEY);
@@ -38,8 +38,9 @@ export function createLocalRepo() {
     },
     save: function (g) {
       var i = list.findIndex(function (x) { return x.id === g.id; });
+      var prev = list.slice();
       if (i >= 0) list[i] = g; else list.push(g);
-      persist();
+      if (!persist()) { list = prev; return Promise.reject({ storage: true }); } /* never lose existing data */
       return Promise.resolve();
     },
     remove: function (id) { list = list.filter(function (x) { return x.id !== id; }); persist(); return Promise.resolve(); }

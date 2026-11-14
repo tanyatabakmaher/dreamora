@@ -12,7 +12,7 @@ export function createGoalList(o) {
   function render(list) {
     goals = list;
     if (!goals.length) {
-      el.innerHTML = '<section class="empty"><div class="gauge">' + Gauge(0, S["a11y.progress"].replace("{pct}", "0")) + "</div><h2>" + S["home.empty.title"] + "</h2><p>" +
+      el.innerHTML = '<section class="empty"><div class="gauge">' + Gauge({ pct: 0, bare: true, id: "empty" }) + "</div><h2>" + S["home.empty.title"] + "</h2><p>" +
         S["home.empty.subtitle"] + "</p>" + Button({ label: S["home.empty.cta"], attrs: 'data-action="add"' }) + "</section>";
       return;
     }

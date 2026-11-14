@@ -8,6 +8,7 @@ import { Button, IconButton } from "./ui/Button.js";
 import { createModal } from "./ui/Modal.js";
 import { IconPicker, wireIconPicker } from "./IconPicker.js";
 import { updatePlanSummary } from "./PlanSummary.js";
+import { trackTagText } from "./TrackTag.js";
 
 /* Create / edit a goal in a bottom sheet. onSave(goal), onDelete(goal, openerEl). open(goal|null, openerEl). */
 var IDS = { name: "gf-name", target: "gf-target", initial: "gf-initial", monthly: "gf-monthly", ret: "gf-return", start: "gf-start" };
@@ -25,6 +26,7 @@ export function createGoalForm(o) {
     '<div class="row2">' +
     Field({ id: "gf-track", label: S["form.track"], control: '<select class="input" id="gf-track">' + TRACKS.map(function (t) { return '<option value="' + t.id + '">' + esc(t.labelHe) + "</option>"; }).join("") + "</select>" }) +
     Field({ id: IDS.ret, label: S["form.return"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="100" step="any"' }) + "</div>" +
+    '<div class="track-tag-row"><span class="tag" id="gf-track-tag"></span></div>' +
     '<div class="hint" id="gf-track-hint" style="margin: -6px 0 14px;" hidden></div>' +
     Field({ id: IDS.start, label: S["form.startDate"], type: "date", num: true }) +
     '<div class="summary" id="gf-summary" aria-live="polite"></div>' +
@@ -61,6 +63,7 @@ export function createGoalForm(o) {
     var v = read(), errs = validate(v);
     ORDER.forEach(function (k) { setFieldError(form, IDS[k], errs[k] && (attempted || touched[k]) ? errs[k] : ""); });
     var core = !errs.target && !errs.initial && !errs.monthly && !errs.ret && !errs.start;
+    $("gf-track-tag").textContent = trackTagText($("gf-track").value, $(IDS.ret).value);
     return { errs: errs, plan: updatePlanSummary($("gf-summary"), v, core) };
   }
   function trackHint() {

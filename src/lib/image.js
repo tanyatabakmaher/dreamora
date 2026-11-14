@@ -1,15 +1,16 @@
-/* Resize an uploaded image to a small square (cover crop) and return a data URL. */
+/* Downscale an uploaded image so its longest side is at most 256 px, encode as JPEG (quality 0.8), return a data URL. */
 export function resizeImage(file, done, fail) {
   var url = URL.createObjectURL(file), img = new Image();
   img.onload = function () {
     try {
-      var size = 160, cv = document.createElement("canvas");
-      cv.width = size; cv.height = size;
-      var ctx = cv.getContext("2d"), s = Math.min(img.naturalWidth, img.naturalHeight);
-      var sx = (img.naturalWidth - s) / 2, sy = (img.naturalHeight - s) / 2;
-      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
-      var out = cv.toDataURL("image/webp", 0.85);
-      if (out.indexOf("data:image/webp") !== 0) out = cv.toDataURL("image/png");
+      var max = 256, w = img.naturalWidth, h = img.naturalHeight, scale = Math.min(1, max / Math.max(w, h));
+      var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+      var cv = document.createElement("canvas");
+      cv.width = cw; cv.height = ch;
+      var ctx = cv.getContext("2d");
+      ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, cw, ch); /* JPEG has no transparency */
+      ctx.drawImage(img, 0, 0, cw, ch);
+      var out = cv.toDataURL("image/jpeg", 0.8);
       URL.revokeObjectURL(url);
       done(out);
     } catch (e) { URL.revokeObjectURL(url); fail(); }
@@ -17,3 +18,4 @@ export function resizeImage(file, done, fail) {
   img.onerror = function () { URL.revokeObjectURL(url); fail(); };
   img.src = url;
 }
+export var MAX_IMAGE_CHARS = 150000;

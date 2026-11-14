@@ -2,5 +2,5 @@
   "name": "dreamora",
   "private": true,
   "type": "module",
-  "scripts": { "test": "node tests/calc.test.js", "serve": "python3 -m http.server 8000" }
+  "scripts": { "test": "node tests/calc.test.js && node tests/gauge.test.js", "serve": "python3 -m http.server 8000" }
 }

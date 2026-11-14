@@ -59,6 +59,20 @@ export function completedMonths(start, today) {
   return Math.max(k, 0);
 }
 
+export const MILESTONES = [25, 50, 75, 100];
+
+// Smallest milestone strictly greater than progressPct, or null at 100%.
+export function nextMilestone(progressPct) {
+  for (const m of MILESTONES) if (m > progressPct) return m;
+  return null;
+}
+
+// Whole days from today to targetDate, never negative; null when there is no target date.
+export function daysRemaining(today, targetDate) {
+  if (!targetDate) return null;
+  return Math.max(0, Math.round((targetDate - today) / 86400000));
+}
+
 // Everything derived from a goal. Never stored.
 export function computeGoal(goal, today) {
   const T = goal.targetAmount;
@@ -73,6 +87,9 @@ export function computeGoal(goal, today) {
   const progressPct = achieved ? 100 : Math.min(100, (balance / T) * 100);
   const remaining = Math.max(T - balance, 0);
   const targetDate = plan.months === null ? null : addMonths(start, plan.months);
-  return { plan, months: plan.months, targetDate, k, balance, achieved, progressPct, remaining };
+  const nextMilestonePct = nextMilestone(progressPct);
+  const amountToNextMilestone = nextMilestonePct === null ? 0 : Math.max(nextMilestonePct / 100 * T - balance, 0);
+  return { plan, months: plan.months, targetDate, k, balance, achieved, progressPct, remaining,
+    daysRemaining: daysRemaining(today, targetDate), nextMilestonePct, amountToNextMilestone };
 }
 

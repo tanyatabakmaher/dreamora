@@ -47,5 +47,20 @@ check("compute targetDate = start+19m", c.toISODate(o.targetDate) === "2027-10-1
 o = c.computeGoal(g, d("2030-01-01"));
 check("compute achieved late", o.achieved && o.remaining === 0 && o.progressPct === 100);
 
+// Milestones
+check("milestone 0 -> 25", c.nextMilestone(0) === 25);
+check("milestone 25 -> 50 (strictly greater)", c.nextMilestone(25) === 50);
+check("milestone 24.9 -> 25", c.nextMilestone(24.9) === 25);
+check("milestone 99 -> 100", c.nextMilestone(99) === 100);
+check("milestone 100 -> null", c.nextMilestone(100) === null);
+// Days remaining
+check("days: 10 days ahead", c.daysRemaining(d("2026-11-14"), d("2026-11-24")) === 10);
+check("days: past target = 0", c.daysRemaining(d("2026-11-14"), d("2026-10-01")) === 0);
+check("days: across DST", c.daysRemaining(d("2026-10-20"), d("2026-11-14")) === 25);
+check("days: no target date", c.daysRemaining(d("2026-11-14"), null) === null);
+o = c.computeGoal({ targetAmount: 10000, initialAmount: 0, monthlyDeposit: 500, annualReturnPct: 9, startDate: "2026-01-14" }, d("2026-11-14"));
+check("compute next milestone + amount", o.nextMilestonePct === 75 && o.amountToNextMilestone > 0 && o.daysRemaining !== null, o.nextMilestonePct + " / " + Math.round(o.amountToNextMilestone));
+check("compute achieved: no next milestone", c.computeGoal({ targetAmount: 1000, initialAmount: 1000, monthlyDeposit: 0, annualReturnPct: 0, startDate: "2026-01-01" }, d("2026-11-14")).nextMilestonePct === null);
+
 console.log(fail === 0 ? "ALL PASSED" : fail + " FAILED");
 process.exit(fail === 0 ? 0 : 1);
