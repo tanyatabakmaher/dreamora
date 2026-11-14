@@ -1,0 +1,17 @@
+.auth { min-height: 100vh; max-width: 480px; margin: 0 auto; padding: var(--space-24) var(--space-24) var(--space-32); display: flex; flex-direction: column; }
+.auth-view { flex: 1; display: flex; flex-direction: column; }
+.preview { background: var(--color-lavender); border-radius: var(--radius-card); padding: var(--space-24) var(--space-16); display: flex; flex-direction: column; gap: var(--space-12); align-items: center; }
+.pv-card { background: var(--color-surface); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: var(--space-16); display: flex; align-items: center; gap: var(--space-12); width: 100%; max-width: 300px; }
+.pv-dot { width: 44px; height: 44px; border-radius: var(--radius-control); flex: none; }
+.pv-mid { flex: 1; display: flex; flex-direction: column; gap: var(--space-8); font-weight: 700; }
+.pv-bar { height: 8px; border-radius: var(--radius-pill); background: var(--color-lavender); }
+.pv-bar i { display: block; height: 8px; border-radius: var(--radius-pill); background: var(--color-primary); }
+.pv-pct { font-weight: 700; font-size: 20px; }
+.auth-mid { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: var(--space-32); padding: var(--space-32) 0; }
+.auth-mid h2 { margin: 0 0 var(--space-8); font-size: 32px; line-height: 1.25; font-weight: 700; text-align: center; }
+.auth-mid p { margin: 0; text-align: center; color: var(--color-text-muted); }
+.auth-back { align-self: flex-start; margin-top: var(--space-24); }
+.auth-form { display: flex; flex-direction: column; gap: var(--space-16); margin-top: var(--space-16); }
+.auth-form h2 { margin: 0; font-size: 32px; line-height: 1.25; font-weight: 700; }
+.auth-form .field { margin-bottom: 0; }
+.swap { margin: 0; text-align: center; }

@@ -1,0 +1,44 @@
+import { fromHTML } from "../lib/dom.js";
+import { S } from "../strings.js";
+import { Button } from "./ui/Button.js";
+import { showToast } from "./ui/Toast.js";
+import { createGoalList } from "./GoalList.js";
+import { createGoalForm } from "./GoalForm.js";
+import { createConfirm } from "./ConfirmDialog.js";
+
+/* The main screen: header, goal list, goal form and delete confirmation. repo = goals storage, onLogout() */
+export function createGoalsScreen(o) {
+  var el = fromHTML('<div><div class="wrap"><header class="top"><h1>' + S["home.title"] + '</h1><div class="top-actions">' +
+    Button({ id: "gs-logout", variant: "ghost", label: S["home.logout"] }) + Button({ id: "gs-add", label: S["home.addGoal"] }) +
+    '</div></header></div><footer class="foot">' + S["disclaimer"] + "</footer></div>");
+  var goals = [];
+  var list = createGoalList({
+    onAdd: function (opener) { form.open(null, opener); },
+    onEdit: function (g, opener) { if (g) form.open(g, opener); }
+  });
+  el.querySelector(".wrap").appendChild(list.el);
+  var confirm = createConfirm({ title: S["delete.confirm.title"], body: S["delete.confirm.body"], yes: S["delete.confirm.yes"], no: S["delete.confirm.no"] });
+  var form = createGoalForm({
+    onSave: function (g) {
+      var i = goals.findIndex(function (x) { return x.id === g.id; });
+      if (i >= 0) goals[i] = g; else goals.push(g);
+      list.render(goals);
+      o.repo.save(g).catch(function () { showToast(S["save.failed"]); });
+    },
+    onDelete: function (g, openerEl, closeForm) {
+      confirm.ask(openerEl).then(function (yes) {
+        if (!yes) return;
+        goals = goals.filter(function (x) { return x.id !== g.id; });
+        list.render(goals);
+        closeForm();
+        o.repo.remove(g.id).catch(function () { showToast(S["save.failed"]); });
+      });
+    }
+  });
+  el.querySelector("#gs-add").addEventListener("click", function () { form.open(null, this); });
+  el.querySelector("#gs-logout").addEventListener("click", function () { o.onLogout(); });
+  o.repo.load().then(function (l) { goals = l; })
+    .catch(function () { goals = []; showToast(S["load.failed"]); })
+    .then(function () { list.render(goals); });
+  return { el: el, destroy: function () { form.destroy(); confirm.destroy(); el.remove(); } };
+}

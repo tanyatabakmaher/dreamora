@@ -1,0 +1,27 @@
+/* Pastel Atelier design tokens. Single source of truth for color, spacing, radius, shadow, type. */
+:root {
+  --color-canvas: #FCF9FD;
+  --color-surface: #FFFFFF;
+  --color-lavender: #DCCCED;
+  --color-pink: #F3C6DA;
+  --color-mint: #C9E8DD;
+  --color-sky: #CBE5EF;
+  --color-butter: #F5E6AC;
+  --color-primary: #70508F;
+  --color-primary-hover: #5D407A;
+  --color-primary-pressed: #4B3265;
+  --color-text: #302738;
+  --color-text-muted: #685D70;
+  --color-border: #DED5E5;
+  --color-input-border: #887991;
+  --color-focus: #70508F;
+  --color-success: #27654E;
+  --color-success-bg: #E8F5EE;
+  --color-error: #A33454;
+  --color-error-bg: #FCEBF0;
+  --space-4: 4px; --space-8: 8px; --space-12: 12px; --space-16: 16px; --space-24: 24px; --space-32: 32px; --space-48: 48px;
+  --radius-control: 12px; --radius-card: 20px; --radius-pill: 999px;
+  --shadow-card: 0 8px 24px rgba(48, 39, 56, 0.06);
+  --font-ui: "Heebo", "Noto Sans Hebrew", Arial, sans-serif;
+  color-scheme: light;
+}

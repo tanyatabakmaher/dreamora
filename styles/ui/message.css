@@ -1,0 +1,6 @@
+.msg { border-radius: var(--radius-control); padding: var(--space-12) var(--space-16); font-size: 14px; font-weight: 500; line-height: 1.5; }
+.msg-error { background: var(--color-error-bg); color: var(--color-error); }
+.msg-info { background: var(--color-sky); color: var(--color-text); }
+.divider-or { display: flex; align-items: center; gap: var(--space-12); color: var(--color-text-muted); font-size: 14px; font-weight: 500; }
+.divider-or::before, .divider-or::after { content: ""; flex: 1; height: 1px; background: var(--color-border); }
+.fine { margin: 0; font-size: 14px; font-weight: 500; color: var(--color-text-muted); text-align: center; }
