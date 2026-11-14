@@ -45,7 +45,7 @@ export function Gauge(o) {
   });
   if (!o.bare) {
     svg += '<text class="g-pct" x="100" y="62" text-anchor="middle" dominant-baseline="central">' + Math.round(pct) + "%</text>" +
-      '<text class="g-amount" x="100" y="92" text-anchor="middle">' + num(o.accumulated) + "</text>" +
+      '<text class="g-amount" x="100" y="92" text-anchor="middle">' + "₪" + num(o.accumulated) + "</text>" +
       '<text class="g-sub" x="100" y="109" text-anchor="middle">' + S["card.of"].replace("{target}", num(o.target)) + "</text>";
   }
   return svg + "</svg>";

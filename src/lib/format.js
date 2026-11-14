@@ -12,3 +12,12 @@ export function durText(n) {
   return parts[0];
 }
 export function todayDate() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+
+/* Amount inputs: show thousands separators while typing (1000 -> 1,000). fmtAmountInput keeps digits and one dot; parseAmount reverses it. */
+export function fmtAmountInput(v) {
+  var t = String(v === null || v === undefined ? "" : v).replace(/[^\d.]/g, ""), i = t.indexOf(".");
+  var whole = i < 0 ? t : t.slice(0, i), frac = i < 0 ? null : t.slice(i + 1).replace(/\./g, "");
+  whole = whole.replace(/^0+(?=\d)/, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return frac === null ? whole : (whole || "0") + "." + frac;
+}
+export function parseAmount(v) { return String(v).replace(/,/g, ""); }

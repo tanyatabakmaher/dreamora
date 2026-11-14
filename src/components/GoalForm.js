@@ -1,7 +1,7 @@
 import { esc, fromHTML, uid } from "../lib/dom.js";
 import { diffMembers, hasChanges, permissionsOf } from "../lib/share.js";
 import { toISODate } from "../lib/calc.js";
-import { todayDate } from "../lib/format.js";
+import { todayDate, fmtAmountInput, parseAmount } from "../lib/format.js";
 import { S } from "../strings.js";
 import { TRACKS, EMOJI_SUGGESTED, trackById } from "../data/tracks.js";
 import { Field, setFieldError } from "./ui/Field.js";
@@ -15,6 +15,7 @@ import { createSharingSection } from "./SharingSection.js";
 /* Create / edit a goal in a bottom sheet. onSave(goal, sharingDiff|null) may return a promise when sharing changed (the dialog then waits and stays open on failure),
    onDelete(goal, openerEl, closeForm). o.sharing = true shows the sharing section; o.ownEmail() gives the signed-in email. open(goal|null, openerEl). */
 var IDS = { name: "gf-name", target: "gf-target", initial: "gf-initial", monthly: "gf-monthly", ret: "gf-return", start: "gf-start" };
+var AMOUNTS = ["gf-target", "gf-initial", "gf-monthly"];
 var ORDER = ["name", "target", "initial", "monthly", "ret", "start"];
 
 export function createGoalForm(o) {
@@ -23,9 +24,9 @@ export function createGoalForm(o) {
     Field({ id: IDS.name, label: S["form.name"], attrs: 'maxlength="40" autocomplete="off" placeholder="' + esc(S["form.name.placeholder"]) + '"' }) +
     IconPicker() +
     '<div class="row2">' +
-    Field({ id: IDS.target, label: S["form.target"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" step="any"' }) +
-    Field({ id: IDS.initial, label: S["form.initial"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" step="any"' }) + "</div>" +
-    Field({ id: IDS.monthly, label: S["form.monthly"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" step="any"' }) +
+    Field({ id: IDS.target, label: S["form.target"], type: "text", num: true, attrs: 'inputmode="decimal" autocomplete="off"' }) +
+    Field({ id: IDS.initial, label: S["form.initial"], type: "text", num: true, attrs: 'inputmode="decimal" autocomplete="off"' }) + "</div>" +
+    Field({ id: IDS.monthly, label: S["form.monthly"], type: "text", num: true, attrs: 'inputmode="decimal" autocomplete="off"' }) +
     '<div class="row2">' +
     Field({ id: "gf-track", label: S["form.track"], control: '<select class="input" id="gf-track">' + TRACKS.map(function (t) { return '<option value="' + t.id + '">' + esc(t.labelHe) + "</option>"; }).join("") + "</select>" }) +
     Field({ id: IDS.ret, label: S["form.return"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="100" step="any"' }) + "</div>" +
@@ -45,7 +46,7 @@ export function createGoalForm(o) {
   var perms = permissionsOf(null);
   var state = null, attempted = false, touched = {};
 
-  function num(v) { return v === "" || v === null || v === undefined ? NaN : Number(v); }
+  function num(v) { return v === "" || v === null || v === undefined ? NaN : Number(parseAmount(v)); }
   function read() {
     return {
       name: $(IDS.name).value.trim(), target: num($(IDS.target).value),
@@ -79,6 +80,12 @@ export function createGoalForm(o) {
   }
 
   form.addEventListener("input", function (ev) {
+    if (AMOUNTS.indexOf(ev.target.id) >= 0) {
+      var el = ev.target, pos = el.selectionStart, before = el.value, digitsBefore = before.slice(0, pos).replace(/[^\d.]/g, "").length, f = fmtAmountInput(before), n = 0, np = f.length;
+      for (var j = 0; j < f.length; j++) { if (n === digitsBefore) { np = j; break; } if (/[\d.]/.test(f[j])) n++; }
+      if (n === digitsBefore && np === f.length && digitsBefore === 0) np = 0;
+      el.value = f; try { el.setSelectionRange(np, np); } catch (e) {}
+    }
     ORDER.forEach(function (k) { if (IDS[k] === ev.target.id) touched[k] = true; });
     refresh();
   });
@@ -124,9 +131,9 @@ export function createGoalForm(o) {
       }));
       $("gf-title").textContent = editing ? S["form.title.edit"] : S["form.title.create"];
       $(IDS.name).value = state.name;
-      $(IDS.target).value = state.targetAmount === "" ? "" : state.targetAmount;
-      $(IDS.initial).value = state.initialAmount === "" || state.initialAmount === 0 ? "" : state.initialAmount;
-      $(IDS.monthly).value = state.monthlyDeposit === "" ? "" : state.monthlyDeposit;
+      $(IDS.target).value = fmtAmountInput(state.targetAmount);
+      $(IDS.initial).value = state.initialAmount === 0 ? "" : fmtAmountInput(state.initialAmount);
+      $(IDS.monthly).value = fmtAmountInput(state.monthlyDeposit);
       $("gf-track").value = state.trackId;
       $(IDS.ret).value = state.annualReturnPct === null || state.annualReturnPct === "" ? "" : state.annualReturnPct;
       $(IDS.start).value = state.startDate;
