@@ -14,3 +14,4 @@ export function BellIcon() { return svg('<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3
 export function ConfettiIcon() { return svg('<path d="M4 20l4.5-12.5 8 8z"/><path d="M14 4v2M20 10h-2M18 4l-1.5 1.5M20.5 16l-2-.5M11 4.5l.5 1.5"/>'); }
 export function UsersIcon() { return svg('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'); }
 export function UserPlusIcon() { return svg('<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/>'); }
+export function CoinsIcon() { return svg('<circle cx="9" cy="9" r="6"/><path d="M15.5 7.2A6 6 0 1 1 7.2 15.5M7 9h4M9 7v4"/>'); }
