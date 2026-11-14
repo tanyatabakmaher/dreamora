@@ -8,6 +8,13 @@
   --surface-input: #172735;
   --accent-mint: #B7E4D2;
   --accent-mint-strong: #78CEB2;
+  /* Aurora gradient (gauge): start to end of the active arc */
+  --aurora-1: #B9F4E3;
+  --aurora-2: #79E3C8;
+  --aurora-3: #5DD3E8;
+  --aurora-4: #7F9CFF;
+  --aurora-glow: rgba(93, 211, 232, 0.18);
+  --gauge-track: #334B63;
   --accent-gold: #EBCB88;
   --text-primary: #F6F2E9;
   --text-secondary: #BBC9D1;

@@ -34,11 +34,14 @@ export function Gauge(o) {
   var svg0 = '<svg viewBox="0 0 200 122" role="img" aria-label="';
   var label = o.bare ? S["a11y.progress"].replace("{pct}", String(Math.round(pct))) :
     S["card.gaugeAria"].replace("{pct}", String(Math.round(pct))).replace("{amount}", num(o.accumulated)).replace("{target}", num(o.target));
-  var svg = svg0 + esc(label) + '"><defs>' +
-    '<linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + (CX + R) + '" y1="0" x2="' + (CX - R) + '" y2="0">' +
-    '<stop offset="0" style="stop-color:var(--accent-mint-strong)"/><stop offset="1" style="stop-color:var(--accent-mint)"/></linearGradient></defs>' +
+  /* Aurora gradient spans the active arc only (start at 0% on the right, end at the progress tip). */
+  var gx1 = CX + R, gx2 = Math.min(pointOnArc(pct, R)[0], gx1 - 8);
+  var svg = svg0.replace("<svg ", '<svg class="' + (pct >= 100 ? "g-done" : "") + '" ') + esc(label) + '"><defs>' +
+    '<linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + gx1.toFixed(2) + '" y1="0" x2="' + gx2.toFixed(2) + '" y2="0">' +
+    '<stop offset="0" style="stop-color:var(--aurora-1)"/><stop offset="0.35" style="stop-color:var(--aurora-2)"/>' +
+    '<stop offset="0.7" style="stop-color:var(--aurora-3)"/><stop offset="1" style="stop-color:var(--aurora-4)"/></linearGradient></defs>' +
     '<path class="g-track" d="' + bandPath(0, 100) + '"/>' + cap(0, "g-track") + cap(100, "g-track");
-  if (pct > 0) svg += '<path class="g-fill" d="' + bandPath(0, pct) + '"' + fillRef + "/>" + cap(0, "g-fill", fillRef) + cap(pct, "g-fill", fillRef);
+  if (pct > 0) svg += '<g class="g-glow"><path class="g-fill" d="' + bandPath(0, pct) + '"' + fillRef + "/>" + cap(0, "g-fill", fillRef) + cap(pct, "g-fill", fillRef) + "</g>";
   MILESTONES.forEach(function (m) {
     var a = pointOnArc(m, R - thickness(m) / 2 - 1), b = pointOnArc(m, R + thickness(m) / 2 + 1);
     svg += '<line class="g-sep" x1="' + a[0].toFixed(2) + '" y1="' + a[1].toFixed(2) + '" x2="' + b[0].toFixed(2) + '" y2="' + b[1].toFixed(2) + '"/>';
