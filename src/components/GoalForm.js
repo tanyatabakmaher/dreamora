@@ -34,8 +34,8 @@ export function createGoalForm(o) {
     '<div class="track-tag-row"><span class="tag" id="gf-track-tag"></span></div>' +
     '<div class="hint" id="gf-track-hint" style="margin: -6px 0 14px;" hidden></div>' +
     Field({ id: IDS.start, label: S["form.startDate"], type: "date", num: true }) +
-    '<div class="summary" id="gf-summary" aria-live="polite"></div>' +
     '<div id="gf-sharing-slot"></div><p class="hint" id="gf-readonly" hidden>' + esc(S["share.readonly"]) + "</p>" +
+    '<div class="summary" id="gf-summary" aria-live="polite"></div>' +
     '<div class="actions">' + Button({ id: "gf-save", type: "submit", label: S["form.save"], grow: true }) +
     Button({ id: "gf-cancel", variant: "ghost", label: S["form.cancel"] }) +
     Button({ id: "gf-delete", variant: "danger", label: S["action.delete"], hidden: true }) + "</div></form>");
