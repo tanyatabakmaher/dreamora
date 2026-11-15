@@ -1,5 +1,6 @@
 import { esc } from "../../lib/dom.js";
 import { S } from "../../strings.js";
+import { BRAND_NAME } from "../../brand.js";
 /* Brand mark: a small dial with a dot on a tinted tile. */
 export function Logo(o) {
   var size = (o && o.size) || 44, bg = (o && o.bg) || "#283B4B";
@@ -10,10 +11,8 @@ export function Logo(o) {
     '<circle cx="32.9" cy="22.8" r="5" fill="#EBCB88"/><circle cx="32.9" cy="22.8" r="3" fill="#0C1722"/></svg>';
 }
 export function Brand() { return '<div class="brand">' + Logo({ size: 44 }) + "<b>" + esc(S.appName) + "</b></div>"; }
-/* Header mark (placeholder for the final Dreamora logo): white tile with a moon and stars. Replace this one function to swap the logo. */
+/* Header logo: the Keepi logo image (wordmark included), cropped and sized for the bar. Replace this one function to swap the logo. */
 export function HeaderLogo(o) {
-  var size = (o && o.size) || 30;
-  return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="9" fill="#283B4B"/>' +
-    '<path d="M18.5 8.2a7.2 7.2 0 1 0 3.3 12.6A6 6 0 0 1 18.5 8.2z" fill="#EBCB88"/>' +
-    '<path d="M21.5 7l.6 1.5 1.5.6-1.5.6-.6 1.5-.6-1.5-1.5-.6 1.5-.6z" fill="#EBCB88"/><circle cx="23.5" cy="14" r="1" fill="#EBCB88"/></svg>';
+  var h = (o && o.height) || 40;
+  return '<img class="appbar-logo" src="pics/keepi-logo-header.png" alt="' + esc(BRAND_NAME) + '" height="' + h + '">';
 }

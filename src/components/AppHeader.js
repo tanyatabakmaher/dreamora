@@ -1,6 +1,5 @@
 import { fromHTML, esc } from "../lib/dom.js";
 import { S } from "../strings.js";
-import { BRAND_NAME } from "../brand.js";
 import { Avatar } from "./ui/Avatar.js";
 import { HeaderLogo } from "./ui/Logo.js";
 import { MenuIcon, LogoutIcon, BellIcon } from "./ui/Icons.js";
@@ -12,7 +11,7 @@ import { createMenu } from "./ui/Menu.js";
 export function createAppHeader(o) {
   var el = fromHTML('<div class="appbar"><div class="appbar-in">' +
     '<div class="appbar-start"><div class="menu-wrap"><button type="button" class="gear-btn" id="ah-settings" aria-label="' + esc(S["header.menuAria"]) + '">' + MenuIcon() + "</button></div>" +
-    '<div class="appbar-brand">' + HeaderLogo({ size: 30 }) + '<span class="appbar-word">' + esc(BRAND_NAME) + "</span></div></div>" +
+    '<div class="appbar-brand">' + HeaderLogo({ height: 40 }) + "</div></div>" +
     '<div class="appbar-end">' +
     '<button type="button" class="bell-btn" id="ah-bell" aria-haspopup="dialog">' + BellIcon() + '<span class="bell-badge" id="ah-badge" hidden></span></button>' +
     '<span class="appbar-sep" aria-hidden="true"></span>' +

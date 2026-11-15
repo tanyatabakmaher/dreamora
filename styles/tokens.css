@@ -62,5 +62,6 @@
   --radius-control: 12px; --radius-card: 18px; --radius-pill: 999px;
   --shadow-card: 0 6px 20px rgba(7, 17, 29, 0.35);
   --font-ui: "Heebo", "Noto Sans Hebrew", Arial, sans-serif;
+  --font-accent: "Gveret Levin", "Heebo", "Noto Sans Hebrew", Arial, sans-serif;
   color-scheme: dark;
 }
