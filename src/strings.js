@@ -26,7 +26,7 @@ export const S = {
   "form.title.edit": "עריכת מטרה",
   "form.name": "שם המטרה",
   "form.name.placeholder": "למשל: טיול ליפן",
-  "form.emoji": "בחירת אימוג'י",
+  "form.emoji": "איך נראה החלום שלכם?",
   "form.image.upload": "העלאת תמונה",
   "form.image.replace": "החלפת תמונה",
   "form.image.remove": "הסרת תמונה",

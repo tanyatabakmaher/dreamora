@@ -10,6 +10,7 @@ import { createModal } from "./ui/Modal.js";
 import { IconPicker, wireIconPicker } from "./IconPicker.js";
 import { updatePlanSummary } from "./PlanSummary.js";
 import { trackTagText } from "./TrackTag.js";
+import { PRESET_ICONS } from "../data/presetIcons.js";
 import { createSharingSection } from "./SharingSection.js";
 
 /* Create / edit a goal in a bottom sheet. onSave(goal, sharingDiff|null) may return a promise when sharing changed (the dialog then waits and stays open on failure),
@@ -126,7 +127,7 @@ export function createGoalForm(o) {
       attempted = false; touched = {};
       var editing = !!goal;
       state = JSON.parse(JSON.stringify(goal || {
-        id: uid(), name: "", emoji: EMOJI_SUGGESTED[0], image: null, targetAmount: "", initialAmount: "", monthlyDeposit: "",
+        id: uid(), name: "", emoji: EMOJI_SUGGESTED[0], image: PRESET_ICONS[0].src, targetAmount: "", initialAmount: "", monthlyDeposit: "",
         trackId: "sp500", annualReturnPct: trackById("sp500").defaultReturnPct, startDate: toISODate(todayDate()), createdAt: new Date().toISOString()
       }));
       $("gf-title").textContent = editing ? S["form.title.edit"] : S["form.title.create"];

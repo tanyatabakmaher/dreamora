@@ -2,7 +2,8 @@ import { esc } from "../lib/dom.js";
 import { resizeImage, MAX_IMAGE_CHARS } from "../lib/image.js";
 import { S } from "../strings.js";
 import { Button } from "./ui/Button.js";
-/* Pick a goal icon: one of the suggested emoji, or an uploaded picture (which replaces the emoji on the card).
+import { PRESET_ICONS, isPresetIcon } from "../data/presetIcons.js";
+/* Pick a goal picture: one of the ready-made pictures (pics/icons), or an uploaded picture. A goal saved earlier with an emoji keeps it as one more selected choice.
    IconPicker(emojis) returns markup; wireIconPicker(root, emojis) returns { get(), set({emoji,image}) }. */
 export function IconPicker() {
   return '<div class="field"><span class="lbl" id="ip-label">' + S["form.emoji"] + "</span>" +
@@ -14,26 +15,29 @@ export function IconPicker() {
 }
 export function wireIconPicker(root, emojis) {
   var $ = function (id) { return root.querySelector("#" + id); };
-  var value = { emoji: emojis[0], image: null };
+  var value = { emoji: emojis[0], image: PRESET_ICONS[0].src };
   /* A goal saved earlier with an emoji outside the suggested set keeps it: it is shown as one more selected choice after the suggested ones. */
-  function options() { return emojis.indexOf(value.emoji) < 0 && value.emoji ? emojis.concat([value.emoji]) : emojis; }
   function paint() {
-    var has = !!value.image, list = options();
-    $("ip-emoji").innerHTML = list.map(function (e) {
-      return '<button type="button" class="emoji-opt" data-emoji="' + esc(e) + '" aria-pressed="' + String(!has && e === value.emoji) + '">' + esc(e) + "</button>";
+    var preset = isPresetIcon(value.image), custom = !!value.image && !preset;
+    var html = PRESET_ICONS.map(function (p) {
+      return '<button type="button" class="emoji-opt pic-opt" data-image="' + esc(p.src) + '" aria-label="' + esc(p.label) + '" aria-pressed="' + String(value.image === p.src) + '"><img src="' + esc(p.src) + '" alt=""></button>';
     }).join("");
-    $("ip-preview").hidden = !has;
-    $("ip-preview").innerHTML = has ? '<img src="' + esc(value.image) + '" alt="">' : "";
-    $("ip-remove").hidden = !has;
-    $("ip-upload").textContent = has ? S["form.image.replace"] : S["form.image.upload"];
+    if (!value.image && value.emoji) html += '<button type="button" class="emoji-opt" data-emoji="' + esc(value.emoji) + '" aria-pressed="true">' + esc(value.emoji) + "</button>";
+    $("ip-emoji").innerHTML = html;
+    $("ip-preview").hidden = !custom;
+    $("ip-preview").innerHTML = custom ? '<img src="' + esc(value.image) + '" alt="">' : "";
+    $("ip-remove").hidden = !custom;
+    $("ip-upload").textContent = custom ? S["form.image.replace"] : S["form.image.upload"];
   }
   $("ip-emoji").addEventListener("click", function (ev) {
     var b = ev.target.closest(".emoji-opt");
     if (!b) return;
-    value.emoji = b.dataset.emoji; value.image = null; $("ip-err").textContent = ""; paint();
+    if (b.dataset.image) { value.image = b.dataset.image; }
+    else { value.emoji = b.dataset.emoji; value.image = null; }
+    $("ip-err").textContent = ""; paint();
   });
   $("ip-upload").addEventListener("click", function () { $("ip-file").click(); });
-  $("ip-remove").addEventListener("click", function () { value.image = null; $("ip-file").value = ""; $("ip-err").textContent = ""; paint(); });
+  $("ip-remove").addEventListener("click", function () { value.image = PRESET_ICONS[0].src; $("ip-file").value = ""; $("ip-err").textContent = ""; paint(); });
   $("ip-file").addEventListener("change", function () {
     var f = this.files && this.files[0];
     if (!f) return;
@@ -45,7 +49,7 @@ export function wireIconPicker(root, emojis) {
   return {
     get: function () { return { emoji: value.emoji, image: value.image }; },
     set: function (v) {
-      value = { emoji: v.emoji || emojis[0], image: v.image || null };
+      value = { emoji: v.emoji || emojis[0], image: v.image || (v.emoji ? null : PRESET_ICONS[0].src) };
       $("ip-err").textContent = ""; $("ip-file").value = ""; paint();
     },
     setDisabled: function (d) { Array.prototype.forEach.call(root.querySelectorAll("#ip-emoji button, #ip-upload, #ip-remove"), function (b) { b.disabled = d; }); }
