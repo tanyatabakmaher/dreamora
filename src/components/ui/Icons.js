@@ -20,4 +20,5 @@ export function HourglassIcon() { return svg('<path d="M5 22h14M5 2h14M17 22v-4.
 export function ShieldIcon() { return svg('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'); }
 export function FlagIcon() { return svg('<path d="M4 22V4M4 4h13l-2 4 2 4H4"/>'); }
 export function CheckCircleIcon() { return svg('<circle cx="12" cy="12" r="10"/><path d="M8 12.5l3 3 5-6"/>'); }
+export function GlobeIcon() { return svg('<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>'); }
 export function MenuIcon() { return svg('<path d="M4 6h16M4 12h16M4 18h16"/>'); }

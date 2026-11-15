@@ -122,13 +122,17 @@
 .sh-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: var(--accent-mint); }
 .sh-head .icon { flex: none; width: 18px; height: 18px; }
 .sh-head h3 { margin: 0; font-size: 15px; font-weight: 500; color: var(--color-text); }
-.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: rgba(7, 17, 29, 0.35); border-radius: 12px; }
-.seg-opt { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 8px; border: 0; border-radius: 10px; background: transparent; color: #D6E2EA; font-size: 14px; font-weight: 500; transition: background-color .18s ease, color .18s ease; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: #162C3D; border-radius: 12px; }
+.seg-opt { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 4px; border: 0; border-radius: 10px; background: transparent; color: #D6E2EA; font-size: 14px; font-weight: 500; transition: background-color .18s ease, color .18s ease; }
 .seg-opt .icon { flex: none; width: 18px; height: 18px; color: #A9B7C8; transition: color .18s ease; }
 .seg-opt[aria-pressed="true"] { background: #79E3C8; color: #102A32; font-weight: 600; }
 .seg-opt[aria-pressed="true"] .icon { color: #102A32; }
 .seg-opt:disabled { cursor: default; }
-.sh-explain { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: #B8C9D5; }
+.sh-explain { display: flex; align-items: flex-start; gap: 10px; margin: 10px 0 0; padding: 12px; border-radius: 10px; background: #1B3948; }
+.sh-explain[hidden] { display: none; }
+.sh-explain-ico .icon { width: 18px; height: 18px; color: #B9F4E3; margin-top: 1px; }
+.sh-explain-title { font-size: 13px; font-weight: 600; color: #B9F4E3; }
+.sh-explain-text { margin-top: 2px; font-size: 12.5px; line-height: 1.5; color: #BDD1DC; }
 #sh-body { margin-top: 12px; }
 .sh-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
 .sh-row { display: flex; align-items: center; gap: 8px; border: 0.5px solid var(--color-border); border-radius: 10px; padding: 6px 8px; }

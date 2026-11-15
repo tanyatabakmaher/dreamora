@@ -51,13 +51,13 @@ export function createLocalRepo() {
 
 function toRow(g) {
   return { id: g.id, name: g.name, emoji: g.emoji || null, image: g.image || null, target_amount: g.targetAmount, initial_amount: g.initialAmount || 0,
-    monthly_deposit: g.monthlyDeposit, track_id: g.trackId, annual_return_pct: g.annualReturnPct, start_date: g.startDate, created_at: g.createdAt || new Date().toISOString(),
+    monthly_deposit: g.monthlyDeposit, track_id: g.trackId, annual_return_pct: g.annualReturnPct, start_date: g.startDate, created_at: g.createdAt || new Date().toISOString(), is_public: !!g.isPublic,
     notified_milestone_pct: g.notifiedMilestonePct === undefined ? null : g.notifiedMilestonePct };
 }
 function fromRow(r) {
   return { id: r.id, name: r.name, emoji: r.emoji || "", image: r.image || null, targetAmount: Number(r.target_amount), initialAmount: Number(r.initial_amount),
     monthlyDeposit: Number(r.monthly_deposit), trackId: r.track_id, annualReturnPct: Number(r.annual_return_pct), startDate: r.start_date, createdAt: r.created_at,
-    members: [], myRole: "owner",
+    members: [], myRole: "owner", isPublic: !!r.is_public,
     notifiedMilestonePct: r.notified_milestone_pct === null || r.notified_milestone_pct === undefined ? undefined : r.notified_milestone_pct };
 }
 function ok(r) { if (r.error) throw r.error; return r; }

@@ -108,7 +108,7 @@ export function createGoalForm(o) {
     var diff = sharing && perms.canManageSharing ? diffMembers(sharing.getSaved(), sharing.getDraft()) : null;
     var goal = {
       id: state.id, name: v.name, emoji: icon.emoji, image: icon.image, targetAmount: v.target, initialAmount: v.initial,
-      monthlyDeposit: v.monthly, trackId: $("gf-track").value, annualReturnPct: v.ret, startDate: v.start, createdAt: state.createdAt
+      monthlyDeposit: v.monthly, isPublic: sharing && perms.canManageSharing ? sharing.isPublic() : !!state.isPublic, trackId: $("gf-track").value, annualReturnPct: v.ret, startDate: v.start, createdAt: state.createdAt
     };
     var res = o.onSave(goal, diff && hasChanges(diff) ? diff : null);
     if (res && typeof res.then === "function") {
@@ -144,7 +144,7 @@ export function createGoalForm(o) {
       picker.setDisabled(!perms.canEdit);
       $("gf-save").hidden = !perms.canEdit; $("gf-save").disabled = false;
       $("gf-readonly").hidden = perms.canEdit;
-      if (sharing) { sharing.set(editing ? state.members : [], perms.canManageSharing); sharing.el.hidden = !perms.canManageSharing && !(state.members && state.members.length); }
+      if (sharing) { sharing.set(editing ? state.members : [], perms.canManageSharing, editing && !!state.isPublic); sharing.el.hidden = !perms.canManageSharing && !(state.members && state.members.length); }
       $("gf-delete").hidden = !editing || !perms.canDelete;
       trackHint();
       refresh();

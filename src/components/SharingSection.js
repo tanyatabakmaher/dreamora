@@ -2,9 +2,9 @@ import { esc, fromHTML } from "../lib/dom.js";
 import { S } from "../strings.js";
 import { validateMemberEmail, memberLabel } from "../lib/share.js";
 import { Avatar } from "./ui/Avatar.js";
-import { UserPlusIcon, CloseIcon, LockIcon, UsersIcon, ShieldIcon } from "./ui/Icons.js";
+import { UserPlusIcon, CloseIcon, LockIcon, UsersIcon, GlobeIcon, ShieldIcon } from "./ui/Icons.js";
 
-/* Privacy and sharing card of the goal dialog (private / shared selector, then the member list when shared). Private clears the draft member list (kept aside, so switching back restores it). All changes are a draft held here; the dialog's save button reads getDraft() and applies it.
+/* Privacy and sharing card of the goal dialog: private / friends / public selector, then the member list when friends. Private and public both clear the draft member list (kept aside, so switching back to friends restores it). Public = readable by every signed-in user, view only. All changes are a draft held here; the dialog's save button reads getDraft() and applies it.
    o.ownEmail() -> the signed-in user's email. set(members, canManage) loads the saved members. getDraft() -> member list. setError(text). */
 function roleSelect(value, label, disabled) {
   return '<select class="input sh-role" aria-label="' + esc(label) + '"' + (disabled ? " disabled" : "") + ">" +
@@ -14,8 +14,9 @@ export function createSharingSection(o) {
   var el = fromHTML('<section class="sharing privacy-card" aria-labelledby="sh-title"><div class="sh-head">' + ShieldIcon() + '<h3 id="sh-title">' + S["share.title"] + "</h3></div>" +
     '<div class="seg" role="group" aria-labelledby="sh-title">' +
     '<button type="button" class="seg-opt" id="sh-opt-private" data-mode="private">' + LockIcon() + "<span>" + S["share.opt.private"] + "</span></button>" +
-    '<button type="button" class="seg-opt" id="sh-opt-shared" data-mode="shared">' + UsersIcon() + "<span>" + S["share.opt.shared"] + "</span></button></div>" +
-    '<p class="sh-explain" id="sh-explain" aria-live="polite"></p>' +
+    '<button type="button" class="seg-opt" id="sh-opt-friends" data-mode="friends">' + UsersIcon() + "<span>" + S["share.opt.friends"] + "</span></button>" +
+    '<button type="button" class="seg-opt" id="sh-opt-public" data-mode="public">' + GlobeIcon() + "<span>" + S["share.opt.public"] + "</span></button></div>" +
+    '<div class="sh-explain" id="sh-explain" aria-live="polite"><span class="sh-explain-ico" id="sh-explain-ico"></span><div><div class="sh-explain-title" id="sh-explain-title"></div><div class="sh-explain-text" id="sh-explain-text"></div></div></div>' +
     '<div id="sh-body"><div id="sh-list" class="sh-list"></div>' +
     '<button type="button" class="linkbtn sh-link" id="sh-open"></button>' +
     '<div class="sh-add" id="sh-add" hidden><div class="sh-addrow"><input class="input sh-email" id="sh-email" type="email" dir="ltr" autocomplete="off" inputmode="email" aria-label="' + esc(S["share.addMember"]) + '" placeholder="' + esc(S["share.email.placeholder"]) + '">' +
@@ -23,15 +24,17 @@ export function createSharingSection(o) {
     '<button type="button" class="btn btn-primary sh-addbtn" id="sh-addbtn">' + S["share.add"] + "</button></div></div>" +
     '<div class="err" id="sh-err" role="alert"></div><p class="sh-help">' + S["share.help"] + "</p></div></section>");
   var $ = function (id) { return el.querySelector("#" + id); };
-  var saved = [], draft = [], stash = [], canManage = true, adding = false, mode = "private";
+  var saved = [], draft = [], stash = [], canManage = true, adding = false, mode = "private", EXPLAIN_ICON = { private: LockIcon, friends: UsersIcon, public: GlobeIcon };
 
   function count() { return draft.length; }
   function render() {
-    var shared = mode === "shared";
-    ["private", "shared"].forEach(function (m) {
+    var shared = mode === "friends";
+    ["private", "friends", "public"].forEach(function (m) {
       var b = $("sh-opt-" + m); b.setAttribute("aria-pressed", String(mode === m)); b.disabled = !canManage;
     });
-    $("sh-explain").textContent = S["share.explain." + mode];
+    $("sh-explain-ico").innerHTML = EXPLAIN_ICON[mode]();
+    $("sh-explain-title").textContent = S["share.explain." + mode + ".title"];
+    $("sh-explain-text").textContent = S["share.explain." + mode];
     $("sh-explain").hidden = !canManage;
     $("sh-body").hidden = !shared;
     $("sh-list").innerHTML = draft.map(function (m, i) {
@@ -61,8 +64,9 @@ export function createSharingSection(o) {
   el.querySelector(".seg").addEventListener("click", function (ev) {
     var b = ev.target.closest(".seg-opt");
     if (!b || !canManage || b.dataset.mode === mode) return;
-    if (b.dataset.mode === "private") { stash = draft; draft = draft.filter(function (m) { return m.role === "owner"; }); adding = false; $("sh-err").textContent = ""; }
-    else { draft = stash.length ? stash.concat(draft.filter(function (m) { return m.role === "owner"; })) : draft; stash = []; }
+    var keepsNoMembers = b.dataset.mode !== "friends";
+    if (keepsNoMembers && mode === "friends") { stash = draft; draft = draft.filter(function (m) { return m.role === "owner"; }); adding = false; $("sh-err").textContent = ""; }
+    else if (!keepsNoMembers) { draft = stash.length ? stash.concat(draft.filter(function (m) { return m.role === "owner"; })) : draft; stash = []; }
     mode = b.dataset.mode; render();
   });
   $("sh-open").addEventListener("click", function () { adding = true; $("sh-err").textContent = ""; render(); $("sh-email").focus(); });
@@ -79,15 +83,16 @@ export function createSharingSection(o) {
   });
   return {
     el: el,
-    set: function (members, manage) {
+    set: function (members, manage, isPublic) {
       saved = (members || []).map(function (m) { return Object.assign({}, m); });
       draft = saved.map(function (m) { return Object.assign({}, m); });
       canManage = manage; adding = false; stash = [];
-      mode = draft.some(function (m) { return m.role !== "owner"; }) || !manage ? "shared" : "private";
+      mode = isPublic ? "public" : draft.some(function (m) { return m.role !== "owner"; }) || !manage ? "friends" : "private";
       $("sh-email").value = ""; $("sh-err").textContent = "";
       render();
     },
     getDraft: function () { return draft.filter(function (m) { return m.role !== "owner"; }).map(function (m) { return Object.assign({}, m); }); },
+    isPublic: function () { return mode === "public"; },
     getSaved: function () { return saved.filter(function (m) { return m.role !== "owner"; }); },
     setError: function (t) { $("sh-err").textContent = t || ""; }
   };

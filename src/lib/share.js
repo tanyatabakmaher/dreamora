@@ -8,6 +8,7 @@ export function memberLabel(m) { return (m && (m.name || m.email)) || ""; }
 /* Indicator data for the goal card: a lock, or the first two other participants and a count of the rest. */
 export function getShareIndicator(goal) {
   var members = membersOf(goal);
+  if (goal && goal.isPublic) return { kind: "public" };
   if (!members.length) return { kind: "private" };
   return { kind: "shared", shown: members.slice(0, MAX_SHOWN_MEMBERS), overflow: Math.max(0, members.length - MAX_SHOWN_MEMBERS) };
 }

@@ -2,7 +2,7 @@ import { esc } from "../lib/dom.js";
 import { initialOf } from "../lib/validate.js";
 import { getShareIndicator, memberLabel } from "../lib/share.js";
 import { S } from "../strings.js";
-import { LockIcon } from "./ui/Icons.js";
+import { LockIcon, GlobeIcon } from "./ui/Icons.js";
 
 /* Private / shared marker for a goal card header. Private: a lock in a grey circle. Shared: overlapping member avatars (up to two, then "+N").
    Always has an accessible label; lock versus avatars also differ by shape, so colour is never the only signal. */
@@ -12,6 +12,7 @@ function MemberAvatar(m, i) {
 }
 export function ShareIndicator(goal) {
   var ind = getShareIndicator(goal);
+  if (ind.kind === "public") return '<span class="share share-private" role="img" aria-label="' + esc(S["card.public"]) + '">' + GlobeIcon() + "</span>";
   if (ind.kind === "private") {
     return '<span class="share share-private" role="img" aria-label="' + esc(S["card.private"]) + '">' + LockIcon() + "</span>";
   }
