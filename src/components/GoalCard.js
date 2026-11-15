@@ -4,7 +4,7 @@ import { fmtDate } from "../lib/format.js";
 import { S } from "../strings.js";
 import { Gauge } from "./Gauge.js";
 import { Chip } from "./ui/Chip.js";
-import { CoinsIcon } from "./ui/Icons.js";
+import { CoinsIcon, CalendarIcon, HourglassIcon } from "./ui/Icons.js";
 import { TrackTag } from "./TrackTag.js";
 import { ShareIndicator } from "./ShareIndicator.js";
 
@@ -26,7 +26,7 @@ export function GoalCard(g, today) {
     (c.achieved ? '<span class="badge">' + S["card.achievedBadge"] + "</span>" : "") + "</div>" + ShareIndicator(g) + "</div>" +
     '<div class="gauge">' + Gauge({ pct: c.progressPct, accumulated: c.balance, target: g.targetAmount, id: g.id.replace(/[^A-Za-z0-9_-]/g, "") }) + "</div>" +
     '<div class="chips">' +
-    Chip({ tone: "lavender", label: S["card.target"], value: c.targetDate ? fmtDate(c.targetDate) : "—" }) +
-    Chip({ tone: "sky", label: S["card.daysLeft"], value: c.daysRemaining === null ? "—" : S["card.daysValue"].replace("{days}", String(c.daysRemaining)) }) +
+    Chip({ tone: "lavender", icon: CalendarIcon(), label: S["card.target"], value: c.targetDate ? fmtDate(c.targetDate) : "—" }) +
+    Chip({ tone: "sky", icon: HourglassIcon(), label: S["card.daysLeft"], value: c.daysRemaining === null ? "—" : S["card.daysValue"].replace("{days}", String(c.daysRemaining)) }) +
     "</div>" + milestone + "</article>";
 }

@@ -28,19 +28,23 @@
 .g-glow { filter: drop-shadow(0 0 4px var(--aurora-glow)); }
 .g-done .g-glow { filter: brightness(1.1) saturate(1.1) drop-shadow(0 0 5px rgba(93, 211, 232, 0.28)); }
 .g-sep { stroke: var(--color-surface); stroke-width: 1.5; }
-.g-pct { font-size: 15px; font-weight: 500; fill: var(--color-text); font-variant-numeric: tabular-nums; }
-.g-amount { font-size: 24px; font-weight: 500; fill: var(--color-text); font-variant-numeric: tabular-nums; }
-.g-sub { font-size: 12px; fill: var(--color-text-muted); }
+.g-pct { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; } /* 22px at the card's rendered gauge width */
+.g-amount { font-size: 23px; font-weight: 700; fill: var(--gauge-amount); font-variant-numeric: tabular-nums; } /* 30px rendered */
+.g-sub { font-size: 10px; font-weight: 500; fill: var(--gauge-sub); } /* 13px rendered */
 .chips { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-8); }
 .chip { display: flex; flex-direction: column; gap: 2px; border-radius: 8px; padding: var(--space-8) var(--space-12); color: var(--color-text); }
-.chip-lavender { background: var(--color-lavender); }
-.chip-sky { background: var(--color-sky); }
-.chip-label { font-size: 11px; font-weight: 500; line-height: 1.4; }
-.chip-value { font-size: 13px; font-weight: 500; line-height: 1.4; }
+.chip-lavender { background: var(--date-bg); border: 1px solid var(--date-border); --chip-label: var(--date-label); --chip-value: var(--date-value); }
+.chip-sky { background: var(--days-bg); border: 1px solid var(--days-border); --chip-label: var(--days-label); --chip-value: var(--days-value); }
+.chip-head { display: flex; align-items: center; gap: 6px; color: var(--chip-label); }
+.chip-head .icon { flex: none; width: 14px; height: 14px; }
+.chip-label { font-size: 12px; font-weight: 500; line-height: 1.4; color: var(--chip-label); }
+.chip-value { font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--chip-value); }
 .milestone { display: flex; align-items: center; gap: var(--space-8); border-radius: 8px; padding: var(--space-8) var(--space-12); background: var(--color-butter); color: var(--color-text); font-size: 12px; line-height: 1.5; }
 .milestone > span { flex: 1; }
 .milestone b { font-weight: 500; }
 .milestone .icon { flex: none; width: 16px; height: 16px; }
+.milestone:not(.milestone-done) { background: var(--deposit-bg); border: 1px solid var(--deposit-border); color: var(--deposit-label); font-weight: 500; }
+.milestone:not(.milestone-done) b { font-size: 15px; font-weight: 700; color: var(--deposit-value); }
 .milestone-done { background: var(--color-success-bg); color: var(--color-success); font-weight: 500; justify-content: center; }
 .empty { text-align: center; padding: var(--space-32) var(--space-16) var(--space-24); max-width: 420px; margin: 0 auto; }
 .empty .gauge { max-width: 200px; margin-bottom: var(--space-16); opacity: .9; }

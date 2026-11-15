@@ -39,7 +39,8 @@ export function Gauge(o) {
   var svg = svg0.replace("<svg ", '<svg class="' + (pct >= 100 ? "g-done" : "") + '" ') + esc(label) + '"><defs>' +
     '<linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + gx1.toFixed(2) + '" y1="0" x2="' + gx2.toFixed(2) + '" y2="0">' +
     '<stop offset="0" style="stop-color:var(--aurora-1)"/><stop offset="0.35" style="stop-color:var(--aurora-2)"/>' +
-    '<stop offset="0.7" style="stop-color:var(--aurora-3)"/><stop offset="1" style="stop-color:var(--aurora-4)"/></linearGradient></defs>' +
+    '<stop offset="0.7" style="stop-color:var(--aurora-3)"/><stop offset="1" style="stop-color:var(--aurora-4)"/></linearGradient>' +
+    '<linearGradient id="gp-' + o.id + '" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--aurora-3)"/><stop offset="1" style="stop-color:var(--aurora-4)"/></linearGradient></defs>' +
     '<path class="g-track" d="' + bandPath(0, 100) + '"/>' + cap(0, "g-track") + cap(100, "g-track");
   if (pct > 0) svg += '<g class="g-glow"><path class="g-fill" d="' + bandPath(0, pct) + '"' + fillRef + "/>" + cap(0, "g-fill", fillRef) + cap(pct, "g-fill", fillRef) + "</g>";
   MILESTONES.forEach(function (m) {
@@ -47,9 +48,9 @@ export function Gauge(o) {
     svg += '<line class="g-sep" x1="' + a[0].toFixed(2) + '" y1="' + a[1].toFixed(2) + '" x2="' + b[0].toFixed(2) + '" y2="' + b[1].toFixed(2) + '"/>';
   });
   if (!o.bare) {
-    svg += '<text class="g-pct" x="100" y="62" text-anchor="middle" dominant-baseline="central">' + Math.round(pct) + "%</text>" +
-      '<text class="g-amount" x="100" y="92" text-anchor="middle">' + "₪" + num(o.accumulated) + "</text>" +
-      '<text class="g-sub" x="100" y="109" text-anchor="middle">' + S["card.of"].replace("{target}", num(o.target)) + "</text>";
+    svg += '<text class="g-pct" x="100" y="56" text-anchor="middle" dominant-baseline="central" fill="url(#gp-' + o.id + ')">' + Math.round(pct) + "%</text>" +
+      '<text class="g-amount" x="100" y="90" text-anchor="middle">' + "₪" + num(o.accumulated) + "</text>" +
+      '<text class="g-sub" x="100" y="108" text-anchor="middle">' + S["card.of"].replace("{target}", num(o.target)) + "</text>";
   }
   return svg + "</svg>";
 }

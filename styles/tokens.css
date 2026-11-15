@@ -15,6 +15,12 @@
   --aurora-4: #7F9CFF;
   --aurora-glow: rgba(93, 211, 232, 0.18);
   --gauge-track: #334B63;
+  /* Accent by meaning (goal cards) */
+  --gauge-amount: #F6F8FC;
+  --gauge-sub: #A9B7C8;
+  --date-bg: rgba(235, 200, 136, 0.10); --date-border: rgba(235, 200, 136, 0.16); --date-label: #EBC888; --date-value: #F2DEAB;
+  --days-bg: rgba(93, 211, 232, 0.10); --days-border: rgba(93, 211, 232, 0.16); --days-label: #8FD8E8; --days-value: #D9F6FB;
+  --deposit-bg: rgba(121, 227, 200, 0.10); --deposit-border: rgba(121, 227, 200, 0.18); --deposit-label: #79E3C8; --deposit-value: #D8FFF3;
   --accent-gold: #EBCB88;
   --text-primary: #F6F2E9;
   --text-secondary: #BBC9D1;
