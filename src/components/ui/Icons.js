@@ -18,4 +18,5 @@ export function CoinsIcon() { return svg('<circle cx="9" cy="9" r="6"/><path d="
 export function CalendarIcon() { return svg('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'); }
 export function HourglassIcon() { return svg('<path d="M5 22h14M5 2h14M17 22v-4.2a2 2 0 0 0-.6-1.4L12 12l-4.4 4.4a2 2 0 0 0-.6 1.4V22M7 2v4.2a2 2 0 0 0 .6 1.4L12 12l4.4-4.4a2 2 0 0 0 .6-1.4V2"/>'); }
 export function ShieldIcon() { return svg('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'); }
+export function FlagIcon() { return svg('<path d="M4 22V4M4 4h13l-2 4 2 4H4"/>'); }
 export function MenuIcon() { return svg('<path d="M4 6h16M4 12h16M4 18h16"/>'); }
