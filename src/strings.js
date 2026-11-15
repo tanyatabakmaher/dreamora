@@ -20,6 +20,7 @@ export const S = {
   "card.monthlyDeposit": "מפקידים {amount} ₪ בכל חודש",
   "card.noDeposit": "אין הפקדה חודשית",
   "card.achievedBadge": "🎉 הושג!",
+  "card.achievedHeader": "היעד הושג בהצלחה!",
   "card.achievedBanner": "הושג! הגעתם ליעד",
   "card.gaugeAria": "התקדמות {pct} אחוז, {amount} ₪ מתוך {target} ₪",
   "form.title.create": "מטרה חדשה",
