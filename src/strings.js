@@ -131,6 +131,7 @@ export const S = {
   "track.hint.age50": "מסלול גמל או פנסיה. כספים אלה בדרך כלל נעולים לתקופה ארוכה",
   "summary.prefix": "תגיעו ליעד בעוד ",
   "summary.targetDate": "תאריך יעד משוער: ",
+  "summary.monthly": "הפקדה חודשית",
   "summary.duration": "משך החיסכון: ",
   "summary.startLabel": "תאריך התחלה",
   "summary.endLabel": "תאריך יעד",

@@ -41,7 +41,7 @@ export function createGoalForm(o) {
     Button({ id: "gf-delete", variant: "danger", label: S["action.delete"], hidden: true }) + "</div></form>");
   var $ = function (id) { return form.querySelector("#" + id); };
   var modal = createModal({ sheet: form });
-  var picker = wireIconPicker(form, EMOJI_SUGGESTED);
+  var picker = wireIconPicker(form, EMOJI_SUGGESTED, function () { refresh(); });
   var sharing = o.sharing ? createSharingSection({ ownEmail: function () { return o.ownEmail ? o.ownEmail() : ""; } }) : null;
   if (sharing) $("gf-sharing-slot").appendChild(sharing.el);
   var perms = permissionsOf(null);
@@ -73,7 +73,7 @@ export function createGoalForm(o) {
     ORDER.forEach(function (k) { setFieldError(form, IDS[k], errs[k] && (attempted || touched[k]) ? errs[k] : ""); });
     var core = !errs.target && !errs.initial && !errs.monthly && !errs.ret && !errs.start;
     $("gf-track-tag").textContent = trackTagText($("gf-track").value, $(IDS.ret).value);
-    return { errs: errs, plan: updatePlanSummary($("gf-summary"), v, core) };
+    return { errs: errs, plan: updatePlanSummary($("gf-summary"), v, core, { image: picker.get().image, emoji: picker.get().emoji, trackId: $("gf-track").value }) };
   }
   function trackHint() {
     var h = $("gf-track-hint");

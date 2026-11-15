@@ -13,7 +13,8 @@ export function IconPicker() {
     Button({ id: "ip-remove", variant: "danger", label: S["form.image.remove"], hidden: true }) +
     '<input type="file" id="ip-file" accept="image/*" hidden></div><div class="err" id="ip-err"></div></div>';
 }
-export function wireIconPicker(root, emojis) {
+export function wireIconPicker(root, emojis, onChange) {
+  function changed() { if (onChange) onChange(); }
   var $ = function (id) { return root.querySelector("#" + id); };
   var value = { emoji: emojis[0], image: PRESET_ICONS[0].src };
   /* A goal saved earlier with an emoji outside the suggested set keeps it: it is shown as one more selected choice after the suggested ones. */
@@ -34,17 +35,17 @@ export function wireIconPicker(root, emojis) {
     if (!b) return;
     if (b.dataset.image) { value.image = b.dataset.image; }
     else { value.emoji = b.dataset.emoji; value.image = null; }
-    $("ip-err").textContent = ""; paint();
+    $("ip-err").textContent = ""; paint(); changed();
   });
   $("ip-upload").addEventListener("click", function () { $("ip-file").click(); });
-  $("ip-remove").addEventListener("click", function () { value.image = PRESET_ICONS[0].src; $("ip-file").value = ""; $("ip-err").textContent = ""; paint(); });
+  $("ip-remove").addEventListener("click", function () { value.image = PRESET_ICONS[0].src; $("ip-file").value = ""; $("ip-err").textContent = ""; paint(); changed(); });
   $("ip-file").addEventListener("change", function () {
     var f = this.files && this.files[0];
     if (!f) return;
     if (!/^image\//.test(f.type)) { $("ip-err").textContent = S["error.notImage"]; this.value = ""; return; }
     resizeImage(f, function (data) {
       if (data.length > MAX_IMAGE_CHARS) { $("ip-err").textContent = S["form.image.tooLarge"]; return; }
-      value.image = data; $("ip-err").textContent = ""; paint(); }, function () { $("ip-err").textContent = S["error.imageFail"]; });
+      value.image = data; $("ip-err").textContent = ""; paint(); changed(); }, function () { $("ip-err").textContent = S["error.imageFail"]; });
   });
   return {
     get: function () { return { emoji: value.emoji, image: value.image }; },
