@@ -72,14 +72,14 @@
 .summary.plan h3 { text-align: start; font-size: 14px; font-weight: 600; color: #DDE8F2; margin-bottom: 8px; }
 .plan-main { font-size: 22px; font-weight: 700; line-height: 1.3; color: #F6F8FC; }
 .plan-date { margin-top: 6px; font-size: 16px; font-weight: 600; color: var(--color-text-muted); }
-.plan-date-val { background: linear-gradient(90deg, #79E3C8, #5DD3E8, #7F9CFF); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+.plan-date-val { background: linear-gradient(to left, #79E3C8, #5DD3E8, #7F9CFF); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 .plan-pill { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 5px 12px; border-radius: 999px; background: rgba(7, 17, 29, 0.45); border: 1px solid var(--color-border); color: #D9F6FB; font-size: 13px; font-weight: 500; }
 .plan-pill .icon { flex: none; width: 15px; height: 15px; color: #79E3C8; }
 .tl { display: flex; align-items: center; gap: 0; margin-top: 18px; }
 .tl-end { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--color-bg-bar, #0C1722); border: 1.5px solid #5DD3E8; color: #79E3C8; box-shadow: 0 0 10px rgba(93, 211, 232, 0.18); }
 .tl-end .icon { width: 15px; height: 15px; }
 .tl-start { border-color: #79E3C8; }
-.tl-line { position: relative; flex: 1; height: 3px; border-radius: 2px; background: linear-gradient(to left, #7F9CFF, #5DD3E8, #79E3C8, #B9F4E3); box-shadow: 0 0 8px rgba(93, 211, 232, 0.18); }
+.tl-line { position: relative; flex: 1; height: 3px; border-radius: 2px; background: linear-gradient(to left, #B9F4E3, #79E3C8, #5DD3E8, #7F9CFF); box-shadow: 0 0 8px rgba(93, 211, 232, 0.18); }
 .tl-line i { position: absolute; top: 50%; width: 8px; height: 8px; margin: -4px -4px 0 0; border-radius: 50%; background: #0C1722; border: 1.5px solid #5DD3E8; }
 [dir="rtl"] .tl-line i { margin: -4px 0 0 -4px; }
 .tl-labels { display: flex; justify-content: space-between; margin-top: 8px; }
