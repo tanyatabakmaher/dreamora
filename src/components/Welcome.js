@@ -19,8 +19,8 @@ export function createWelcome(o) {
     '<div class="mosaic" aria-hidden="true">' + TILES.map(Tile).join("") + "</div>" +
     '<div><h2 id="wl-title" tabindex="-1">' + S["auth.welcome.title"] + "</h2><p>" + S["auth.welcome.subtitle"] + "</p></div></div>" +
     '<div class="welcome-divider" aria-hidden="true"></div>' +
-    '<div class="actions-stack">' + Button({ id: "wl-signup", label: S["auth.welcome.signup"], block: true }) +
-    Button({ id: "wl-login", variant: "ghost", label: S["auth.login"], block: true }) + "</div></section>");
+    '<div class="actions-stack">' + Button({ id: "wl-login", label: S["auth.login"], block: true }) +
+    Button({ id: "wl-signup", variant: "ghost", label: S["auth.welcome.signup"], block: true }) + "</div></section>");
   el.querySelector("#wl-signup").addEventListener("click", o.onSignup);
   el.querySelector("#wl-login").addEventListener("click", o.onLogin);
   return { el: el, focus: function () { el.querySelector("#wl-title").focus(); } };
