@@ -1,4 +1,4 @@
-.auth { min-height: 100vh; max-width: 480px; margin: 0 auto; padding: var(--space-24) var(--space-24) var(--space-32); display: flex; flex-direction: column; }
+.auth { min-height: 100vh; min-height: 100dvh; max-width: 480px; margin: 0 auto; padding: var(--space-24) var(--space-24) var(--space-32); display: flex; flex-direction: column; }
 .auth-view { flex: 1; display: flex; flex-direction: column; }
 .auth-mid { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: var(--space-32); padding: var(--space-32) 0; }
 .auth-mid h2 { margin: 0 0 var(--space-8); font-size: 32px; line-height: 1.25; font-weight: 700; text-align: center; }
@@ -9,17 +9,16 @@
 .auth-form .field { margin-bottom: 0; }
 .swap { margin: 0; text-align: center; }
 /* Welcome: goals mosaic */
-.welcome { justify-content: center; gap: var(--space-24); }
-.welcome-mid { flex: none; gap: var(--space-24); padding: 0; }
-.welcome-divider { width: 48px; height: 4px; border-radius: var(--radius-pill); background: var(--color-border); align-self: center; flex: none; }
-.welcome-logo { display: block; width: min(176px, 48%); height: auto; margin: 0 auto; }
-.mosaic { container-type: inline-size; position: relative; width: min(100%, calc(42svh * 1.2046)); margin-inline: auto; aspect-ratio: 262 / 217.5; }
-.mosaic-stage { --u: calc(87cqw / 262); position: absolute; left: 6.5%; top: calc(14 * var(--u)); width: calc(262 * var(--u)); height: calc(236 * var(--u)); }
+.welcome { justify-content: flex-start; gap: 0; }
+.welcome-mid { flex: 1; justify-content: space-evenly; gap: var(--space-16); padding: var(--space-8) 0; }
+.welcome-divider { margin: var(--space-8) 0 var(--space-16); width: 48px; height: 4px; border-radius: var(--radius-pill); background: var(--color-border); align-self: center; flex: none; }
+.welcome-logo { display: block; width: min(190px, 58%); height: auto; margin: var(--space-8) auto 0; flex: none; }
+.mosaic { container-type: inline-size; position: relative; width: min(100%, calc(44svh * 1.135)); margin-inline: auto; aspect-ratio: 1.135; flex: none; }
+.mosaic-stage { --u: calc(98cqw / 278); position: absolute; left: calc(1cqw + 6 * var(--u)); top: calc(14 * var(--u)); width: calc(262 * var(--u)); height: calc(236 * var(--u)); }
 .mc { position: absolute; display: block; height: auto; aspect-ratio: 1; object-fit: cover; border: 3px solid #f4efe6; border-bottom-width: 10px; border-radius: 3px; background: #2a3646; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4); }
 .mc-center { z-index: 9; border-width: 4px; border-bottom-width: 12px; }
 @media (max-height: 720px) {
-  .welcome, .welcome-mid { gap: var(--space-16); }
-  .mosaic { width: min(100%, calc(32svh * 1.2046)); }
+  .mosaic { width: min(100%, calc(32svh * 1.135)); }
   .welcome .auth-mid h2 { font-size: 28px; }
 }
 /* Form view: picture header with the form sheet rising over it */
