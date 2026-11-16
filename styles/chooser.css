@@ -1,0 +1,22 @@
+/* "How would you like to start?" sheet. Uses the same overlay and sheet as every dialog (bottom sheet on phones, centered dialog from 640px). */
+.sheet.chooser { max-width: 440px; padding-top: var(--space-12); }
+.chooser-handle { width: 32px; height: 4px; border-radius: 2px; background: var(--accent-gold); margin: 0 auto var(--space-12); }
+.chooser h2 { margin: 0; font-weight: 700; font-size: 20px; line-height: 1.3; text-align: center; }
+.chooser-sub { margin: 2px 0 var(--space-16); text-align: center; color: var(--color-text-muted); font-size: 14px; }
+.choice { display: flex; align-items: center; gap: var(--space-16); width: 100%; margin-bottom: var(--space-8); padding: var(--space-12) var(--space-16); text-align: start; color: var(--color-text); background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-card); transition: border-color .15s ease, transform .15s ease; }
+.choice:hover { border-color: var(--color-focus); }
+.choice:active { transform: scale(0.99); }
+.choice:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+/* photo-print frame, the same cream border as the goal cards */
+.pola { flex: none; width: 64px; padding: 4px 4px 10px; background: var(--polaroid, #f4efe6); border-radius: 3px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); }
+.pola img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 2px; }
+.pola.tilt-a { transform: rotate(-6deg); }
+.pola.tilt-b { transform: rotate(5deg); }
+.choice-text { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.choice-title { font-size: 16px; font-weight: 600; line-height: 1.3; }
+.choice-sub { font-size: 14px; color: var(--color-text-muted); line-height: 1.4; }
+.choice-ex { margin-top: var(--space-4); padding: 3px var(--space-8); border-radius: var(--radius-pill); background: var(--color-input-bg); font-size: 12px; font-weight: 500; line-height: 1.5; }
+.choice-ex.tone-mint { color: var(--accent-mint); }
+.choice-ex.tone-gold { color: var(--accent-gold); }
+.chooser-cancel { margin-top: var(--space-8); }
+@media (prefers-reduced-motion: reduce) { .choice { transition: none; } .choice:active { transform: none; } }

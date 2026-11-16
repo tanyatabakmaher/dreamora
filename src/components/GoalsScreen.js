@@ -4,6 +4,7 @@ import { Button } from "./ui/Button.js";
 import { showToast } from "./ui/Toast.js";
 import { createGoalList } from "./GoalList.js";
 import { createGoalForm } from "./GoalForm.js";
+import { createGoalStartChooser } from "./GoalStartChooser.js";
 import { createConfirm } from "./ConfirmDialog.js";
 import { createAppHeader } from "./AppHeader.js";
 import { createProfileDialog } from "./ProfileDialog.js";
@@ -69,7 +70,7 @@ export function createGoalsScreen(o) {
   var list = createGoalList({
     canShare: function () { return !!o.sharing; },
     viewer: function () { return { name: profile.name, photo: profile.photo }; },
-    onAdd: function (opener) { form.open(null, opener, opener.dataset.mode || null); },
+    onAdd: function (opener) { chooser.open(opener, opener.dataset.mode || null); },
     onEdit: function (g, opener) { if (g) form.open(g, opener); }
   });
   el.querySelector(".wrap").appendChild(list.el);
@@ -112,7 +113,9 @@ export function createGoalsScreen(o) {
       });
     }
   });
-  el.querySelector("#gs-add").addEventListener("click", function () { form.open(null, this); });
+  /* Adding a goal starts with a choice. "Know the deposit" continues to the existing form; the other path is not built yet. */
+  var chooser = createGoalStartChooser({ onKnownDeposit: function (opener, mode) { form.open(null, opener, mode); } });
+  el.querySelector("#gs-add").addEventListener("click", function () { chooser.open(this, null); });
   /* Invitations sent to this email before there was an account become notifications first, then everything loads. */
   (o.sharing ? o.sharing.syncRequests().catch(function () {}) : Promise.resolve()).then(function () { return Promise.all([
     o.repo.load().catch(function () { showToast(S["load.failed"]); return []; }),
@@ -135,5 +138,5 @@ export function createGoalsScreen(o) {
     reloadGoals();
   }
   if (o.sharing) document.addEventListener("visibilitychange", onVisible);
-  return { el: el, destroy: function () { document.removeEventListener("visibilitychange", onVisible); notifScreen.destroy(); form.destroy(); confirm.destroy(); profileDialog.destroy(); header.destroy(); el.remove(); } };
+  return { el: el, destroy: function () { document.removeEventListener("visibilitychange", onVisible); notifScreen.destroy(); chooser.destroy(); form.destroy(); confirm.destroy(); profileDialog.destroy(); header.destroy(); el.remove(); } };
 }
