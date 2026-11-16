@@ -6,7 +6,7 @@ import { Button } from "./ui/Button.js";
 import { Message, showMessage, hideMessage } from "./ui/Message.js";
 import { BRAND_NAME } from "../brand.js";
 
-/* Sign-in / sign-up form with Google and email-link options. auth = auth service, demo = show the demo notice. */
+/* Sign-in / sign-up form with a Google option. auth = auth service, demo = show the demo notice. */
 var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function createAuthForm(o) {
@@ -24,8 +24,7 @@ export function createAuthForm(o) {
     Message({ kind: "error", id: "af-err" }) + Message({ kind: "info", id: "af-info" }) +
     Button({ id: "af-submit", type: "submit", label: "", block: true }) +
     '<div class="divider-or" aria-hidden="true">' + S["auth.or"] + "</div>" +
-    '<div class="actions-stack">' + Button({ id: "af-google", variant: "ghost", label: S["auth.google"], block: true }) +
-    Button({ id: "af-magic", variant: "ghost", label: S["auth.magic"], block: true }) + "</div>" +
+    '<div class="actions-stack">' + Button({ id: "af-google", variant: "ghost", label: S["auth.google"], block: true }) + "</div>" +
     '<p class="fine" id="af-fine">' + S["auth.fine"] + "</p>" +
     '<p class="swap"><span id="af-swap-text"></span>' + Button({ id: "af-swap", variant: "link", label: "" }) + "</p></form></div></section>");
   var $ = function (id) { return el.querySelector("#" + id); };
@@ -78,12 +77,7 @@ export function createAuthForm(o) {
       .then(function () { btn.disabled = false; });
   });
   $("af-google").addEventListener("click", function () { clear(); o.auth.oauth("google").catch(altFail); });
-  $("af-magic").addEventListener("click", function () {
-    clear();
-    var email = $("af-email").value.trim();
-    if (!EMAIL_RE.test(email)) { setFieldError(el, "af-email", S["auth.err.email"]); $("af-email").focus(); return; }
-    o.auth.magic(email).then(function () { showMessage($("af-info"), S["auth.info.magicSent"]); }).catch(altFail);
-  });
+
 
   setMode("login");
   return {
