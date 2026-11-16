@@ -20,15 +20,23 @@ export function getAvatarStack(goal, viewer) {
   viewer = viewer || {};
   var me = { name: viewer.name || "", photo: viewer.photo || "" };
   var mine = !goal.myRole || goal.myRole === "owner";
-  var members = membersOf(goal).map(function (m) { return { name: memberLabel(m), photo: m.photoDataUrl || "" }; });
+  /* Only people who accepted are drawn and counted; an invited-but-pending person still makes the goal "shared" (the icon), but has no avatar. */
+  var members = membersOf(goal).filter(function (m) { return m.status === "joined"; }).map(function (m) { return { name: memberLabel(m), photo: m.photoDataUrl || "", owner: m.role === "owner" }; });
   if (goal.fromOthers) return { main: { name: goal.ownerName || "", photo: "" }, layers: [], extra: 0 };
-  if (!members.length) return { main: me, layers: [], extra: 0 };
+  if (!members.length) return { main: mine ? me : { name: ownerOf(goal), photo: "" }, layers: [], extra: 0 };
   var all, main;
   if (mine) { main = me; all = members; }
-  else { main = members[0]; all = members.slice(1).concat([me]); } /* members come owner first, without the signed-in user */
+  else { /* members come owner first, without the signed-in user; the owner is the full circle even if not "joined" yet */
+    main = members.filter(function (m) { return m.owner; })[0] || { name: ownerOf(goal), photo: "" };
+    all = members.filter(function (m) { return m !== main; }).concat([me]);
+  }
   return { main: main, layers: all.slice(0, 2), extra: all.length };
 }
 
+function ownerOf(goal) {
+  var o = membersOf(goal).filter(function (m) { return m.role === "owner"; })[0];
+  return o ? memberLabel(o) : "";
+}
 function Dot(p, cls, tone) {
   var inner = p.photo ? '<img src="' + esc(p.photo) + '" alt="">' : esc(initialOf(p.name));
   return '<span class="pa ' + cls + (p.photo ? "" : " tone-" + tone) + '">' + inner + "</span>";
