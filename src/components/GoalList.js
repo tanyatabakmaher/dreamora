@@ -14,11 +14,11 @@ export function createGoalList(o) {
   function findGoal(id) { return goals.find(function (g) { return g.id === id; }) || others.find(function (g) { return g.id === id; }); }
   function render(list) {
     goals = list;
-    if (!goals.length && !others.length) {
-      el.innerHTML = '<section class="empty"><div class="gauge">' + Gauge({ pct: 0, bare: true, id: "empty" }) + "</div><h2>" + S["home.empty.title"] + "</h2><p>" +
+    function emptyHTML() {
+      return '<section class="empty"><div class="gauge">' + Gauge({ pct: 0, bare: true, id: "empty" }) + "</div><h2>" + S["home.empty.title"] + "</h2><p>" +
         S["home.empty.subtitle"] + "</p>" + Button({ label: S["home.empty.cta"], attrs: 'data-action="add"' }) + "</section>";
-      return;
     }
+    if (!goals.length && !others.length) { el.innerHTML = emptyHTML(); return; }
     var today = todayDate();
     var showFilter = (o.canShare && o.canShare()) || goals.some(isShared) || goals.some(function (g) { return g.isPublic; }) || others.length > 0;
     if (!showFilter) filter = "all";
@@ -27,7 +27,7 @@ export function createGoalList(o) {
       return '<button type="button" class="filter-chip' + (filter === k ? " on" : "") + '" data-filter="' + k + '" aria-pressed="' + String(filter === k) + '">' + (FILTER_ICONS[k] ? '<span class="filter-ico" aria-hidden="true">' + FILTER_ICONS[k]() + "</span>" : "") + S["filter." + k] + "</button>";
     }).join("") + "</div>" : "";
     el.innerHTML = chips + (shown.length ? '<div class="grid">' + shown.map(function (g) { return GoalCard(g, today, o.viewer && o.viewer()); }).join("") + "</div>"
-      : '<p class="filter-empty">' + S["filter.empty." + filter] + "</p>");
+      : filter === "all" ? emptyHTML() : '<p class="filter-empty">' + S["filter.empty." + filter] + "</p>");
   }
   /* Bring a goal's card into view and flash it briefly (no flash with reduced motion). Returns false if the goal is not shown. */
   function reveal(id) {
