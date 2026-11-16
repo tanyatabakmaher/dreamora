@@ -128,7 +128,7 @@ export function createGoalForm(o) {
   $("gf-delete").addEventListener("click", function () { o.onDelete(state, this, function () { modal.close(); }); });
 
   return {
-    open: function (goal, openerEl) {
+    open: function (goal, openerEl, presetMode) {
       attempted = false; touched = {};
       var editing = !!goal;
       state = JSON.parse(JSON.stringify(goal || {
@@ -150,7 +150,7 @@ export function createGoalForm(o) {
       picker.setDisabled(!perms.canEdit);
       $("gf-save").hidden = !perms.canEdit; $("gf-save").disabled = false;
       $("gf-readonly").hidden = perms.canEdit;
-      if (sharing) { sharing.set(editing ? state.members : [], perms.canManageSharing, editing && !!state.isPublic); sharing.el.hidden = !perms.canManageSharing && !(state.members && state.members.length); }
+      if (sharing) { sharing.set(editing ? state.members : [], perms.canManageSharing, editing && !!state.isPublic, editing ? null : presetMode); sharing.el.hidden = !perms.canManageSharing && !(state.members && state.members.length); }
       $("gf-delete").hidden = !editing || !perms.canDelete;
       trackHint();
       refresh();

@@ -69,7 +69,7 @@ export function createGoalsScreen(o) {
   var list = createGoalList({
     canShare: function () { return !!o.sharing; },
     viewer: function () { return { name: profile.name, photo: profile.photo }; },
-    onAdd: function (opener) { form.open(null, opener); },
+    onAdd: function (opener) { form.open(null, opener, opener.dataset.mode || null); },
     onEdit: function (g, opener) { if (g) form.open(g, opener); }
   });
   el.querySelector(".wrap").appendChild(list.el);

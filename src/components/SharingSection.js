@@ -83,11 +83,12 @@ export function createSharingSection(o) {
   });
   return {
     el: el,
-    set: function (members, manage, isPublic) {
+    set: function (members, manage, isPublic, preset) {
       saved = (members || []).map(function (m) { return Object.assign({}, m); });
       draft = saved.map(function (m) { return Object.assign({}, m); });
       canManage = manage; adding = false; stash = [];
       mode = isPublic ? "public" : draft.some(function (m) { return m.role !== "owner"; }) || !manage ? "friends" : "private";
+      if (preset && manage && !draft.some(function (m) { return m.role !== "owner"; })) mode = preset; /* a new goal started from a filtered empty state opens with that privacy chosen */
       $("sh-email").value = ""; $("sh-err").textContent = "";
       render();
     },

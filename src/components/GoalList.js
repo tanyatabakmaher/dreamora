@@ -15,9 +15,9 @@ export function createGoalList(o) {
   function render(list) {
     goals = list;
     function emptyHTML(f) {
-      var k = f && f !== "all" ? "filter.empty." + f : "home.empty", cta = f && f !== "all" ? "filter.empty.cta" : "home.empty.cta";
+      var k = f && f !== "all" ? "filter.empty." + f : "home.empty", cta = f && f !== "all" ? "filter.empty." + f + ".cta" : "home.empty.cta";
       return '<section class="empty"><div class="gauge">' + Gauge({ pct: 0, bare: true, id: "empty" }) + "</div><h2>" + S[k + ".title"] + "</h2><p>" +
-        S[k + ".subtitle"] + "</p>" + Button({ label: S[cta], attrs: 'data-action="add"' }) + "</section>";
+        S[k + ".subtitle"] + "</p>" + Button({ label: S[cta], attrs: 'data-action="add"' + (f === "private" || f === "shared" || f === "public" ? ' data-mode="' + (f === "shared" ? "friends" : f) + '"' : "") }) + "</section>";
     }
     if (!goals.length && !others.length) { el.innerHTML = emptyHTML(); return; }
     var today = todayDate();
