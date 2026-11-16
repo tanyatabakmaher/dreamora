@@ -6,7 +6,7 @@ import { Gauge } from "./Gauge.js";
 import { Chip } from "./ui/Chip.js";
 import { CoinsIcon, CalendarIcon, HourglassIcon, CheckCircleIcon } from "./ui/Icons.js";
 import { TrackTag } from "./TrackTag.js";
-import { ShareIndicator, AvatarStack } from "./ShareIndicator.js";
+import { ShareIndicator, AvatarStack, getAvatarStack } from "./ShareIndicator.js";
 
 /* Ready-made pictures have a larger copy for the wide banner (pics/cards/goal-N.webp); uploaded pictures are used as they are. */
 function bannerSrc(src) { return String(src).replace(/^pics\/icons\/(goal-\d+\.webp)$/, "pics/cards/$1"); }
@@ -27,7 +27,7 @@ export function GoalCard(g, today, viewer) {
       "</span></div>";
   return '<article class="card' + (c.achieved ? " achieved" : "") + '" tabindex="0" role="button" data-id="' + esc(g.id) + '" aria-label="' + esc(S["action.edit"] + ": " + g.name) + '">' +
     (c.achieved ? '<div class="success-head">' + CheckCircleIcon() + "<span>" + esc(S["card.achievedHeader"]) + "</span></div>" : "") +
-    '<div class="card-banner"><span class="banner-pic" aria-hidden="true">' + banner + "</span>" +
+    '<div class="card-banner" style="--n:' + getAvatarStack(g, viewer).layers.length + '"><span class="banner-pic" aria-hidden="true">' + banner + "</span>" +
     '<div class="banner-tag">' + TrackTag(g.trackId, netReturnPct(g.annualReturnPct, g.managementFeePct)) + "</div>" +
     '<div class="banner-name">' + (g.ownerName ? '<div class="owner-line">' + esc(S["card.by"].replace("{name}", g.ownerName)) + "</div>" : "") + "<h2>" + esc(g.name) + "</h2></div>" +
     AvatarStack(g, viewer) + ShareIndicator(g) + "</div>" +

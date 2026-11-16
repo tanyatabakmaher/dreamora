@@ -202,12 +202,14 @@
 .banner-tag .tag { background: rgba(16, 26, 38, 0.72); color: #d3f1e4; border: 1px solid rgba(255, 255, 255, 0.16); }
 .card-banner .share { top: 8px; left: 8px; background: rgba(16, 26, 38, 0.78); border-color: rgba(255, 255, 255, 0.18); color: #dfe7f1; }
 /* owner circle: right side (start in RTL), half outside the banner; crescents peek inward (to the left), "+N" at the outer crescent */
-.card-banner .pa-stack { left: auto; right: 12px; bottom: 20px; width: 34px; height: 34px; z-index: 3; }
-.card-banner .pa-row { width: 34px; height: 34px; }
-.card-banner .pa { width: 34px; height: 34px; font-size: 13px; border-color: var(--color-surface); }
+.card-banner .pa-stack { left: auto; right: 12px; top: 8px; bottom: auto; width: 30px; height: 30px; z-index: 3; }
+.card-banner .pa-row { width: 30px; height: 30px; }
+.card-banner .pa { width: 30px; height: 30px; font-size: 12px; border-color: var(--color-surface); }
 .card-banner .pa-l1 { transform: translateX(-9px); }
 .card-banner .pa-l2 { transform: translateX(-18px); }
-.card-banner .pa-count { left: calc(-9px * var(--n, 0) - 12px); top: -10px; }
+.card-banner .pa-count { left: calc(-9px * var(--n, 0) - 7px); top: auto; bottom: -6px; }
+.card-banner .banner-tag { margin-top: 4px; margin-inline-start: calc(30px + 9px * var(--n, 0) + 10px); max-width: calc(100% - 30px - 9px * var(--n, 0) - 10px - 46px); }
+.card-banner .banner-name { padding-inline-end: 0; }
 
 /* Tighter body under the banner: the gauge sits right under the picture, the date / days-left chips are one line each, the deposit row is slimmer. */
 .card-banner + .gauge { margin-top: -52px; position: relative; z-index: 2; }
