@@ -22,7 +22,7 @@ export function createGoalsScreen(o) {
   var profile = { name: "", email: "", photo: null, phone: "" };
   var profileDialog = createProfileDialog({
     save: function (p) { return o.auth.updateProfile(p); },
-    onSaved: function (p) { profile = p; header.setProfile(p); }
+    onSaved: function (p) { profile = p; header.setProfile(p); list.render(goals); }
   });
   var notifications = [];
   var notifScreen = createNotificationsScreen({
@@ -64,10 +64,11 @@ export function createGoalsScreen(o) {
     onLogout: function () { o.onLogout(); }
   });
   el.insertBefore(header.el, el.firstChild);
-  o.auth.getProfile().then(function (p) { profile = p; header.setProfile(p); }).catch(function () {});
+  o.auth.getProfile().then(function (p) { profile = p; header.setProfile(p); if (typeof list !== "undefined") list.render(goals); }).catch(function () {});
   var goals = [];
   var list = createGoalList({
     canShare: function () { return !!o.sharing; },
+    viewer: function () { return { name: profile.name, photo: profile.photo }; },
     onAdd: function (opener) { form.open(null, opener); },
     onEdit: function (g, opener) { if (g) form.open(g, opener); }
   });

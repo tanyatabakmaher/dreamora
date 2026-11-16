@@ -1,5 +1,5 @@
 import { filterGoals, getShareIndicator, isShared, validateMemberEmail, diffMembers, hasChanges, permissionsOf, memberLabel } from "../src/lib/share.js";
-import { ShareIndicator } from "../src/components/ShareIndicator.js";
+import { ShareIndicator, AvatarStack, getAvatarStack } from "../src/components/ShareIndicator.js";
 import { groupSharing } from "../src/services/sharingApi.js";
 import { NotificationItem } from "../src/components/NotificationsScreen.js";
 let fail = 0;
@@ -29,10 +29,25 @@ const g = groupSharing([
   { goal_id: "g2", email: null, name: "Me", photo: null, role: "owner", status: "joined", is_me: true },
   { goal_id: "g2", email: "p@x.co", name: null, photo: "data:x", role: "view", status: "pending", is_me: false }]);
 check("groupSharing excludes me and sets role", g.g1.myRole === "edit" && g.g1.members.length === 1 && g.g2.myRole === "owner" && g.g2.members[0].photoDataUrl === "data:x" && g.g2.members[0].status === "pending", JSON.stringify(g));
-check("private markup label", /aria-label="פרטית"/.test(ShareIndicator({})));
-const sh = ShareIndicator({ members: [m("דנה"), { email: "bob@x.co" }, m("c"), m("d")] });
-check("shared label with more", /aria-label="משותפת עם דנה, bob@x.co ועוד 2"/.test(sh), sh);
-check("shared shows +2 and initials", sh.includes("+2") && sh.includes(">ד<") && sh.includes(">B<"));
+check("private icon label", /aria-label="מטרה פרטית, גלויה רק לך"/.test(ShareIndicator({})));
+check("shared icon label (no names)", /aria-label="מטרה משותפת עם משתתפים נוספים"/.test(ShareIndicator({ members: [m("דנה")] })) && !ShareIndicator({ members: [m("דנה")] }).includes("דנה"));
+check("public icon label", /aria-label="מטרה ציבורית, גלויה לכל המשתמשים"/.test(ShareIndicator({ isPublic: true })));
+const me = { name: "Tan", photo: "" };
+let st = getAvatarStack({}, me);
+check("private: one circle, no layers, no count", st.main.name === "Tan" && st.layers.length === 0 && st.extra === 0);
+check("private markup has no +N", !AvatarStack({}, me).includes("pa-count") && AvatarStack({}, me).includes(">T<"));
+st = getAvatarStack({ isPublic: true }, { name: "Tan", photo: "data:me" });
+check("public: owner profile photo", st.main.photo === "data:me" && st.extra === 0);
+st = getAvatarStack({ isPublic: true, fromOthers: true, ownerName: "דנה", myRole: "view" }, me);
+check("other user's public goal: owner initial", st.main.name === "דנה" && st.layers.length === 0 && AvatarStack({ isPublic: true, fromOthers: true, ownerName: "דנה" }, me).includes(">ד<"));
+st = getAvatarStack({ members: [m("a")] }, me);
+check("shared, 2 participants: 1 layer, +1", st.main.name === "Tan" && st.layers.length === 1 && st.extra === 1);
+st = getAvatarStack({ members: [m("a"), m("b")] }, me);
+check("shared, 3 participants: 2 layers, +2", st.layers.length === 2 && st.extra === 2);
+st = getAvatarStack({ members: [m("a"), m("b"), m("c"), m("d")] }, me);
+check("shared, 5 participants: 2 layers max, +4", st.layers.length === 2 && st.extra === 4 && AvatarStack({ members: [m("a"), m("b"), m("c"), m("d")] }, me).includes("+4"));
+st = getAvatarStack({ myRole: "edit", members: [{ name: "Owner", role: "owner" }, m("b")] }, me);
+check("shared with me: owner is the full circle, I am a layer", st.main.name === "Owner" && st.layers.length === 2 && st.extra === 2 && st.layers[1].name === "Tan");
 const req = { id: "n1", goalId: "g", goalName: "טיול", type: "shareRequest", date: "2026-11-14", read: false, payload: { fromName: "דנה", memberId: "m1", state: "pending" } };
 const rq = NotificationItem(req);
 check("request has accept/decline", rq.includes("nt-accept") && rq.includes("nt-decline") && rq.includes("אישור") && rq.includes("דחייה"), rq);

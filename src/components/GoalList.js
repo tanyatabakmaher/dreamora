@@ -26,7 +26,7 @@ export function createGoalList(o) {
     var chips = showFilter ? '<div class="filter-row" role="group" aria-label="' + S["filter.aria"] + '">' + ["all", "private", "shared", "public"].map(function (k) {
       return '<button type="button" class="filter-chip' + (filter === k ? " on" : "") + '" data-filter="' + k + '" aria-pressed="' + String(filter === k) + '">' + (FILTER_ICONS[k] ? '<span class="filter-ico" aria-hidden="true">' + FILTER_ICONS[k]() + "</span>" : "") + S["filter." + k] + "</button>";
     }).join("") + "</div>" : "";
-    el.innerHTML = chips + (shown.length ? '<div class="grid">' + shown.map(function (g) { return GoalCard(g, today); }).join("") + "</div>"
+    el.innerHTML = chips + (shown.length ? '<div class="grid">' + shown.map(function (g) { return GoalCard(g, today, o.viewer && o.viewer()); }).join("") + "</div>"
       : '<p class="filter-empty">' + S["filter.empty." + filter] + "</p>");
   }
   /* Bring a goal's card into view and flash it briefly (no flash with reduced motion). Returns false if the goal is not shown. */

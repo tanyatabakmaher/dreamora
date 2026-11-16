@@ -1,24 +1,44 @@
 import { esc } from "../lib/dom.js";
 import { initialOf } from "../lib/validate.js";
-import { getShareIndicator, memberLabel } from "../lib/share.js";
+import { getShareIndicator, membersOf, memberLabel } from "../lib/share.js";
 import { S } from "../strings.js";
-import { LockIcon, GlobeIcon } from "./ui/Icons.js";
+import { LockIcon, UsersIcon, GlobeIcon } from "./ui/Icons.js";
 
-/* Private / shared marker for a goal card header. Private: a lock in a grey circle. Shared: overlapping member avatars (up to two, then "+N").
-   Always has an accessible label; lock versus avatars also differ by shape, so colour is never the only signal. */
-function MemberAvatar(m, i) {
-  var inner = m.photoDataUrl ? '<img src="' + esc(m.photoDataUrl) + '" alt="">' : esc(initialOf(memberLabel(m)));
-  return '<span class="mini-avatar tone-' + (i % 2) + '" aria-hidden="true">' + inner + "</span>";
-}
+/* Exposure marker in the top corner of a goal card: the same round icon on every card, only the glyph and its label change.
+   Lock = private, people = shared, globe = public. The label is Hebrew text for screen readers (the shape differs too, so colour is never the only signal). */
 export function ShareIndicator(goal) {
   var ind = getShareIndicator(goal);
-  if (ind.kind === "public") return '<span class="share share-private" role="img" aria-label="' + esc(S["card.public"]) + '">' + GlobeIcon() + "</span>";
-  if (ind.kind === "private") {
-    return '<span class="share share-private" role="img" aria-label="' + esc(S["card.private"]) + '">' + LockIcon() + "</span>";
-  }
-  var names = ind.shown.map(function (m) { return memberLabel(m); }).join(", ");
-  if (ind.overflow > 0) names = S["card.sharedMore"].replace("{names}", names).replace("{count}", String(ind.overflow));
-  var label = ind.shown.length ? S["card.sharedWithAria"].replace("{names}", names) : S["card.shared"];
-  return '<span class="share share-shared" role="img" aria-label="' + esc(label) + '">' + ind.shown.map(MemberAvatar).join("") +
-    (ind.overflow > 0 ? '<span class="mini-avatar more" aria-hidden="true">+' + ind.overflow + "</span>" : "") + "</span>";
+  var glyph = ind.kind === "public" ? GlobeIcon() : ind.kind === "shared" ? UsersIcon() : LockIcon();
+  var label = S["card.exposure." + ind.kind];
+  return '<span class="share share-private" role="img" aria-label="' + esc(label) + '" title="' + esc(label) + '">' + glyph + "</span>";
+}
+
+/* Who is shown on the goal picture. Returns null when there is nobody to show.
+   { main, layers, extra }: main = the owner (the signed-in user's own profile for their goals); layers = up to two other participants (drawn behind);
+   extra = participants other than the one fully visible (shown as "+N" only when above 0). viewer = { name, photo } of the signed-in user. */
+export function getAvatarStack(goal, viewer) {
+  viewer = viewer || {};
+  var me = { name: viewer.name || "", photo: viewer.photo || "" };
+  var mine = !goal.myRole || goal.myRole === "owner";
+  var members = membersOf(goal).map(function (m) { return { name: memberLabel(m), photo: m.photoDataUrl || "" }; });
+  if (goal.fromOthers) return { main: { name: goal.ownerName || "", photo: "" }, layers: [], extra: 0 };
+  if (!members.length) return { main: me, layers: [], extra: 0 };
+  var all, main;
+  if (mine) { main = me; all = members; }
+  else { main = members[0]; all = members.slice(1).concat([me]); } /* members come owner first, without the signed-in user */
+  return { main: main, layers: all.slice(0, 2), extra: all.length };
+}
+
+function Dot(p, cls, tone) {
+  var inner = p.photo ? '<img src="' + esc(p.photo) + '" alt="">' : esc(initialOf(p.name));
+  return '<span class="pa ' + cls + (p.photo ? "" : " tone-" + tone) + '">' + inner + "</span>";
+}
+/* Avatars at the bottom-left corner of the goal picture: one full circle; behind it up to two thin crescents peeking inward; "+N" under the stack. */
+export function AvatarStack(goal, viewer) {
+  var st = getAvatarStack(goal, viewer);
+  var names = [st.main.name].concat(st.layers.map(function (l) { return l.name; })).filter(Boolean).join(", ");
+  var label = st.layers.length || st.extra ? S["card.participantsAria"].replace("{names}", names).replace("{count}", String(st.extra)) : S["card.ownerAria"].replace("{name}", st.main.name || "");
+  var layers = st.layers.map(function (l, i) { return Dot(l, "pa-layer pa-l" + (i + 1), (i + 1) % 2); }).reverse().join("");
+  return '<span class="pa-stack" role="img" aria-label="' + esc(label.trim()) + '"><span class="pa-row">' + layers + Dot(st.main, "pa-main", 0) + "</span>" +
+    (st.extra > 0 ? '<span class="pa-count" aria-hidden="true">+' + st.extra + "</span>" : "") + "</span>";
 }
