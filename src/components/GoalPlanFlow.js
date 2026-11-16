@@ -151,7 +151,7 @@ export function createGoalPlanFlow(o) {
       el.querySelector(".pln-amtnum").textContent = r.deposit === null ? S["plan.none"] : r.status === "achieved" ? S["plan.achieved"] : money(r.deposit);
       var fillEl = el.querySelector(".pln-bartrack i"), col = heat(hi > lo && r.deposit !== null ? (r.deposit - lo) / (hi - lo) * 100 : 0), amtEl = el.querySelector(".pln-amt");
       fillEl.style.width = r.deposit === null ? "0%" : Math.max(r.deposit > 0 ? 3 : 0, r.barPct) + "%";
-      fillEl.style.background = "linear-gradient(90deg, " + HEAT[0] + ", " + col + ")"; amtEl.style.color = r.deposit === null ? "" : col;
+      fillEl.style.background = r.deposit === null ? "" : col; amtEl.style.color = r.deposit === null ? "" : col;
       var net = el.querySelector(".pln-net"), delta = el.querySelector(".pln-delta"), reset = el.querySelector(".pln-reset");
       var retEmpty = $("#pln-ret-" + r.id).value === "";
       net.textContent = r.net === null ? (retEmpty ? S["plan.track.needReturn"] : S["plan.track.badValues"]) : fill(S["plan.track.net"], { pct: String(r.net) });
