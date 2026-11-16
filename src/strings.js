@@ -53,6 +53,7 @@ export const S = {
   "error.tooFar": "היעד רחוק מדי (מעל 50 שנה). נסו להגדיל את ההפקדה החודשית",
   "card.private": "פרטית",
   "card.public": "ציבורית",
+  "card.by": "של {name}",
   "card.shared": "משותפת",
   "card.sharedWithAria": "משותפת עם {names}",
   "card.sharedMore": "{names} ועוד {count}",

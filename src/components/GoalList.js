@@ -10,19 +10,19 @@ var FILTER_ICONS = { private: LockIcon, shared: UsersIcon, public: GlobeIcon };
 /* The grid of goal cards, or the empty state, with a filter row (all / private / shared) when o.canShare() is true or any goal is shared. render(goals) redraws; events go out through onAdd / onEdit(goal, element). */
 export function createGoalList(o) {
   var el = fromHTML('<main id="main"></main>');
-  var goals = [], filter = "all";
-  function findGoal(id) { return goals.find(function (g) { return g.id === id; }); }
+  var goals = [], others = [], filter = "all"; /* others = public goals of other users, shown under the public filter only */
+  function findGoal(id) { return goals.find(function (g) { return g.id === id; }) || others.find(function (g) { return g.id === id; }); }
   function render(list) {
     goals = list;
-    if (!goals.length) {
+    if (!goals.length && !others.length) {
       el.innerHTML = '<section class="empty"><div class="gauge">' + Gauge({ pct: 0, bare: true, id: "empty" }) + "</div><h2>" + S["home.empty.title"] + "</h2><p>" +
         S["home.empty.subtitle"] + "</p>" + Button({ label: S["home.empty.cta"], attrs: 'data-action="add"' }) + "</section>";
       return;
     }
     var today = todayDate();
-    var showFilter = (o.canShare && o.canShare()) || goals.some(isShared) || goals.some(function (g) { return g.isPublic; });
+    var showFilter = (o.canShare && o.canShare()) || goals.some(isShared) || goals.some(function (g) { return g.isPublic; }) || others.length > 0;
     if (!showFilter) filter = "all";
-    var shown = filterGoals(goals, filter);
+    var shown = filter === "public" ? filterGoals(goals, "public").concat(others) : filterGoals(goals, filter);
     var chips = showFilter ? '<div class="filter-row" role="group" aria-label="' + S["filter.aria"] + '">' + ["all", "private", "shared", "public"].map(function (k) {
       return '<button type="button" class="filter-chip' + (filter === k ? " on" : "") + '" data-filter="' + k + '" aria-pressed="' + String(filter === k) + '">' + (FILTER_ICONS[k] ? '<span class="filter-ico" aria-hidden="true">' + FILTER_ICONS[k]() + "</span>" : "") + S["filter." + k] + "</button>";
     }).join("") + "</div>" : "";
@@ -53,5 +53,6 @@ export function createGoalList(o) {
     var card = ev.target.closest(".card");
     if (card && ev.target === card) { ev.preventDefault(); o.onEdit(findGoal(card.dataset.id), card); }
   });
-  return { el: el, render: render, reveal: reveal };
+  function setOthers(list) { others = list || []; render(goals); }
+  return { el: el, render: render, setOthers: setOthers, reveal: reveal };
 }

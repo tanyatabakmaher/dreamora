@@ -123,6 +123,8 @@ export function createGoalsScreen(o) {
     mig.changed.forEach(function (g) { o.repo.save(g).catch(function () {}); });
     list.render(goals);
     sync();
+    /* Public goals of other users (random, up to 10) appear under the "public" filter; a failure just leaves them out. */
+    if (o.repo.loadPublicOthers) o.repo.loadPublicOthers().then(function (others) { list.setOthers(others); }).catch(function () {});
   });
   /* With a server, new invitations and changes made by others appear when the person comes back to the app. */
   function onVisible() {

@@ -25,6 +25,13 @@ function seedExamples() {
   ];
 }
 
+/* A public goal of another user (read only): shown only under the "public" filter. */
+function fromPublicRow(r) {
+  return { id: r.id, name: r.name, emoji: r.emoji || "", image: r.image || null, targetAmount: Number(r.target_amount), initialAmount: Number(r.initial_amount),
+    monthlyDeposit: Number(r.monthly_deposit), trackId: r.track_id, annualReturnPct: Number(r.annual_return_pct), managementFeePct: Number(r.management_fee_pct) || 0,
+    startDate: r.start_date, createdAt: r.created_at, members: [], myRole: "view", isPublic: true, fromOthers: true, ownerName: r.owner_name || "" };
+}
+
 export function createLocalRepo() {
   function rd(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
   function wr(k, v) { try { window.localStorage.setItem(k, v); return true; } catch (e) { return false; } }
@@ -45,7 +52,8 @@ export function createLocalRepo() {
       if (!persist()) { list = prev; return Promise.reject({ storage: true }); } /* never lose existing data */
       return Promise.resolve();
     },
-    remove: function (id) { list = list.filter(function (x) { return x.id !== id; }); persist(); return Promise.resolve(); }
+    remove: function (id) { list = list.filter(function (x) { return x.id !== id; }); persist(); return Promise.resolve(); },
+    loadPublicOthers: function () { return Promise.resolve([]); } /* demo mode has no other users */
   };
 }
 
@@ -81,6 +89,11 @@ export function createRemoteRepo(config) {
           goals.forEach(function (g) { known[g.id] = g.image; });
           return withSharing(goals);
         });
+    },
+    /* Up to 10 random public goals of other users (the database picks them; a new draw on every call). */
+    loadPublicOthers: function () {
+      return client().then(function (c) { return c.rpc("get_random_public_goals", { p_limit: 10 }); }).then(ok)
+        .then(function (r) { return (r.data || []).map(fromPublicRow).filter(validGoal); });
     },
     save: function (g) {
       /* A new picture is uploaded first and the goal keeps its URL; an old file that is no longer used is deleted afterwards. */
