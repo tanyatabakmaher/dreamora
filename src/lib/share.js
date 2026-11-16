@@ -39,9 +39,10 @@ export function permissionsOf(goal) {
   var role = goal && goal.myRole ? goal.myRole : "owner";
   return { role: role, canEdit: role === "owner" || role === "edit", canDelete: role === "owner", canManageSharing: role === "owner" };
 }
-/* Goal list filter: "all" | "private" | "shared". A goal is shared when it has members. */
+/* Goal list filter: "all" | "private" | "shared" | "public". Public = isPublic; shared = has members (and not public); private = neither. */
 export function filterGoals(goals, filter) {
-  if (filter === "private") return goals.filter(function (g) { return !isShared(g); });
-  if (filter === "shared") return goals.filter(isShared);
+  if (filter === "private") return goals.filter(function (g) { return !isShared(g) && !g.isPublic; });
+  if (filter === "shared") return goals.filter(function (g) { return isShared(g) && !g.isPublic; });
+  if (filter === "public") return goals.filter(function (g) { return !!g.isPublic; });
   return goals;
 }

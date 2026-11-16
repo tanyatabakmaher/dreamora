@@ -40,5 +40,6 @@ check("answered request has no buttons", !NotificationItem({ ...req, payload: { 
 const gl = [{ id: "a", members: [] }, { id: "b", members: [m("x")] }, { id: "c" }];
 check("filter all", filterGoals(gl, "all").length === 3);
 check("filter private", eq(filterGoals(gl, "private").map((g) => g.id), ["a", "c"]));
+check("filter public excludes private/shared", filterGoals([{id:"p",isPublic:true},{id:"q"},{id:"r",members:[m("a")]}], "public").map((g)=>g.id).join()==="p" && filterGoals([{id:"p",isPublic:true},{id:"q"}], "private").map((g)=>g.id).join()==="q");
 check("filter shared", eq(filterGoals(gl, "shared").map((g) => g.id), ["b"]));
 console.log(fail === 0 ? "ALL PASSED" : fail + " FAILED"); process.exit(fail ? 1 : 0);

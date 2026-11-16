@@ -160,8 +160,13 @@
 
 /* Filter row above the goal list: slim pills like the track tag. The tap area is larger than the pill (see ::after). */
 .filter-row { display: flex; gap: var(--space-8); margin-bottom: var(--space-16); flex-wrap: wrap; }
-.filter-chip { position: relative; padding: 2px var(--space-12); border-radius: var(--radius-pill); border: 1px solid var(--color-primary); background: transparent; color: var(--color-text); font-size: 12px; font-weight: 500; line-height: 1.5; }
+.filter-chip { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; position: relative; padding: 2px var(--space-12); border-radius: var(--radius-pill); border: 1px solid var(--color-primary); background: transparent; color: var(--color-text); font-size: 12px; font-weight: 500; line-height: 1.5; }
 .filter-chip::after { content: ""; position: absolute; inset: -9px -4px; }
+.filter-ico { display: inline-flex; } .filter-ico svg { width: 13px; height: 13px; }
 .filter-chip:hover { background: var(--color-surface-2); }
 .filter-chip.on { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); }
 .filter-empty { text-align: center; color: var(--color-text-muted); margin: var(--space-32) 0; }
+
+/* Phones: the four filters stay on one line (tighter chips on very narrow screens). */
+@media (max-width: 639px) { .filter-row { flex-wrap: nowrap; } .filter-chip { flex: 0 1 auto; } }
+@media (max-width: 380px) { .filter-row { gap: 4px; } .filter-chip { padding-inline: 6px; gap: 3px; } .filter-ico svg { width: 12px; height: 12px; } }
