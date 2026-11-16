@@ -111,7 +111,8 @@
 .track-tag-row { margin: calc(-1 * var(--space-8)) 0 var(--space-16); }
 
 /* Private / shared marker, at the end of the card header */
-.share { flex: none; align-self: flex-start; display: inline-flex; align-items: center; margin-inline-start: var(--space-8); }
+.share { position: absolute; top: calc(var(--radius-card) - 15px); left: calc(var(--radius-card) - 15px); z-index: 2; display: inline-flex; align-items: center; margin: 0; }
+.card-top { padding-left: 34px; } /* keeps the title clear of the corner icon */
 .share-private { width: 30px; height: 30px; justify-content: center; border-radius: 50%; background: var(--color-canvas); border: 1px solid var(--color-border); color: var(--color-text-muted); }
 .share-private .icon { width: 16px; height: 16px; }
 /* Brief highlight when a card is opened from a notification */
@@ -168,7 +169,8 @@
 
 /* Avatars on the goal picture (bottom-left corner): one full circle, up to two crescents behind it peeking inward, and a "+N" tag under the stack. */
 .pic { position: relative; flex: none; display: block; width: 54px; height: 54px; }
-.pa-stack { position: absolute; left: -4px; bottom: -4px; z-index: 1; direction: ltr; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; pointer-events: none; }
+/* The main circle's center sits exactly on the picture's bottom-left corner (22px circle: 11px out on each side). "+N" sits at the top-right of the outermost circle. */
+.pa-stack { position: absolute; left: -11px; bottom: -11px; z-index: 1; direction: ltr; display: block; width: 22px; height: 22px; pointer-events: none; }
 .pa-row { position: relative; display: block; width: 22px; height: 22px; }
 .pa { position: absolute; top: 0; left: 0; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--color-surface); overflow: hidden; font-size: 11px; font-weight: 600; line-height: 1; color: var(--color-text); background: var(--color-canvas); }
 .pa img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -178,4 +180,4 @@
 .pa-layer { z-index: 2; }
 .pa-l1 { transform: translateX(5px); }
 .pa-l2 { z-index: 1; transform: translateX(10px); }
-.pa-count { box-sizing: border-box; min-width: 22px; height: 17px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; border: 2px solid var(--color-surface); background: var(--color-canvas); color: var(--color-text); font-size: 11px; font-weight: 600; line-height: 1; }
+.pa-count { position: absolute; left: calc(22px + 5px * var(--n, 0) - 13px); top: -9px; z-index: 4; box-sizing: border-box; min-width: 22px; height: 17px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; border: 2px solid var(--color-surface); background: var(--color-canvas); color: var(--color-text); font-size: 11px; font-weight: 600; line-height: 1; }

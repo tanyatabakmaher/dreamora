@@ -47,6 +47,6 @@ export function AvatarStack(goal, viewer) {
   var names = [st.main.name].concat(st.layers.map(function (l) { return l.name; })).filter(Boolean).join(", ");
   var label = st.layers.length || st.extra ? S["card.participantsAria"].replace("{names}", names).replace("{count}", String(st.extra)) : S["card.ownerAria"].replace("{name}", st.main.name || "");
   var layers = st.layers.map(function (l, i) { return Dot(l, "pa-layer pa-l" + (i + 1), (i + 1) % 2); }).reverse().join("");
-  return '<span class="pa-stack" role="img" aria-label="' + esc(label.trim()) + '"><span class="pa-row">' + layers + Dot(st.main, "pa-main", 0) + "</span>" +
+  return '<span class="pa-stack" style="--n:' + st.layers.length + '" role="img" aria-label="' + esc(label.trim()) + '"><span class="pa-row">' + layers + Dot(st.main, "pa-main", 0) + "</span>" +
     (st.extra > 0 ? '<span class="pa-count" aria-hidden="true">+' + st.extra + "</span>" : "") + "</span>";
 }
