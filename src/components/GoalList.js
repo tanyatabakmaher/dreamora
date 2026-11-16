@@ -4,7 +4,6 @@ import { S } from "../strings.js";
 import { Gauge } from "./Gauge.js";
 import { GoalCard } from "./GoalCard.js";
 import { Button } from "./ui/Button.js";
-import { PlusIcon } from "./ui/Icons.js";
 import { filterGoals, isShared } from "../lib/share.js";
 /* The grid of goal cards, or the empty state, with a filter row (all / private / shared) when o.canShare() is true or any goal is shared. render(goals) redraws; events go out through onAdd / onEdit(goal, element). */
 export function createGoalList(o) {
@@ -24,7 +23,7 @@ export function createGoalList(o) {
     var shown = filterGoals(goals, filter);
     var chips = showFilter ? '<div class="filter-row" role="group" aria-label="' + S["filter.aria"] + '">' + ["all", "private", "shared"].map(function (k) {
       return '<button type="button" class="filter-chip' + (filter === k ? " on" : "") + '" data-filter="' + k + '" aria-pressed="' + String(filter === k) + '">' + S["filter." + k] + "</button>";
-    }).join("") + Button({ label: S["home.addGoal"], icon: PlusIcon(), extraClass: "add-btn add-btn-row", attrs: 'data-action="add"' }) + "</div>" : "";
+    }).join("") + "</div>" : "";
     el.innerHTML = chips + (shown.length ? '<div class="grid">' + shown.map(function (g) { return GoalCard(g, today); }).join("") + "</div>"
       : '<p class="filter-empty">' + S["filter.empty." + filter] + "</p>");
   }

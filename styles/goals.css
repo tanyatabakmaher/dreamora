@@ -2,19 +2,12 @@
 .titlebar { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-12); margin-bottom: var(--space-16); padding-bottom: var(--space-16); border-bottom: 1px solid var(--color-border); }
 .titlebar h1 { font-weight: 700; font-size: 24px; line-height: 1.25; margin: 0; text-wrap: balance; }
 .add-btn { white-space: nowrap; }
-.add-btn-row { display: none; }
-/* Mobile only: with filters shown, "הוספת מטרה" sits at the left end of the filter row instead of the title bar. */
+/* Mobile only: the title and the add button share one row (title at the start, compact button at the end). */
 @media (max-width: 639px) {
-  .wrap:has(.filter-row) .titlebar .add-btn { display: none; }
-  .wrap .filter-row { flex-wrap: nowrap; align-items: center; }
-  .wrap .filter-row .add-btn-row { display: inline-flex; margin-inline-start: auto; flex: none; min-height: 32px; padding: 0 var(--space-12); font-size: 13px; gap: 4px; }
-  .wrap .filter-row .add-btn-row svg { width: 14px; height: 14px; }
-}
-/* Very narrow phones: slightly tighter chips and button so all four fit on one line. */
-@media (max-width: 359px) {
-  .wrap .filter-row { gap: 4px; }
-  .wrap .filter-row .filter-chip { padding-inline: var(--space-8); }
-  .wrap .filter-row .add-btn-row { padding: 0 var(--space-8); font-size: 12px; }
+  .titlebar { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-8); }
+  .titlebar h1 { min-width: 0; }
+  .titlebar .add-btn { flex: none; width: auto; min-height: 36px; padding: 0 var(--space-12); font-size: 13px; gap: 4px; }
+  .titlebar .add-btn svg { width: 14px; height: 14px; }
 }
 @media (min-width: 640px) { .titlebar { flex-direction: row; align-items: center; justify-content: space-between; } .titlebar h1 { font-size: 32px; } }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-24); }
