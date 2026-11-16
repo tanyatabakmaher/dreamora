@@ -10,8 +10,8 @@ import { BRAND_NAME } from "../brand.js";
 var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function createAuthForm(o) {
-  /* Layout: a picture header (back button + Keepi logo) with the form sheet rising over its bottom edge. */
-  var el = fromHTML('<section class="auth-view auth-form-view"><div class="auth-hero">' +
+  /* Layout: a collage header of the three goal pictures (back button + Keepi logo over it) with the form sheet rising over its bottom edge. */
+  var el = fromHTML('<section class="auth-view auth-form-view"><div class="auth-hero"><div class="auth-collage" aria-hidden="true"><img class="ac-home" src="pics/welcome/home.webp" alt=""><img class="ac-event" src="pics/welcome/event.webp" alt=""><img class="ac-travel" src="pics/welcome/travel.webp" alt=""></div>' +
     Button({ id: "af-back", variant: "ghost", label: S["auth.back"], extraClass: "auth-back", attrs: 'aria-label="חזרה"' }) +
     '<img class="auth-hero-logo" src="pics/welcome/keepi-logo-dark.webp" alt="' + BRAND_NAME + '" width="720" height="241"></div>' +
     '<div class="auth-sheet"><div class="auth-handle" aria-hidden="true"></div>' +
