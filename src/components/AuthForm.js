@@ -9,9 +9,21 @@ import { BRAND_NAME } from "../brand.js";
 /* Sign-in / sign-up form with a Google option. auth = auth service, demo = show the demo notice. */
 var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/* Header collage: overlapping tilted picture cards covering the whole banner, the travel picture bigger in the middle. Positions are in design units (300 wide); CSS maps them with --u so it scales with the screen. */
+var COLLAGE = ["laptop", "gym", "grad", "sprout", "gift", "car", "ring", "baby", "home"], COLLAGE_ROT = [-6, 4, -3, 6, -5, 3];
+function collageHTML() {
+  var h = "", n = 0;
+  function card(img, c, r) {
+    var off = r % 2 ? -50 : 0;
+    h += '<img class="ac-card" loading="lazy" src="pics/welcome/collage/' + img + '.webp" alt="" style="left:calc(' + (c * 100 + off - 12) + ' * var(--u));top:calc(' + (-26 + r * 92) + ' * var(--u));transform:rotate(' + COLLAGE_ROT[n % COLLAGE_ROT.length] + 'deg);z-index:' + (1 + (n % 3)) + '">';
+    n++;
+  }
+  [0, 1, 2, 3, -1, 4].forEach(function (c) { for (var r = 0; r < 3; r++) card(COLLAGE[(n * 4 + r) % COLLAGE.length], c, r); });
+  return h + '<img class="ac-card ac-center" src="pics/welcome/collage/travel.webp" alt="">';
+}
 export function createAuthForm(o) {
   /* Layout: a collage header of the three goal pictures (back button + Keepi logo over it) with the form sheet rising over its bottom edge. */
-  var el = fromHTML('<section class="auth-view auth-form-view"><div class="auth-hero"><div class="auth-collage" aria-hidden="true"><img class="ac-home" src="pics/welcome/home.webp" alt=""><img class="ac-event" src="pics/welcome/event.webp" alt=""><img class="ac-travel" src="pics/welcome/travel.webp" alt=""></div>' +
+  var el = fromHTML('<section class="auth-view auth-form-view"><div class="auth-hero"><div class="auth-collage" aria-hidden="true"><div class="ac-stage">' + collageHTML() + '</div></div>' +
     Button({ id: "af-back", variant: "ghost", label: S["auth.back"], extraClass: "auth-back", attrs: 'aria-label="חזרה"' }) +
     '<img class="auth-hero-logo" src="pics/welcome/keepi-logo-dark.webp" alt="' + BRAND_NAME + '" width="720" height="241"></div>' +
     '<div class="auth-sheet"><div class="auth-handle" aria-hidden="true"></div>' +

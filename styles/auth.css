@@ -30,16 +30,16 @@
 /* Form view: picture header with the form sheet rising over it */
 .auth-form-view { margin: calc(var(--space-24) * -1) calc(var(--space-24) * -1) calc(var(--space-32) * -1); }
 .auth-hero { position: relative; overflow: hidden; min-height: 270px; padding: var(--space-16) var(--space-24); display: flex; flex-direction: column; gap: var(--space-8); }
-/* three goal pictures overlapping at a slight tilt, darkened so the logo stays readable */
-.auth-collage { position: absolute; inset: 0; }
-.auth-collage img { position: absolute; display: block; object-fit: cover; }
-.auth-collage .ac-home { left: -4.5%; top: -4%; width: 56.5%; height: 104%; border-radius: 0 0 24px 0; transform: rotate(-4deg); }
-.auth-collage .ac-event { left: 50%; top: -9%; width: 56.5%; height: 104%; border-radius: 0 0 0 24px; transform: rotate(3deg); }
-.auth-collage .ac-travel { left: 27%; top: 9%; width: 46%; height: 63%; border: 3px solid var(--color-canvas); border-radius: 18px; transform: rotate(-2deg); }
-.auth-hero::after { content: ""; position: absolute; inset: 0; background: color-mix(in srgb, var(--bg-app) 55%, transparent); }
-.auth-hero > .auth-back, .auth-hero > .auth-hero-logo { position: relative; z-index: 2; }
+/* overlapping tilted picture cards fill the whole banner; --u scales the 300-unit design with the screen (capped), the stage is centered and spills over both sides */
+.auth-hero { container-type: inline-size; }
+.auth-collage { --u: min(0.3333cqw, 1.15px); position: absolute; inset: 0; z-index: 0; }
+.ac-stage { position: absolute; left: 50%; top: 0; width: calc(300 * var(--u)); height: 100%; margin-left: calc(-150 * var(--u)); }
+.ac-card { position: absolute; display: block; width: calc(124 * var(--u)); aspect-ratio: 1; object-fit: cover; border: 3px solid #f4efe6; border-bottom-width: 11px; border-radius: 3px; background: #2a3646; }
+.ac-card.ac-center { left: calc(88 * var(--u)); top: calc(56 * var(--u)); border-width: 5px; border-bottom-width: 16px; transform: rotate(-2deg); z-index: 9; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
+.auth-hero::after { content: ""; position: absolute; inset: 0; z-index: 1; background: color-mix(in srgb, var(--bg-app) 30%, transparent); }
+.auth-hero > .auth-back { position: relative; z-index: 2; }
 .auth-hero .auth-back { align-self: flex-start; color: var(--text-primary); background: color-mix(in srgb, var(--bg-app) 45%, transparent); border-color: color-mix(in srgb, var(--text-primary) 35%, transparent); }
-.auth-hero > .auth-hero-logo { position: absolute; left: 50%; top: 40.5%; transform: translate(-50%, -50%); display: block; width: 110px; height: auto; margin: 0; }
+.auth-hero > .auth-hero-logo { --u: min(0.3333cqw, 1.15px); position: absolute; z-index: 2; left: 50%; top: calc(118 * var(--u)); transform: translate(-50%, -50%); display: block; width: calc(104 * var(--u)); height: auto; margin: 0; }
 .auth-sheet { position: relative; flex: 1; margin-top: calc(var(--space-32) * -1); padding: var(--space-24) var(--space-24) var(--space-32); background: var(--color-canvas); border-top: 1px solid var(--color-border); border-radius: calc(var(--radius-card) + 10px) calc(var(--radius-card) + 10px) 0 0; display: flex; flex-direction: column; }
 .auth-handle { width: 48px; height: 4px; border-radius: var(--radius-pill); background: var(--color-primary); align-self: center; }
 @media (min-width: 520px) { .auth-form-view { margin: 0; border-radius: calc(var(--radius-card) + 10px); overflow: hidden; border: 1px solid var(--color-border); } }
