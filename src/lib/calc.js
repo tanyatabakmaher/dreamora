@@ -5,6 +5,12 @@ export function monthlyRate(annualPct) {
   return annualPct / 100 / 12;
 }
 
+// Yearly return used in every calculation: the gross expected return minus the yearly management fee, never below 0. Rounded to 2 decimals for display and stability.
+export function netReturnPct(grossPct, feePct) {
+  const net = (Number(grossPct) || 0) - (Number(feePct) || 0);
+  return Math.max(0, Math.round(net * 100) / 100);
+}
+
 // Balance after k completed months.
 export function balanceAfter(P, PMT, annualPct, k) {
   const i = monthlyRate(annualPct);
@@ -91,7 +97,7 @@ export function computeGoal(goal, today) {
   const T = goal.targetAmount;
   const P = goal.initialAmount || 0;
   const PMT = goal.monthlyDeposit || 0;
-  const r = goal.annualReturnPct || 0;
+  const r = netReturnPct(goal.annualReturnPct, goal.managementFeePct);
   const start = parseISODate(goal.startDate);
   const plan = monthsToGoal(T, P, PMT, r);
   const k = completedMonths(start, today);

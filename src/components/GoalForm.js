@@ -1,6 +1,6 @@
 import { esc, fromHTML, uid } from "../lib/dom.js";
 import { diffMembers, hasChanges, permissionsOf } from "../lib/share.js";
-import { toISODate } from "../lib/calc.js";
+import { toISODate, netReturnPct } from "../lib/calc.js";
 import { todayDate, fmtAmountInput, parseAmount } from "../lib/format.js";
 import { S } from "../strings.js";
 import { TRACKS, EMOJI_SUGGESTED, trackById } from "../data/tracks.js";
@@ -15,9 +15,9 @@ import { createSharingSection } from "./SharingSection.js";
 
 /* Create / edit a goal in a bottom sheet. onSave(goal, sharingDiff|null) may return a promise when sharing changed (the dialog then waits and stays open on failure),
    onDelete(goal, openerEl, closeForm). o.sharing = true shows the sharing section; o.ownEmail() gives the signed-in email. open(goal|null, openerEl). */
-var IDS = { name: "gf-name", target: "gf-target", initial: "gf-initial", monthly: "gf-monthly", ret: "gf-return", start: "gf-start" };
+var IDS = { name: "gf-name", target: "gf-target", initial: "gf-initial", monthly: "gf-monthly", ret: "gf-return", fee: "gf-fee", start: "gf-start" };
 var AMOUNTS = ["gf-target", "gf-initial", "gf-monthly"];
-var ORDER = ["name", "target", "initial", "monthly", "ret", "start"];
+var ORDER = ["name", "target", "initial", "monthly", "ret", "fee", "start"];
 
 export function createGoalForm(o) {
   var form = fromHTML('<form class="sheet" novalidate role="dialog" aria-modal="true" aria-labelledby="gf-title">' +
@@ -31,7 +31,8 @@ export function createGoalForm(o) {
     '<div class="row2">' +
     Field({ id: "gf-track", label: S["form.track"], control: '<select class="input" id="gf-track">' + TRACKS.map(function (t) { return '<option value="' + t.id + '">' + esc(t.labelHe) + "</option>"; }).join("") + "</select>" }) +
     Field({ id: IDS.ret, label: S["form.return"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="100" step="any"' }) + "</div>" +
-    '<div class="track-tag-row"><span class="tag" id="gf-track-tag"></span></div>' +
+    Field({ id: IDS.fee, label: S["form.fee"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="10" step="any"' }) +
+    '<div class="track-tag-row"><span class="tag" id="gf-track-tag"></span> <span class="hint" id="gf-net"></span></div>' +
     '<div class="hint" id="gf-track-hint" style="margin: -6px 0 14px;" hidden></div>' +
     Field({ id: IDS.start, label: S["form.startDate"], type: "date", num: true }) +
     '<div id="gf-sharing-slot"></div><p class="hint" id="gf-readonly" hidden>' + esc(S["share.readonly"]) + "</p>" +
@@ -52,7 +53,7 @@ export function createGoalForm(o) {
     return {
       name: $(IDS.name).value.trim(), target: num($(IDS.target).value),
       initial: $(IDS.initial).value === "" ? 0 : num($(IDS.initial).value),
-      monthly: num($(IDS.monthly).value), ret: num($(IDS.ret).value), start: $(IDS.start).value
+      monthly: num($(IDS.monthly).value), ret: num($(IDS.ret).value), fee: $(IDS.fee).value === "" ? 0 : num($(IDS.fee).value), start: $(IDS.start).value
     };
   }
   function validate(v) {
@@ -65,14 +66,17 @@ export function createGoalForm(o) {
     else if (!(v.monthly >= 0)) e.monthly = S["error.positiveNumber"];
     if ($(IDS.ret).value === "") e.ret = S["error.required"];
     else if (!(v.ret >= 0 && v.ret <= 100)) e.ret = S["error.returnRange"];
+    if (!(v.fee >= 0 && v.fee <= 10)) e.fee = S["error.feeRange"];
     if (!v.start) e.start = S["error.required"];
     return e;
   }
   function refresh() {
     var v = read(), errs = validate(v);
     ORDER.forEach(function (k) { setFieldError(form, IDS[k], errs[k] && (attempted || touched[k]) ? errs[k] : ""); });
-    var core = !errs.target && !errs.initial && !errs.monthly && !errs.ret && !errs.start;
-    $("gf-track-tag").textContent = trackTagText($("gf-track").value, $(IDS.ret).value);
+    var core = !errs.target && !errs.initial && !errs.monthly && !errs.ret && !errs.fee && !errs.start;
+    var net = core || (!errs.ret && !errs.fee) ? netReturnPct(v.ret, v.fee) : "";
+    $("gf-track-tag").textContent = trackTagText($("gf-track").value, net);
+    $("gf-net").textContent = net === "" ? "" : S["form.net"].replace("{pct}", String(net));
     return { errs: errs, plan: updatePlanSummary($("gf-summary"), v, core, { image: picker.get().image, emoji: picker.get().emoji, trackId: $("gf-track").value }) };
   }
   function trackHint() {
@@ -94,6 +98,7 @@ export function createGoalForm(o) {
     state.trackId = this.value;
     var t = trackById(this.value);
     $(IDS.ret).value = t.defaultReturnPct === null ? "" : t.defaultReturnPct;
+    $(IDS.fee).value = t.defaultFeePct;
     trackHint(); refresh();
   });
   form.addEventListener("submit", function (ev) {
@@ -108,7 +113,7 @@ export function createGoalForm(o) {
     var diff = sharing && perms.canManageSharing ? diffMembers(sharing.getSaved(), sharing.getDraft()) : null;
     var goal = {
       id: state.id, name: v.name, emoji: icon.emoji, image: icon.image, targetAmount: v.target, initialAmount: v.initial,
-      monthlyDeposit: v.monthly, isPublic: sharing && perms.canManageSharing ? sharing.isPublic() : !!state.isPublic, trackId: $("gf-track").value, annualReturnPct: v.ret, startDate: v.start, createdAt: state.createdAt
+      monthlyDeposit: v.monthly, isPublic: sharing && perms.canManageSharing ? sharing.isPublic() : !!state.isPublic, trackId: $("gf-track").value, annualReturnPct: v.ret, managementFeePct: v.fee, startDate: v.start, createdAt: state.createdAt
     };
     var res = o.onSave(goal, diff && hasChanges(diff) ? diff : null);
     if (res && typeof res.then === "function") {
@@ -128,7 +133,7 @@ export function createGoalForm(o) {
       var editing = !!goal;
       state = JSON.parse(JSON.stringify(goal || {
         id: uid(), name: "", emoji: EMOJI_SUGGESTED[0], image: PRESET_ICONS[0].src, targetAmount: "", initialAmount: "", monthlyDeposit: "",
-        trackId: "sp500", annualReturnPct: trackById("sp500").defaultReturnPct, startDate: toISODate(todayDate()), createdAt: new Date().toISOString()
+        trackId: "sp500", annualReturnPct: trackById("sp500").defaultReturnPct, managementFeePct: trackById("sp500").defaultFeePct, startDate: toISODate(todayDate()), createdAt: new Date().toISOString()
       }));
       $("gf-title").textContent = editing ? S["form.title.edit"] : S["form.title.create"];
       $(IDS.name).value = state.name;
@@ -137,6 +142,7 @@ export function createGoalForm(o) {
       $(IDS.monthly).value = fmtAmountInput(state.monthlyDeposit);
       $("gf-track").value = state.trackId;
       $(IDS.ret).value = state.annualReturnPct === null || state.annualReturnPct === "" ? "" : state.annualReturnPct;
+      $(IDS.fee).value = state.managementFeePct === undefined || state.managementFeePct === null ? 0 : state.managementFeePct;
       $(IDS.start).value = state.startDate;
       picker.set({ emoji: state.emoji, image: state.image });
       perms = permissionsOf(editing ? state : null);

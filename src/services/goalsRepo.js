@@ -19,9 +19,9 @@ function seedExamples() {
   var t = todayDate(), now = new Date().toISOString();
   return [
     { id: uid(), name: "טיול ליפן" + S["example.suffix"], emoji: "✈️", targetAmount: 15000, initialAmount: 2000, monthlyDeposit: 600,
-      trackId: "equity", annualReturnPct: 9, startDate: toISODate(addMonths(t, -8)), createdAt: now, notifiedMilestonePct: 0 },
+      trackId: "equity", annualReturnPct: 9, managementFeePct: 0.6, startDate: toISODate(addMonths(t, -8)), createdAt: now, notifiedMilestonePct: 0 },
     { id: uid(), name: "רכב חדש" + S["example.suffix"], emoji: "🚗", targetAmount: 60000, initialAmount: 5000, monthlyDeposit: 1500,
-      trackId: "age50", annualReturnPct: 6.5, startDate: toISODate(addMonths(t, -2)), createdAt: now, notifiedMilestonePct: 0 }
+      trackId: "age50", annualReturnPct: 6.5, managementFeePct: 0.55, startDate: toISODate(addMonths(t, -2)), createdAt: now, notifiedMilestonePct: 0 }
   ];
 }
 
@@ -51,12 +51,12 @@ export function createLocalRepo() {
 
 function toRow(g) {
   return { id: g.id, name: g.name, emoji: g.emoji || null, image: g.image || null, target_amount: g.targetAmount, initial_amount: g.initialAmount || 0,
-    monthly_deposit: g.monthlyDeposit, track_id: g.trackId, annual_return_pct: g.annualReturnPct, start_date: g.startDate, created_at: g.createdAt || new Date().toISOString(), is_public: !!g.isPublic,
+    monthly_deposit: g.monthlyDeposit, track_id: g.trackId, annual_return_pct: g.annualReturnPct, management_fee_pct: g.managementFeePct || 0, start_date: g.startDate, created_at: g.createdAt || new Date().toISOString(), is_public: !!g.isPublic,
     notified_milestone_pct: g.notifiedMilestonePct === undefined ? null : g.notifiedMilestonePct };
 }
 function fromRow(r) {
   return { id: r.id, name: r.name, emoji: r.emoji || "", image: r.image || null, targetAmount: Number(r.target_amount), initialAmount: Number(r.initial_amount),
-    monthlyDeposit: Number(r.monthly_deposit), trackId: r.track_id, annualReturnPct: Number(r.annual_return_pct), startDate: r.start_date, createdAt: r.created_at,
+    monthlyDeposit: Number(r.monthly_deposit), trackId: r.track_id, annualReturnPct: Number(r.annual_return_pct), managementFeePct: Number(r.management_fee_pct) || 0, startDate: r.start_date, createdAt: r.created_at,
     members: [], myRole: "owner", isPublic: !!r.is_public,
     notifiedMilestonePct: r.notified_milestone_pct === null || r.notified_milestone_pct === undefined ? undefined : r.notified_milestone_pct };
 }

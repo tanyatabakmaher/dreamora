@@ -1,7 +1,7 @@
 /* In-app notifications: pure functions, no UI and no storage.
    Notification = { id, goalId, goalName, type: "milestone"|"achieved"|"shareRequest", milestonePct?, date: "YYYY-MM-DD", read, payload? }
    "shareRequest" is reserved for the sharing phase: it can be shown, but nothing in Phase 1 creates it. */
-import { MILESTONES, computeGoal, currentMilestone, milestoneMonth, addMonths, parseISODate, toISODate } from "./calc.js";
+import { MILESTONES, netReturnPct, computeGoal, currentMilestone, milestoneMonth, addMonths, parseISODate, toISODate } from "./calc.js";
 import { uid } from "./dom.js";
 
 export var MAX_NOTIFICATIONS = 50;
@@ -38,7 +38,7 @@ export function syncNotifications(goals, existing, today, opts) {
     if (cur <= done && g.notifiedMilestonePct !== undefined) return g;
     MILESTONES.forEach(function (m) {
       if (m <= done || m > cur) return;
-      var mm = milestoneMonth(m, g.targetAmount, g.initialAmount || 0, g.monthlyDeposit || 0, g.annualReturnPct || 0);
+      var mm = milestoneMonth(m, g.targetAmount, g.initialAmount || 0, g.monthlyDeposit || 0, netReturnPct(g.annualReturnPct, g.managementFeePct));
       var d = mm === null ? today : addMonths(parseISODate(g.startDate), mm);
       if (d > today) d = today;
       var n = { id: make(), goalId: g.id, goalName: g.name, type: m === 100 ? "achieved" : "milestone", date: toISODate(d), read: false };

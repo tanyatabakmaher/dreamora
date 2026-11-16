@@ -1,4 +1,4 @@
-import { monthsToGoal, parseISODate, addMonths } from "../lib/calc.js";
+import { monthsToGoal, netReturnPct, parseISODate, addMonths } from "../lib/calc.js";
 import { durText, fmtDate, money } from "../lib/format.js";
 import { esc } from "../lib/dom.js";
 import { TrackTag } from "./TrackTag.js";
@@ -9,13 +9,13 @@ import { CalendarIcon, FlagIcon, CoinsIcon } from "./ui/Icons.js";
 function header(v, extra) {
   var pic = extra.image ? '<img src="' + esc(extra.image) + '" alt="">' : esc(extra.emoji || "🎯");
   return '<div class="plan-head"><span class="plan-pic" aria-hidden="true">' + pic + '</span><div class="plan-title"><div class="plan-name">' + esc(v.name || S["form.title.create"]) + "</div>" +
-    TrackTag(extra.trackId, v.ret) + "</div></div>";
+    TrackTag(extra.trackId, netReturnPct(v.ret, v.fee)) + "</div></div>";
 }
 export function updatePlanSummary(box, v, inputsOk, extra) {
   extra = extra || {};
   box.className = "summary";
   if (!inputsOk) { box.innerHTML = "<h3>" + S["summary.title"] + '</h3><p class="sub">—</p>'; return null; }
-  var plan = monthsToGoal(v.target, v.initial, v.monthly, v.ret);
+  var plan = monthsToGoal(v.target, v.initial, v.monthly, netReturnPct(v.ret, v.fee));
   if (plan.status === "unreachable") { box.className = "summary bad"; box.innerHTML = "<p>" + S["error.unreachable"] + "</p>"; }
   else if (plan.status === "tooFar") { box.className = "summary bad"; box.innerHTML = "<p>" + S["error.tooFar"] + "</p>"; }
   else if (plan.status === "achieved") { box.innerHTML = "<h3>" + S["summary.title"] + "</h3><p>" + S["summary.alreadyAchieved"] + "</p>"; }

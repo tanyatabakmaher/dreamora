@@ -1,5 +1,5 @@
 import { esc } from "../lib/dom.js";
-import { computeGoal } from "../lib/calc.js";
+import { computeGoal, netReturnPct } from "../lib/calc.js";
 import { fmtDate } from "../lib/format.js";
 import { S } from "../strings.js";
 import { Gauge } from "./Gauge.js";
@@ -23,7 +23,7 @@ export function GoalCard(g, today) {
   return '<article class="card' + (c.achieved ? " achieved" : "") + '" tabindex="0" role="button" data-id="' + esc(g.id) + '" aria-label="' + esc(S["action.edit"] + ": " + g.name) + '">' +
     (c.achieved ? '<div class="success-head">' + CheckCircleIcon() + "<span>" + esc(S["card.achievedHeader"]) + "</span></div>" : "") +
     '<div class="card-top"><span class="icon-box" aria-hidden="true">' + icon + "</span>" +
-    '<div class="card-title"><h2>' + esc(g.name) + "</h2>" + TrackTag(g.trackId, g.annualReturnPct) +
+    '<div class="card-title"><h2>' + esc(g.name) + "</h2>" + TrackTag(g.trackId, netReturnPct(g.annualReturnPct, g.managementFeePct)) +
     "</div>" + ShareIndicator(g) + "</div>" +
     '<div class="gauge">' + Gauge({ pct: c.progressPct, accumulated: c.balance, target: g.targetAmount, id: g.id.replace(/[^A-Za-z0-9_-]/g, "") }) + "</div>" +
     '<div class="chips">' +

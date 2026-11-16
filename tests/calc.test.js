@@ -61,6 +61,21 @@ check("days: no target date", c.daysRemaining(d("2026-11-14"), null) === null);
 o = c.computeGoal({ targetAmount: 10000, initialAmount: 0, monthlyDeposit: 500, annualReturnPct: 9, startDate: "2026-01-14" }, d("2026-11-14"));
 check("compute next milestone + amount", o.nextMilestonePct === 75 && o.amountToNextMilestone > 0 && o.daysRemaining !== null, o.nextMilestonePct + " / " + Math.round(o.amountToNextMilestone));
 check("compute achieved: no next milestone", c.computeGoal({ targetAmount: 1000, initialAmount: 1000, monthlyDeposit: 0, annualReturnPct: 0, startDate: "2026-01-01" }, d("2026-11-14")).nextMilestonePct === null);
+// Management fee: the calculation uses gross return minus the yearly fee
+check("net: 10 - 0.6 = 9.4", c.netReturnPct(10, 0.6) === 9.4);
+check("net: 6.5 - 0.55 = 5.95", c.netReturnPct(6.5, 0.55) === 5.95);
+check("net: 3.25 - 0.1 = 3.15", c.netReturnPct(3.25, 0.1) === 3.15);
+check("net: no fee = gross", c.netReturnPct(9, undefined) === 9 && c.netReturnPct(9, 0) === 9);
+check("net: fee above return floors at 0", c.netReturnPct(0.3, 0.6) === 0);
+{
+  const withFee = c.computeGoal({ targetAmount: 10000, initialAmount: 0, monthlyDeposit: 500, annualReturnPct: 9, managementFeePct: 0.6, startDate: "2026-01-14" }, d("2026-11-14"));
+  const asNet = c.computeGoal({ targetAmount: 10000, initialAmount: 0, monthlyDeposit: 500, annualReturnPct: 8.4, startDate: "2026-01-14" }, d("2026-11-14"));
+  const noFee = c.computeGoal({ targetAmount: 10000, initialAmount: 0, monthlyDeposit: 500, annualReturnPct: 9, startDate: "2026-01-14" }, d("2026-11-14"));
+  check("compute with fee = compute with net return", withFee.balance === asNet.balance && withFee.months === asNet.months, withFee.balance.toFixed(2));
+  check("compute with fee is lower than without fee", withFee.balance < noFee.balance, withFee.balance.toFixed(2) + " < " + noFee.balance.toFixed(2));
+  const long = (f) => c.balanceAfter(0, 1000, c.netReturnPct(9, f), 240);
+  check("20y x 1000/month: 0.6% fee costs ~49k", Math.abs((long(0) - long(0.6)) - 49000) < 1500, Math.round(long(0) - long(0.6)));
+}
 
 console.log(fail === 0 ? "ALL PASSED" : fail + " FAILED");
 process.exit(fail === 0 ? 0 : 1);
