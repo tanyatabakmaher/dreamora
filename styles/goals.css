@@ -188,7 +188,7 @@
 .pa-count { position: absolute; left: calc(22px + 5px * var(--n, 0) - 13px); top: -9px; z-index: 4; box-sizing: border-box; min-width: 22px; height: 17px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; border: 2px solid var(--color-surface); background: var(--color-canvas); color: var(--color-text); font-size: 11px; font-weight: 600; line-height: 1; }
 
 /* Picture banner: the goal picture across the top of the card (bleeding to the frame), name bottom-end, track tag top-end, owner circle straddling the bottom-end edge, private/shared marker in the start corner. */
-.card-banner { --banner-h: calc(var(--card-pad) + 54px + 18px); position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 4px; min-height: var(--banner-h); margin: 0 calc(-1 * var(--card-pad)) var(--space-8); padding: 6px 12px 7px; color: #fff; }
+.card-banner { --banner-h: calc(var(--card-pad) + 54px + 70px); position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 4px; min-height: var(--banner-h); margin: 0 calc(-1 * var(--card-pad)) 0; padding: 8px 12px 9px; color: #fff; }
 .card:not(.achieved) > .card-banner { margin-top: calc(-1 * var(--card-pad)); }
 .banner-pic { position: absolute; inset: 0; overflow: hidden; background: var(--color-lavender); display: grid; place-items: center; }
 .banner-pic img { width: 100%; height: 100%; object-fit: cover; object-position: center 42%; display: block; }
@@ -208,3 +208,11 @@
 .card-banner .pa-l1 { transform: translateX(-9px); }
 .card-banner .pa-l2 { transform: translateX(-18px); }
 .card-banner .pa-count { left: calc(-9px * var(--n, 0) - 12px); top: -10px; }
+
+/* Tighter body under the banner: the gauge sits right under the picture, the date / days-left chips are one line each, the deposit row is slimmer. */
+.card-banner + .gauge { margin-top: -14px; }
+.card .chip { flex-direction: row; align-items: center; justify-content: space-between; gap: 6px; padding: 6px var(--space-12); white-space: nowrap; }
+.card .chip-value { font-size: 13px; }
+.card .chip-label { font-size: 11.5px; }
+.card .milestone { padding: 6px var(--space-12); }
+.card .milestone:not(.milestone-done) b { font-size: 14px; }
