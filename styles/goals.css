@@ -14,7 +14,7 @@
 .card {
   position: relative; display: flex; flex-direction: column; gap: var(--space-8);
   background: var(--color-surface); border-radius: var(--radius-card);
-  padding: var(--space-16); box-shadow: var(--shadow-card); cursor: pointer;
+  --card-pad: var(--space-16); padding: var(--card-pad); box-shadow: var(--shadow-card); cursor: pointer;
   transition: transform .15s ease;
   /* photo-print frame: thin cream border with a wider strip at the bottom, each card tilted a little */
   --tilt: -1.2deg; transform: rotate(var(--tilt));
@@ -22,8 +22,7 @@
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45);
 }
 .grid > .card:nth-child(even) { --tilt: 1deg; }
-.grid > .card:nth-child(3n) { --tilt: 0.5deg; }
-@media (min-width: 640px) { .card { padding: var(--space-24); } }
+@media (min-width: 640px) { .card { --card-pad: var(--space-24); } }
 .card:hover { transform: rotate(var(--tilt)) translateY(-2px); }
 .card.achieved { border-color: var(--polaroid, #f4efe6); }
 /* Success header: spans the card's full width at the very top, clipped to its rounded top corners */
@@ -187,3 +186,25 @@
 .pa-l1 { transform: translateX(5px); }
 .pa-l2 { z-index: 1; transform: translateX(10px); }
 .pa-count { position: absolute; left: calc(22px + 5px * var(--n, 0) - 13px); top: -9px; z-index: 4; box-sizing: border-box; min-width: 22px; height: 17px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; border: 2px solid var(--color-surface); background: var(--color-canvas); color: var(--color-text); font-size: 11px; font-weight: 600; line-height: 1; }
+
+/* Picture banner: the goal picture across the top of the card (bleeding to the frame), name bottom-end, track tag top-end, owner circle straddling the bottom-end edge, private/shared marker in the start corner. */
+.card-banner { --banner-h: calc(var(--card-pad) + 54px + 18px); position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 4px; min-height: var(--banner-h); margin: 0 calc(-1 * var(--card-pad)) var(--space-8); padding: 6px 12px 7px; color: #fff; }
+.card:not(.achieved) > .card-banner { margin-top: calc(-1 * var(--card-pad)); }
+.banner-pic { position: absolute; inset: 0; overflow: hidden; background: var(--color-lavender); display: grid; place-items: center; }
+.banner-pic img { width: 100%; height: 100%; object-fit: cover; object-position: center 42%; display: block; }
+.banner-emoji { font-size: 40px; line-height: 1; justify-self: end; margin-inline-end: 18%; margin-top: -4px; }
+.banner-pic::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(8, 13, 20, 0.82) 0%, rgba(8, 13, 20, 0) 62%); }
+.banner-tag, .banner-name { position: relative; z-index: 1; }
+.banner-tag { max-width: calc(100% - 46px); display: flex; } .banner-tag .tag { overflow: hidden; text-overflow: ellipsis; }
+.banner-name { align-self: stretch; padding-inline-start: 0; padding-inline-end: 46px; text-align: start; min-width: 0; }
+.banner-name h2 { color: #fff; font-size: 17px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6); }
+.banner-name .owner-line { color: rgba(255, 255, 255, 0.82); margin: 0 0 1px; font-size: 11px; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
+.banner-tag .tag { background: rgba(16, 26, 38, 0.72); color: #d3f1e4; border: 1px solid rgba(255, 255, 255, 0.16); }
+.card-banner .share { top: 8px; left: 8px; background: rgba(16, 26, 38, 0.78); border-color: rgba(255, 255, 255, 0.18); color: #dfe7f1; }
+/* owner circle: right side (start in RTL), half outside the banner; crescents peek inward (to the left), "+N" at the outer crescent */
+.card-banner .pa-stack { left: auto; right: 12px; bottom: -17px; width: 34px; height: 34px; z-index: 3; }
+.card-banner .pa-row { width: 34px; height: 34px; }
+.card-banner .pa { width: 34px; height: 34px; font-size: 13px; border-color: var(--color-surface); }
+.card-banner .pa-l1 { transform: translateX(-9px); }
+.card-banner .pa-l2 { transform: translateX(-18px); }
+.card-banner .pa-count { left: calc(-9px * var(--n, 0) - 12px); top: -10px; }
