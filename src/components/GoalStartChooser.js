@@ -5,7 +5,7 @@ import { createModal } from "./ui/Modal.js";
 
 /* The first step of "add goal": a bottom sheet (a centered dialog on wide screens) with two ways to start.
    "known deposit" (I know how much to deposit, show me when I arrive) goes on to the existing goal form via onKnownDeposit(openerEl, presetMode).
-   "known date" (I know when I want to arrive, show me how much to deposit) is a placeholder until the reverse flow is built: pressing it does nothing. */
+   "known date" (I know when I want to arrive, show me how much to deposit) goes on to the plan flow via onKnownDate(openerEl). */
 var PICTURES = { date: "pics/icons/goal-1.webp", deposit: "pics/icons/goal-10.webp" };
 
 function Choice(o) {
@@ -30,7 +30,11 @@ export function createGoalStartChooser(o) {
     modal.close(); /* gives focus back to the opener first, then the form takes it */
     o.onKnownDeposit(from, m);
   });
-  /* "#gc-known-date" has no handler on purpose (see above). */
+  sheet.querySelector("#gc-known-date").addEventListener("click", function () {
+    var from = opener;
+    modal.close();
+    o.onKnownDate(from);
+  });
   sheet.querySelector("#gc-cancel").addEventListener("click", function () { modal.close(); });
   return {
     open: function (openerEl, presetMode) { opener = openerEl || null; mode = presetMode || null; modal.open(openerEl, "#gc-known-deposit"); },

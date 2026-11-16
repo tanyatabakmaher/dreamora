@@ -5,17 +5,19 @@ import { Button } from "./ui/Button.js";
 import { PRESET_ICONS, isPresetIcon } from "../data/presetIcons.js";
 /* Pick a goal picture: one of the ready-made pictures (pics/icons), or an uploaded picture. A goal saved earlier with an emoji keeps it as one more selected choice.
    IconPicker(emojis) returns markup; wireIconPicker(root, emojis) returns { get(), set({emoji,image}) }. */
-export function IconPicker() {
-  return '<div class="field"><span class="lbl" id="ip-label">' + S["form.emoji"] + "</span>" +
+export function IconPicker(prefix) {
+  var html = '<div class="field"><span class="lbl" id="ip-label">' + S["form.emoji"] + "</span>" +
     '<div class="emoji-row" id="ip-emoji" role="group" aria-labelledby="ip-label"></div>' +
     '<div class="img-row"><span class="img-preview" id="ip-preview" hidden></span>' +
     Button({ id: "ip-upload", variant: "ghost", label: S["form.image.upload"] }) +
     Button({ id: "ip-remove", variant: "danger", label: S["form.image.remove"], hidden: true }) +
     '<input type="file" id="ip-file" accept="image/*" hidden></div><div class="err" id="ip-err"></div></div>';
+  return prefix && prefix !== "ip" ? html.replace(/"ip-/g, '"' + prefix + "-") : html;
 }
-export function wireIconPicker(root, emojis, onChange) {
+export function wireIconPicker(root, emojis, onChange, prefix) {
+  var P = prefix || "ip";
   function changed() { if (onChange) onChange(); }
-  var $ = function (id) { return root.querySelector("#" + id); };
+  var $ = function (id) { return root.querySelector("#" + id.replace(/^ip-/, P + "-")); };
   var value = { emoji: emojis[0], image: PRESET_ICONS[0].src };
   /* A goal saved earlier with an emoji outside the suggested set keeps it: it is shown as one more selected choice after the suggested ones. */
   function paint() {
@@ -53,6 +55,6 @@ export function wireIconPicker(root, emojis, onChange) {
       value = { emoji: v.emoji || emojis[0], image: v.image || (v.emoji ? null : PRESET_ICONS[0].src) };
       $("ip-err").textContent = ""; $("ip-file").value = ""; paint();
     },
-    setDisabled: function (d) { Array.prototype.forEach.call(root.querySelectorAll("#ip-emoji button, #ip-upload, #ip-remove"), function (b) { b.disabled = d; }); }
+    setDisabled: function (d) { Array.prototype.forEach.call(root.querySelectorAll("#" + P + "-emoji button, #" + P + "-upload, #" + P + "-remove"), function (b) { b.disabled = d; }); }
   };
 }

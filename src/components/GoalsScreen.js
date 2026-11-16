@@ -4,6 +4,7 @@ import { Button } from "./ui/Button.js";
 import { showToast } from "./ui/Toast.js";
 import { createGoalList } from "./GoalList.js";
 import { createGoalForm } from "./GoalForm.js";
+import { createGoalPlanFlow } from "./GoalPlanFlow.js";
 import { createGoalStartChooser } from "./GoalStartChooser.js";
 import { createConfirm } from "./ConfirmDialog.js";
 import { createAppHeader } from "./AppHeader.js";
@@ -78,29 +79,30 @@ export function createGoalsScreen(o) {
   function reloadGoals() {
     return o.repo.load().then(function (g) { goals = g; list.render(goals); }).catch(function () {});
   }
+  function saveGoal(g, diff) {
+    var existing = goals.find(function (x) { return x.id === g.id; });
+    if (existing) { g.members = existing.members || []; g.myRole = existing.myRole; }
+    /* Progress that already exists when a goal is created or edited never produces notifications. */
+    g.notifiedMilestonePct = currentMilestone(computeGoal(g, todayDate()).progressPct);
+    var prev = goals.slice();
+    var i = goals.findIndex(function (x) { return x.id === g.id; });
+    if (i >= 0) goals[i] = g; else goals.push(g);
+    list.render(goals);
+    var saving = o.repo.save(g).catch(function (e) {
+      goals = prev; list.render(goals); /* undo the optimistic change */
+      showToast(e && e.storage ? S["error.storageFull"] : S["save.failed"]);
+      throw e;
+    });
+    if (diff && o.sharing) {
+      /* The goal is saved first, then the sharing changes; the dialog waits for both and stays open (draft kept) if sharing fails. */
+      return saving.then(function () { return o.sharing.apply(g.id, diff); }).then(function () { return reloadGoals(); }).then(function () { sync(); });
+    }
+    saving.then(function () { sync(); }, function () {});
+  }
   var form = createGoalForm({
     sharing: !!o.sharing,
     ownEmail: function () { return profile.email; },
-    onSave: function (g, diff) {
-      var existing = goals.find(function (x) { return x.id === g.id; });
-      if (existing) { g.members = existing.members || []; g.myRole = existing.myRole; }
-      /* Progress that already exists when a goal is created or edited never produces notifications. */
-      g.notifiedMilestonePct = currentMilestone(computeGoal(g, todayDate()).progressPct);
-      var prev = goals.slice();
-      var i = goals.findIndex(function (x) { return x.id === g.id; });
-      if (i >= 0) goals[i] = g; else goals.push(g);
-      list.render(goals);
-      var saving = o.repo.save(g).catch(function (e) {
-        goals = prev; list.render(goals); /* undo the optimistic change */
-        showToast(e && e.storage ? S["error.storageFull"] : S["save.failed"]);
-        throw e;
-      });
-      if (diff && o.sharing) {
-        /* The goal is saved first, then the sharing changes; the dialog waits for both and stays open (draft kept) if sharing fails. */
-        return saving.then(function () { return o.sharing.apply(g.id, diff); }).then(function () { return reloadGoals(); }).then(function () { sync(); });
-      }
-      saving.then(function () { sync(); }, function () {});
-    },
+    onSave: saveGoal,
     onDelete: function (g, openerEl, closeForm) {
       confirm.ask(openerEl).then(function (yes) {
         if (!yes) return;
@@ -113,8 +115,12 @@ export function createGoalsScreen(o) {
       });
     }
   });
-  /* Adding a goal starts with a choice. "Know the deposit" continues to the existing form; the other path is not built yet. */
-  var chooser = createGoalStartChooser({ onKnownDeposit: function (opener, mode) { form.open(null, opener, mode); } });
+  /* Adding a goal starts with a choice: "know the deposit" continues to the existing form, "know the date" to the plan flow (which saves through the same saveGoal). */
+  var planFlow = createGoalPlanFlow({ onSave: saveGoal });
+  var chooser = createGoalStartChooser({
+    onKnownDeposit: function (opener, mode) { form.open(null, opener, mode); },
+    onKnownDate: function (opener) { planFlow.open(opener); }
+  });
   el.querySelector("#gs-add").addEventListener("click", function () { chooser.open(this, null); });
   /* Invitations sent to this email before there was an account become notifications first, then everything loads. */
   (o.sharing ? o.sharing.syncRequests().catch(function () {}) : Promise.resolve()).then(function () { return Promise.all([
@@ -138,5 +144,5 @@ export function createGoalsScreen(o) {
     reloadGoals();
   }
   if (o.sharing) document.addEventListener("visibilitychange", onVisible);
-  return { el: el, destroy: function () { document.removeEventListener("visibilitychange", onVisible); notifScreen.destroy(); chooser.destroy(); form.destroy(); confirm.destroy(); profileDialog.destroy(); header.destroy(); el.remove(); } };
+  return { el: el, destroy: function () { document.removeEventListener("visibilitychange", onVisible); notifScreen.destroy(); chooser.destroy(); planFlow.destroy(); form.destroy(); confirm.destroy(); profileDialog.destroy(); header.destroy(); el.remove(); } };
 }

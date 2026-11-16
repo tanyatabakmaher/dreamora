@@ -65,6 +65,20 @@ export function completedMonths(start, today) {
   return Math.max(k, 0);
 }
 
+// Reverse calculation: the monthly deposit needed to go from P to T in exactly n months (deposits at the end of each month), rounded UP to a whole shekel so the date is never missed.
+// status: "ok" | "achieved" (the starting amount alone grows to T, deposit 0) | "invalid" (n < 1 or T <= 0).
+export function requiredDeposit(T, P, annualPct, n) {
+  if (!(n >= 1) || !(T > 0)) return { status: "invalid", deposit: null };
+  const i = monthlyRate(annualPct);
+  const g = i === 0 ? 1 : Math.pow(1 + i, n);
+  const pmt = i === 0 ? (T - P) / n : ((T - P * g) * i) / (g - 1);
+  if (pmt <= 1e-9) return { status: "achieved", deposit: 0 };
+  return { status: "ok", deposit: Math.ceil(pmt - 1e-9) };
+}
+
+// Whole calendar months from start to target, anchored to the day of month (same rule as completedMonths). 0 when target is not after start.
+export function monthsUntil(start, target) { return completedMonths(start, target); }
+
 export const MILESTONES = [25, 50, 75, 100];
 
 // Smallest milestone strictly greater than progressPct, or null at 100%.
