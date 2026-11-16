@@ -3,10 +3,13 @@ import { S } from "../strings.js";
 import { BRAND_NAME } from "../brand.js";
 import { Button } from "./ui/Button.js";
 /* First screen: the Keepi logo, a collage of goal pictures from the built-in catalog (display only, in pics/welcome/collage/), and the two entry buttons.
-   Cards are [picture, left, top, size, tilt] in design units of a 230-wide frame; CSS scales them with --u, and the frame clips them. */
-var CARDS = [["home", -14, -6, 104, -8], ["laptop", 86, -14, 100, 5], ["grad", 178, -4, 100, -5], ["ring", -10, 92, 100, 6], ["sprout", 92, 90, 100, -4], ["gift", 176, 96, 100, 7], ["travel", 62, 34, 128, -2]];
-function Card(c, i) {
-  return '<img class="mc' + (c[0] === "travel" ? " mc-center" : "") + '" src="pics/welcome/collage/' + c[0] + '.webp" alt="" width="420" height="420" decoding="async" draggable="false" style="left:calc(' + c[1] + ' * var(--u));top:calc(' + c[2] + ' * var(--u));width:calc(' + c[3] + ' * var(--u));transform:rotate(' + c[4] + 'deg)">';
+   Cards are [picture, left, top, size, tilt] in design units of a 262-wide stage; CSS scales them with --u. Nothing is clipped, so the edges of the pile stay uneven on all four sides. */
+var CARDS = [["laptop", -6, 2, 92, -9, 3], ["home", 70, -14, 96, 4, 2], ["grad", 128, -6, 92, -6, 3], ["gym", 190, 8, 82, 8, 2],
+  ["car", -6, 70, 92, 7, 2], ["gift", 178, 84, 88, -8, 3],
+  ["sprout", -2, 138, 92, -5, 3], ["ring", 64, 146, 90, 5, 2], ["baby", 124, 142, 90, -6, 3], ["home", 176, 152, 80, 9, 2],
+  ["travel", 64, 38, 142, -3, 9]];
+function Card(c) {
+  return '<img class="mc' + (c[0] === "travel" ? " mc-center" : "") + '" src="pics/welcome/collage/' + c[0] + '.webp" alt="" width="420" height="420" decoding="async" draggable="false" style="left:calc(' + c[1] + ' * var(--u));top:calc(' + c[2] + ' * var(--u));width:calc(' + c[3] + ' * var(--u));transform:rotate(' + c[4] + 'deg);z-index:' + c[5] + '">';
 }
 export function createWelcome(o) {
   var el = fromHTML('<section class="auth-view welcome"><div class="auth-mid welcome-mid">' +

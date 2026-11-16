@@ -13,13 +13,13 @@
 .welcome-mid { flex: none; gap: var(--space-24); padding: 0; }
 .welcome-divider { width: 48px; height: 4px; border-radius: var(--radius-pill); background: var(--color-border); align-self: center; flex: none; }
 .welcome-logo { display: block; width: min(176px, 48%); height: auto; margin: 0 auto; }
-.mosaic { container-type: inline-size; position: relative; overflow: hidden; width: min(100%, calc(42svh * 1.127)); margin-inline: auto; aspect-ratio: 230 / 204; border-radius: var(--radius-card); }
-.mosaic-stage { --u: calc(100cqw / 230); position: absolute; inset: 0; }
-.mc { position: absolute; display: block; height: auto; aspect-ratio: 1; object-fit: cover; border: 3px solid #f4efe6; border-bottom-width: 10px; border-radius: 3px; background: #2a3646; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4); z-index: 2; }
+.mosaic { container-type: inline-size; position: relative; width: min(100%, calc(42svh * 1.2046)); margin-inline: auto; aspect-ratio: 262 / 217.5; }
+.mosaic-stage { --u: calc(87cqw / 262); position: absolute; left: 6.5%; top: calc(14 * var(--u)); width: calc(262 * var(--u)); height: calc(236 * var(--u)); }
+.mc { position: absolute; display: block; height: auto; aspect-ratio: 1; object-fit: cover; border: 3px solid #f4efe6; border-bottom-width: 10px; border-radius: 3px; background: #2a3646; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4); }
 .mc-center { z-index: 9; border-width: 4px; border-bottom-width: 12px; }
 @media (max-height: 720px) {
   .welcome, .welcome-mid { gap: var(--space-16); }
-  .mosaic { width: min(100%, calc(32svh * 1.127)); }
+  .mosaic { width: min(100%, calc(32svh * 1.2046)); }
   .welcome .auth-mid h2 { font-size: 28px; }
 }
 /* Form view: picture header with the form sheet rising over it */
