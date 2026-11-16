@@ -45,7 +45,7 @@ function createSupabaseAuth(config) {
   var back = function () { return window.location.href.split("#")[0]; };
   function ok(r) { if (r.error) throw r.error; return r; }
   function client() { return getClient(config); }
-  var images = createImageStore(config), knownPhoto = null;
+  var images = createImageStore(config), knownPhoto = null, providerPhoto = null; /* providerPhoto: the Google picture, shown when no own picture is saved; never written to the profile */
   return {
     getSession: function () {
       return client().then(function (c) { return c.auth.getSession(); })
@@ -63,7 +63,9 @@ function createSupabaseAuth(config) {
             if (res.error) throw res.error;
             var row = res.data || {};
             knownPhoto = row.photo || null;
-            return { name: row.name || (u.user_metadata && u.user_metadata.name) || "", email: u.email, photo: row.photo || null, phone: row.phone || "" };
+            var meta = u.user_metadata || {}, pic = meta.avatar_url || meta.picture || null;
+            providerPhoto = typeof pic === "string" && pic.indexOf("https://") === 0 ? pic : null;
+            return { name: row.name || meta.name || meta.full_name || "", email: u.email, photo: row.photo || providerPhoto, phone: row.phone || "" };
           });
         });
       });
@@ -74,12 +76,12 @@ function createSupabaseAuth(config) {
         return c.auth.getSession().then(function (r) {
           var u = r.data.session && r.data.session.user;
           if (!u) throw new Error("no session");
-          return images.resolve(cl.photo).then(function (photo) {
+          return images.resolve(cl.photo === providerPhoto ? null : cl.photo).then(function (photo) {
             return c.from("profiles").upsert({ id: u.id, name: cl.name || null, phone: cl.phone || null, photo: photo }).then(function (res) {
               if (res.error) throw res.error;
               if (knownPhoto && knownPhoto !== photo) images.discard(knownPhoto);
               knownPhoto = photo;
-              return { name: cl.name, email: u.email, photo: photo, phone: cl.phone };
+              return { name: cl.name, email: u.email, photo: photo || providerPhoto, phone: cl.phone };
             });
           });
         });
@@ -96,7 +98,7 @@ function createSupabaseAuth(config) {
     },
     signOut: function () { return client().then(function (c) { return c.auth.signOut(); }); },
     oauth: function (provider) {
-      return client().then(function (c) { return c.auth.signInWithOAuth({ provider: provider, options: { redirectTo: back() } }); }).then(ok);
+      return client().then(function (c) { return c.auth.signInWithOAuth({ provider: provider, options: { redirectTo: back(), queryParams: { prompt: "select_account" } } }); }).then(ok); /* always let the user pick the Google account */
     },
     magic: function (email) {
       return client().then(function (c) { return c.auth.signInWithOtp({ email: email, options: { emailRedirectTo: back() } }); }).then(ok);
