@@ -14,9 +14,10 @@ export function createGoalList(o) {
   function findGoal(id) { return goals.find(function (g) { return g.id === id; }) || others.find(function (g) { return g.id === id; }); }
   function render(list) {
     goals = list;
-    function emptyHTML() {
-      return '<section class="empty"><div class="gauge">' + Gauge({ pct: 0, bare: true, id: "empty" }) + "</div><h2>" + S["home.empty.title"] + "</h2><p>" +
-        S["home.empty.subtitle"] + "</p>" + Button({ label: S["home.empty.cta"], attrs: 'data-action="add"' }) + "</section>";
+    function emptyHTML(f) {
+      var k = f && f !== "all" ? "filter.empty." + f : "home.empty", cta = f && f !== "all" ? "filter.empty.cta" : "home.empty.cta";
+      return '<section class="empty"><div class="gauge">' + Gauge({ pct: 0, bare: true, id: "empty" }) + "</div><h2>" + S[k + ".title"] + "</h2><p>" +
+        S[k + ".subtitle"] + "</p>" + Button({ label: S[cta], attrs: 'data-action="add"' }) + "</section>";
     }
     if (!goals.length && !others.length) { el.innerHTML = emptyHTML(); return; }
     var today = todayDate();
@@ -27,7 +28,7 @@ export function createGoalList(o) {
       return '<button type="button" class="filter-chip' + (filter === k ? " on" : "") + '" data-filter="' + k + '" aria-pressed="' + String(filter === k) + '">' + (FILTER_ICONS[k] ? '<span class="filter-ico" aria-hidden="true">' + FILTER_ICONS[k]() + "</span>" : "") + S["filter." + k] + "</button>";
     }).join("") + "</div>" : "";
     el.innerHTML = chips + (shown.length ? '<div class="grid">' + shown.map(function (g) { return GoalCard(g, today, o.viewer && o.viewer()); }).join("") + "</div>"
-      : filter === "all" ? emptyHTML() : '<p class="filter-empty">' + S["filter.empty." + filter] + "</p>");
+      : emptyHTML(filter));
   }
   /* Bring a goal's card into view and flash it briefly (no flash with reduced motion). Returns false if the goal is not shown. */
   function reveal(id) {
