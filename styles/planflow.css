@@ -16,11 +16,15 @@
 .pln-step[data-step="1"] .pln-title { margin-bottom: var(--space-16); }
 .pln-link { padding: 4px 6px; color: var(--accent-gold); font-size: 14px; font-weight: 500; background: none; text-decoration: underline; text-underline-offset: 3px; }
 /* goal header on step 2 */
-.pln-goalhead { display: flex; align-items: center; gap: var(--space-12); margin-bottom: var(--space-16); padding: var(--space-8) var(--space-12); background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-card); }
-.pln-pola { flex: none; width: 40px; padding: 3px 3px 7px; background: var(--polaroid, #f4efe6); border-radius: 3px; transform: rotate(-5deg); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4); }
+.pln-goalhead { display: flex; align-items: center; gap: var(--space-16); margin-bottom: var(--space-16); padding: var(--space-12) var(--space-16); background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-card); }
+.pln-pola { flex: none; width: 56px; padding: 3px 3px 7px; background: var(--polaroid, #f4efe6); border-radius: 3px; transform: rotate(-5deg); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4); }
 .pln-pola img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 2px; }
 .pln-emoji { display: block; text-align: center; font-size: 22px; line-height: 1.4; }
-.pln-goaltext { flex: 1; font-weight: 600; font-size: 15px; }
+.pln-goaltext { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pln-goalname { font-size: 14px; color: var(--color-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pln-goaldate { font-size: 28px; font-weight: 700; line-height: 1.2; color: var(--accent-gold); }
+.pln-goaldate small { font-size: 13px; font-weight: 500; color: var(--color-text-muted); }
+.pln-goalamt { font-size: 15px; font-weight: 600; }
 .pln-chip { margin: -6px 0 var(--space-12); padding: 3px var(--space-8); width: fit-content; border-radius: var(--radius-pill); background: var(--color-input-bg); color: var(--accent-mint); font-size: 12px; font-weight: 500; line-height: 1.5; }
 .pln-chip[hidden] { display: none; }
 /* track accordion */
@@ -37,9 +41,9 @@
 .pln-amt { flex: none; display: flex; align-items: baseline; gap: 4px; font-weight: 700; font-size: 16px; }
 .pln-amt small { font-size: 11px; font-weight: 400; color: var(--color-text-muted); }
 .pln-chev { flex: none; color: var(--color-text-muted); transition: transform .2s ease; }
-.pln-track.sel .pln-chev { transform: rotate(180deg); }
+.pln-track.open .pln-chev { transform: rotate(180deg); }
 .pln-bartrack { height: 6px; margin: 4px var(--space-12) var(--space-12); border-radius: 3px; background: #334B63; overflow: hidden; }
-.pln-bartrack i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--aurora-1), var(--aurora-2), var(--aurora-3), var(--aurora-4)); transition: width .25s ease; }
+.pln-bartrack i { display: block; height: 100%; border-radius: 3px; transition: width .25s ease; }
 .pln-panel { padding: 0 var(--space-12) var(--space-12); border-top: 1px solid var(--color-border); padding-top: var(--space-12); }
 .pln-panel[hidden] { display: none; }
 .pln-panel .field { margin-bottom: var(--space-8); }

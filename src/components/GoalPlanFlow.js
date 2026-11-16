@@ -16,6 +16,14 @@ import { IconPicker, wireIconPicker } from "./IconPicker.js";
 var MAX_MONTHS = 600;
 function mmYYYY(d) { return String(d.getMonth() + 1).padStart(2, "0") + "/" + d.getFullYear(); }
 function numOrNaN(v) { return v === "" || v === null || v === undefined ? NaN : Number(parseAmount(v)); }
+/* Deposit size as colour: cheap = mint, middle = gold, expensive = coral (all from the app palette). */
+var HEAT = ["#78CEB2", "#EBCB88", "#F2A08F"];
+function heat(pct) {
+  var x = Math.max(0, Math.min(100, pct)) / 100 * 2, i = Math.min(1, Math.floor(x)), f = x - i;
+  function ch(c, k) { return parseInt(c.slice(1 + k * 2, 3 + k * 2), 16); }
+  var out = [0, 1, 2].map(function (k) { return Math.round(ch(HEAT[i], k) + (ch(HEAT[i + 1], k) - ch(HEAT[i], k)) * f); });
+  return "rgb(" + out.join(",") + ")";
+}
 function fill(t, m) { return Object.keys(m).reduce(function (s, k) { return s.replace("{" + k + "}", m[k]); }, t); }
 
 export function createGoalPlanFlow(o) {
@@ -31,8 +39,8 @@ export function createGoalPlanFlow(o) {
     Field({ id: "pln-date", label: S["plan.date"], type: "date", num: true, hint: S["plan.date.hint"] }) +
     '<div class="actions">' + Button({ id: "pln-next1", label: S["plan.next"], grow: true }) + "</div></section>" +
     '<section class="pln-step" data-step="2" hidden>' +
-    '<div class="pln-goalhead"><span class="pln-pola" id="pln-pola"></span><span class="pln-goaltext" id="pln-goaltext"></span>' +
-    '<button type="button" class="pln-link" id="pln-editgoal">' + esc(S["plan.edit"]) + "</button></div>" +
+    '<div class="pln-goalhead"><span class="pln-pola" id="pln-pola"></span><span class="pln-goaltext"><span class="pln-goalname" id="pln-goalname"></span>' +
+    '<span class="pln-goaldate" id="pln-goaldate"></span><span class="pln-goalamt" id="pln-goalamt"></span></span></div>' +
     '<h2 class="pln-title">' + esc(S["plan.s2.title"]) + '</h2><p class="pln-sub">' + esc(S["plan.s2.sub"]) + "</p>" +
     Field({ id: "pln-initial", label: S["plan.initial"], type: "text", num: true, attrs: 'inputmode="decimal" autocomplete="off"' }) +
     '<div class="pln-chip" id="pln-initialchip" hidden></div>' +
@@ -49,7 +57,7 @@ export function createGoalPlanFlow(o) {
   var picker = wireIconPicker(root, EMOJI_SUGGESTED, function () { dirty = true; }, "plnp");
   var leave = createConfirm({ title: S["plan.leave.title"], body: S["plan.leave.body"], yes: S["plan.leave.yes"], no: S["plan.leave.no"] });
   var step = 1, dirty = false, saved = false, today = todayDate();
-  var st = { T: NaN, months: 0, dateISO: "", P: 0, trackId: TRACKS[0].id, edits: {} }, rows = [], tracksBuilt = false;
+  var st = { T: NaN, months: 0, dateISO: "", P: 0, trackId: null, openId: null, edits: {} }, rows = [], tracksBuilt = false;
 
   /* Closing with unsaved input asks first; Escape and the backdrop both go through modal.close. */
   var realClose = modal.close;
@@ -131,14 +139,19 @@ export function createGoalPlanFlow(o) {
   }
   function paintTracks() {
     recompute();
+    /* Colour is relative within the list: the cheapest track is greenest, the most expensive is reddest. */
+    var ds = rows.filter(function (r) { return r.deposit !== null; }).map(function (r) { return r.deposit; });
+    var lo = Math.min.apply(null, ds), hi = Math.max.apply(null, ds);
     rows.forEach(function (r) {
-      var el = $('.pln-track[data-id="' + r.id + '"]'), sel = r.id === st.trackId;
-      el.classList.toggle("sel", sel);
+      var el = $('.pln-track[data-id="' + r.id + '"]'), sel = r.id === st.trackId, open = r.id === st.openId;
+      el.classList.toggle("sel", sel); el.classList.toggle("open", open);
       var head = el.querySelector(".pln-trackhead");
-      head.setAttribute("aria-checked", String(sel)); head.setAttribute("aria-expanded", String(sel));
-      el.querySelector(".pln-panel").hidden = !sel;
+      head.setAttribute("aria-checked", String(sel)); head.setAttribute("aria-expanded", String(open));
+      el.querySelector(".pln-panel").hidden = !open;
       el.querySelector(".pln-amtnum").textContent = r.deposit === null ? S["plan.none"] : r.status === "achieved" ? S["plan.achieved"] : money(r.deposit);
-      var fillEl = el.querySelector(".pln-bartrack i"); fillEl.style.width = r.deposit === null ? "0%" : Math.max(r.deposit > 0 ? 3 : 0, r.barPct) + "%";
+      var fillEl = el.querySelector(".pln-bartrack i"), col = heat(hi > lo && r.deposit !== null ? (r.deposit - lo) / (hi - lo) * 100 : 0), amtEl = el.querySelector(".pln-amt");
+      fillEl.style.width = r.deposit === null ? "0%" : Math.max(r.deposit > 0 ? 3 : 0, r.barPct) + "%";
+      fillEl.style.background = "linear-gradient(90deg, " + HEAT[0] + ", " + col + ")"; amtEl.style.color = r.deposit === null ? "" : col;
       var net = el.querySelector(".pln-net"), delta = el.querySelector(".pln-delta"), reset = el.querySelector(".pln-reset");
       var retEmpty = $("#pln-ret-" + r.id).value === "";
       net.textContent = r.net === null ? (retEmpty ? S["plan.track.needReturn"] : S["plan.track.badValues"]) : fill(S["plan.track.net"], { pct: String(r.net) });
@@ -160,11 +173,12 @@ export function createGoalPlanFlow(o) {
   function enterStep2() {
     if (!tracksBuilt) buildTracks();
     var pic = picker.get();
-    $("#pln-pola").innerHTML = pic.image ? '<img src="' + esc(pic.image) + '" alt="" width="40" height="40">' : '<span class="pln-emoji">' + esc(pic.emoji) + "</span>";
-    $("#pln-goaltext").innerHTML = "<bdi>" + esc(money(st.T)) + "</bdi> · <bdi>" + esc(mmYYYY(parseISODate(st.dateISO))) + "</bdi>";
+    $("#pln-pola").innerHTML = pic.image ? '<img src="' + esc(pic.image) + '" alt="" width="56" height="56">' : '<span class="pln-emoji">' + esc(pic.emoji) + "</span>";
+    $("#pln-goalname").textContent = readStep1().name;
+    $("#pln-goaldate").innerHTML = '<small>' + esc(S["plan.goal.until"]) + "</small> <bdi>" + esc(mmYYYY(parseISODate(st.dateISO))) + "</bdi>";
+    $("#pln-goalamt").innerHTML = "<bdi>" + esc(money(st.T)) + "</bdi>";
     paintTracks();
   }
-  $("#pln-editgoal").addEventListener("click", function () { show(1); });
   $("#pln-initial").addEventListener("input", function () {
     dirty = true; fmtInput(this);
     var v = this.value === "" ? 0 : numOrNaN(this.value);
@@ -182,7 +196,11 @@ export function createGoalPlanFlow(o) {
       $("#pln-ret-" + id).value = t.defaultReturnPct === null ? "" : t.defaultReturnPct; $("#pln-fee-" + id).value = t.defaultFeePct;
       paintTracks(); return;
     }
-    if (ev.target.closest(".pln-trackhead") && st.trackId !== id) { dirty = true; st.trackId = id; paintTracks(); }
+    if (ev.target.closest(".pln-trackhead")) {
+      /* Pressing a row selects it and opens it (the previous one closes); pressing the open row only closes it. */
+      if (st.openId === id) st.openId = null; else { st.openId = id; st.trackId = id; dirty = true; }
+      paintTracks();
+    }
   });
   $("#pln-tracks").addEventListener("input", function (ev) {
     var m = /^pln-(ret|fee)-(.+)$/.exec(ev.target.id || "");
@@ -239,7 +257,7 @@ export function createGoalPlanFlow(o) {
 
   function reset() {
     step = 1; dirty = false; saved = false; today = todayDate();
-    st = { T: NaN, months: 0, dateISO: "", P: 0, trackId: TRACKS[0].id, edits: {} }; plan = null;
+    st = { T: NaN, months: 0, dateISO: "", P: 0, trackId: null, openId: null, edits: {} }; plan = null;
     ["#pln-name", "#pln-target", "#pln-date", "#pln-initial"].forEach(function (s) { $(s).value = ""; });
     $("#pln-date").min = toISODate(addMonths(today, 1)); $("#pln-date").max = toISODate(addMonths(today, MAX_MONTHS));
     picker.set({});
