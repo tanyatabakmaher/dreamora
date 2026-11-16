@@ -2,21 +2,16 @@ import { fromHTML, esc } from "../lib/dom.js";
 import { S } from "../strings.js";
 import { BRAND_NAME } from "../brand.js";
 import { Button } from "./ui/Button.js";
-/* First screen ("goals mosaic"): the Keepi logo, three goal pictures from the built-in catalog (display only), and the two entry buttons.
-   The big tile sits at the inline start (right in RTL), the two small ones are stacked at the inline end. Pictures are 720px copies of the originals in pics/. */
-var TILES = [
-  { cls: "mosaic-big", src: "pics/welcome/travel.webp", label: S["auth.welcome.tile.travel"] },
-  { cls: "mosaic-top", src: "pics/welcome/home.webp", label: S["auth.welcome.tile.home"] },
-  { cls: "mosaic-bottom", src: "pics/welcome/event.webp", label: S["auth.welcome.tile.event"] }
-];
-function Tile(t) {
-  return '<div class="mosaic-tile ' + t.cls + '"><img src="' + t.src + '" alt="" width="720" height="720" decoding="async" draggable="false">' +
-    '<span class="mosaic-label">' + esc(t.label) + "</span></div>";
+/* First screen: the Keepi logo, a collage of goal pictures from the built-in catalog (display only, in pics/welcome/collage/), and the two entry buttons.
+   Cards are [picture, left, top, size, tilt] in design units of a 230-wide frame; CSS scales them with --u, and the frame clips them. */
+var CARDS = [["home", -14, -6, 104, -8], ["laptop", 86, -14, 100, 5], ["grad", 178, -4, 100, -5], ["ring", -10, 92, 100, 6], ["sprout", 92, 90, 100, -4], ["gift", 176, 96, 100, 7], ["travel", 62, 34, 128, -2]];
+function Card(c, i) {
+  return '<img class="mc' + (c[0] === "travel" ? " mc-center" : "") + '" src="pics/welcome/collage/' + c[0] + '.webp" alt="" width="420" height="420" decoding="async" draggable="false" style="left:calc(' + c[1] + ' * var(--u));top:calc(' + c[2] + ' * var(--u));width:calc(' + c[3] + ' * var(--u));transform:rotate(' + c[4] + 'deg)">';
 }
 export function createWelcome(o) {
   var el = fromHTML('<section class="auth-view welcome"><div class="auth-mid welcome-mid">' +
     '<img class="welcome-logo" src="pics/welcome/keepi-logo-dark.webp" alt="' + esc(BRAND_NAME) + '" width="720" height="241">' +
-    '<div class="mosaic" aria-hidden="true">' + TILES.map(Tile).join("") + "</div>" +
+    '<div class="mosaic" aria-hidden="true"><div class="mosaic-stage">' + CARDS.map(Card).join("") + "</div></div>" +
     '<div><h2 id="wl-title" tabindex="-1">' + S["auth.welcome.title"] + "</h2><p>" + S["auth.welcome.subtitle"] + "</p></div></div>" +
     '<div class="welcome-divider" aria-hidden="true"></div>' +
     '<div class="actions-stack">' + Button({ id: "wl-login", label: S["auth.login"], block: true }) +
