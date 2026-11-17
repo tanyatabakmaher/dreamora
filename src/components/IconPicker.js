@@ -7,11 +7,8 @@ import { PRESET_ICONS, isPresetIcon } from "../data/presetIcons.js";
    IconPicker(emojis) returns markup; wireIconPicker(root, emojis) returns { get(), set({emoji,image}) }. */
 export function IconPicker(prefix) {
   var html = '<div class="field"><span class="lbl" id="ip-label">' + S["form.emoji"] + "</span>" +
-    '<div class="emoji-row" id="ip-emoji" role="group" aria-labelledby="ip-label"></div>' +
-    '<div class="img-row"><span class="img-preview" id="ip-preview" hidden></span>' +
-    Button({ id: "ip-upload", variant: "ghost", label: S["form.image.upload"] }) +
-    Button({ id: "ip-remove", variant: "danger", label: S["form.image.remove"], hidden: true }) +
-    '<input type="file" id="ip-file" accept="image/*" hidden></div><div class="err" id="ip-err"></div></div>';
+    '<div class="emoji-row pol-grid" id="ip-emoji" role="group" aria-labelledby="ip-label"></div>' +
+    '<input type="file" id="ip-file" accept="image/*" hidden><div class="err" id="ip-err"></div></div>';
   return prefix && prefix !== "ip" ? html.replace(/"ip-/g, '"' + prefix + "-") : html;
 }
 export function wireIconPicker(root, emojis, onChange, prefix) {
@@ -20,27 +17,27 @@ export function wireIconPicker(root, emojis, onChange, prefix) {
   var $ = function (id) { return root.querySelector("#" + id.replace(/^ip-/, P + "-")); };
   var value = { emoji: emojis[0], image: PRESET_ICONS[0].src };
   /* A goal saved earlier with an emoji outside the suggested set keeps it: it is shown as one more selected choice after the suggested ones. */
+  /* Every picture is a small polaroid. The uploaded picture (if any) comes first with a remove badge; the upload tile is the last cell. */
   function paint() {
     var preset = isPresetIcon(value.image), custom = !!value.image && !preset;
-    var html = PRESET_ICONS.map(function (p) {
-      return '<button type="button" class="emoji-opt pic-opt" data-image="' + esc(p.src) + '" aria-label="' + esc(p.label) + '" aria-pressed="' + String(value.image === p.src) + '"><img src="' + esc(p.src) + '" alt=""></button>';
+    var html = custom ? '<div class="pol-cell"><button type="button" class="emoji-opt pic-opt" data-image="' + esc(value.image) + '" aria-label="' + esc(S["form.image.replace"]) + '" aria-pressed="true"><img src="' + esc(value.image) + '" alt=""></button>' +
+      '<button type="button" class="pol-remove" aria-label="' + esc(S["form.image.remove"]) + '">\u2715</button></div>' : "";
+    html += PRESET_ICONS.map(function (p) {
+      return '<div class="pol-cell"><button type="button" class="emoji-opt pic-opt" data-image="' + esc(p.src) + '" aria-label="' + esc(p.label) + '" aria-pressed="' + String(value.image === p.src) + '"><img src="' + esc(p.src) + '" alt=""></button></div>';
     }).join("");
-    if (!value.image && value.emoji) html += '<button type="button" class="emoji-opt" data-emoji="' + esc(value.emoji) + '" aria-pressed="true">' + esc(value.emoji) + "</button>";
+    if (!value.image && value.emoji) html += '<div class="pol-cell"><button type="button" class="emoji-opt pic-opt pol-emoji" data-emoji="' + esc(value.emoji) + '" aria-pressed="true"><span>' + esc(value.emoji) + "</span></button></div>";
+    html += '<div class="pol-cell"><button type="button" class="pol-upload" id="' + P + '-upload"><span class="pol-plus" aria-hidden="true">\uff0b</span><span>' + esc(custom ? S["form.image.replace"] : S["form.image.upload"]) + "</span></button></div>";
     $("ip-emoji").innerHTML = html;
-    $("ip-preview").hidden = !custom;
-    $("ip-preview").innerHTML = custom ? '<img src="' + esc(value.image) + '" alt="">' : "";
-    $("ip-remove").hidden = !custom;
-    $("ip-upload").textContent = custom ? S["form.image.replace"] : S["form.image.upload"];
   }
   $("ip-emoji").addEventListener("click", function (ev) {
+    if (ev.target.closest(".pol-upload")) { $("ip-file").click(); return; }
+    if (ev.target.closest(".pol-remove")) { value.image = PRESET_ICONS[0].src; $("ip-file").value = ""; $("ip-err").textContent = ""; paint(); changed(); return; }
     var b = ev.target.closest(".emoji-opt");
     if (!b) return;
     if (b.dataset.image) { value.image = b.dataset.image; }
     else { value.emoji = b.dataset.emoji; value.image = null; }
     $("ip-err").textContent = ""; paint(); changed();
   });
-  $("ip-upload").addEventListener("click", function () { $("ip-file").click(); });
-  $("ip-remove").addEventListener("click", function () { value.image = PRESET_ICONS[0].src; $("ip-file").value = ""; $("ip-err").textContent = ""; paint(); changed(); });
   $("ip-file").addEventListener("change", function () {
     var f = this.files && this.files[0];
     if (!f) return;
@@ -55,6 +52,6 @@ export function wireIconPicker(root, emojis, onChange, prefix) {
       value = { emoji: v.emoji || emojis[0], image: v.image || (v.emoji ? null : PRESET_ICONS[0].src) };
       $("ip-err").textContent = ""; $("ip-file").value = ""; paint();
     },
-    setDisabled: function (d) { Array.prototype.forEach.call(root.querySelectorAll("#" + P + "-emoji button, #" + P + "-upload, #" + P + "-remove"), function (b) { b.disabled = d; }); }
+    setDisabled: function (d) { Array.prototype.forEach.call(root.querySelectorAll("#" + P + "-emoji button"), function (b) { b.disabled = d; }); }
   };
 }
