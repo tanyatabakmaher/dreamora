@@ -88,7 +88,7 @@
 @container (max-width: 360px) { .pln-sig { display: none; } .pln-risk { padding: 2px 8px; font-size: 11px; } .pln-namecol { gap: 6px; } }
 
 /* Flat goal header: polaroid + name / track tag / date in even steps, then the coverage bar */
-.pln-hdr { container-type: inline-size; margin-bottom: var(--space-8); }
+.pln-hdr { container-type: inline-size; margin-bottom: var(--space-12); padding: 14px 14px 12px; background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)), var(--surface-2); border: 1px solid rgba(121, 227, 200, 0.18); border-radius: 16px; }
 .pln-hd-top { display: flex; align-items: center; gap: 14px; }
 .pln-hd-text { min-width: 0; flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .pln-hd-text .pln-goalname { line-height: 24px; }
@@ -96,8 +96,8 @@
 .pln-hd-date .pln-tk-date { line-height: 24px; font-size: 20px; }
 .pln-hd-lbl { font-size: 12px; color: var(--color-text-muted); }
 .pln-dot { opacity: 0.7; }
-.pln-cv { margin-top: 12px; }
-.pln-cv-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4px; font-size: 12px; color: var(--color-text-muted); }
+.pln-cv { margin-top: 6px; }
+.pln-cv-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3px; font-size: 12px; color: var(--color-text-muted); }
 .pln-flag { display: inline-flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 700; color: #F6F8FC; }
 .pln-flagico { color: #EBCB88; font-size: 15px; }
 .pln-cv-bar { height: 8px; border-radius: 4px; background: #334B63; overflow: hidden; }
