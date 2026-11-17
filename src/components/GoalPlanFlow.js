@@ -157,14 +157,14 @@ export function createGoalPlanFlow(o) {
       var fillEl = el.querySelector(".pln-bartrack i"), col = heat(hi > lo && r.deposit !== null ? (r.deposit - lo) / (hi - lo) * 100 : 0), amtEl = el.querySelector(".pln-amt");
       fillEl.style.width = r.deposit === null ? "0%" : Math.max(r.deposit > 0 ? 3 : 0, r.barPct) + "%";
       fillEl.style.background = r.deposit === null ? "" : col; amtEl.style.color = r.deposit === null ? "" : col;
-      /* The net return rides on the bar: inside the fill when it is long enough, otherwise just after its end. */
+      /* The net return rides on the bar: at the start of the fill when it is long enough, otherwise just past its end. */
       var lbl = el.querySelector(".pln-barlbl"), w = r.deposit === null ? 0 : Math.max(r.deposit > 0 ? 3 : 0, r.barPct), inside = w >= 38;
       lbl.hidden = r.net === null || r.deposit === null;
       lbl.textContent = (r.edited ? "✎ " : "") + (r.net === null ? "" : fill(S["plan.netTag"], { pct: String(r.net) }));
       lbl.classList.toggle("in", inside);
-      /* anchored to the moving end of the fill, so it travels with the colour */
-      lbl.style.insetInlineStart = inside ? "auto" : "calc(" + w + "% + 8px)";
-      lbl.style.insetInlineEnd = inside ? "calc(" + (100 - w) + "% + 10px)" : "auto";
+      /* inside the fill the label sits at the start (right in Hebrew); only a very short bar puts it just past the fill's end */
+      lbl.style.insetInlineStart = inside ? "10px" : "calc(" + w + "% + 8px)";
+      lbl.style.insetInlineEnd = "auto";
       var net = el.querySelector(".pln-net"), delta = el.querySelector(".pln-delta"), reset = el.querySelector(".pln-reset");
       var retEmpty = $("#pln-ret-" + r.id).value === "";
       net.textContent = r.net === null ? (retEmpty ? S["plan.track.needReturn"] : S["plan.track.badValues"]) : fill(S["plan.track.net"], { pct: String(r.net) });
