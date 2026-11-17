@@ -54,6 +54,11 @@ export function createGoalPlanFlow(o) {
     '<div class="actions">' + Button({ id: "pln-save", label: S["plan.s3.save"], grow: true }) + "</div></section></div>");
   var $ = function (sel) { return root.querySelector(sel); };
   var modal = createModal({ sheet: root });
+  /* The ticket notches sit on the dashed line, which moves with the width of the date part. */
+  if (window.ResizeObserver) {
+    var stub = root.querySelector(".pln-tk-stub"), tk = root.querySelector(".pln-ticket");
+    new ResizeObserver(function () { if (stub.offsetWidth) tk.style.setProperty("--pln-notch", stub.offsetWidth - 9 + "px"); }).observe(stub);
+  }
   var picker = wireIconPicker(root, EMOJI_SUGGESTED, function () { dirty = true; }, "plnp");
   var leave = createConfirm({ title: S["plan.leave.title"], body: S["plan.leave.body"], yes: S["plan.leave.yes"], no: S["plan.leave.no"] });
   var step = 1, dirty = false, saved = false, today = todayDate();
@@ -115,7 +120,7 @@ export function createGoalPlanFlow(o) {
   /* ---- step 2 ---- */
   function trackRowHtml(t) {
     return '<div class="pln-track" data-id="' + t.id + '"><button type="button" class="pln-trackhead" role="radio" aria-checked="false" aria-expanded="false">' +
-      '<span class="pln-radio" aria-hidden="true"></span><span class="pln-trackname">' + esc(t.labelHe) + "</span>" +
+      '<span class="pln-radio" aria-hidden="true"></span><span class="pln-trackname">' + esc(t.labelHe.length <= 8 ? t.labelHe.replace(/ /g, "\u00a0") : t.labelHe) + "</span>" +
       (t.risk ? '<span class="pln-risk r-' + t.risk + '">' + esc(S["plan.risk." + t.risk]) + "</span>" : "") +
       '<span class="pln-amt"><bdi class="pln-amtnum"></bdi><small>' + esc(S["plan.perMonth"]) + '</small></span><span class="pln-chev" aria-hidden="true">⌄</span></button>' +
       '<div class="pln-bartrack" aria-hidden="true"><i></i></div>' +
@@ -176,7 +181,7 @@ export function createGoalPlanFlow(o) {
     $("#pln-pola").innerHTML = pic.image ? '<img src="' + esc(pic.image) + '" alt="" width="56" height="56">' : '<span class="pln-emoji">' + esc(pic.emoji) + "</span>";
     $("#pln-goalname").textContent = readStep1().name;
     $("#pln-goaldate").textContent = mmYYYY(parseISODate(st.dateISO));
-    $("#pln-goalamt").innerHTML = esc(S["plan.goal.target"]) + " <bdi>" + esc(money(st.T)) + "</bdi>";
+    $("#pln-goalamt").innerHTML = '<span class="pln-tag-w">' + esc(S["plan.goal.target"]) + "</span> <bdi>" + esc(money(st.T)) + "</bdi>";
     $("#pln-goalin").textContent = fill(S["plan.goal.in"], { dur: durText(st.months) });
     paintTracks();
   }
