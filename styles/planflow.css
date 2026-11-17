@@ -39,7 +39,8 @@
 .pln-radio { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--color-text-faint); position: relative; }
 .pln-track.sel .pln-radio { border-color: var(--accent-gold); }
 .pln-track.sel .pln-radio::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--accent-gold); }
-.pln-namecol { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+/* name and risk tag on one line; the tag drops below only when the name leaves no room */
+.pln-namecol { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
 .pln-trackname { font-size: 15px; font-weight: 600; line-height: 1.3; }
 /* risk tag: the riskier the track, the redder (high = coral, mid = gold, low = mint); three-step signal */
 .pln-risk { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 500; line-height: 1.4; white-space: nowrap; color: var(--rk); background: color-mix(in srgb, var(--rk) 14%, transparent); border: 1px solid color-mix(in srgb, var(--rk) 35%, transparent); }
