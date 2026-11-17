@@ -1,6 +1,6 @@
 import { esc, fromHTML, uid } from "../lib/dom.js";
 import { diffMembers, hasChanges, permissionsOf } from "../lib/share.js";
-import { toISODate, netReturnPct } from "../lib/calc.js";
+import { toISODate, netReturnPct, parseISODate } from "../lib/calc.js";
 import { todayDate, fmtAmountInput, parseAmount } from "../lib/format.js";
 import { S } from "../strings.js";
 import { TRACKS, EMOJI_SUGGESTED, trackById } from "../data/tracks.js";
@@ -9,7 +9,7 @@ import { Button, IconButton } from "./ui/Button.js";
 import { createModal } from "./ui/Modal.js";
 import { IconPicker, wireIconPicker } from "./IconPicker.js";
 import { updatePlanSummary } from "./PlanSummary.js";
-import { trackTagText } from "./TrackTag.js";
+import { createTrackPicker } from "./TrackPicker.js";
 import { PRESET_ICONS } from "../data/presetIcons.js";
 import { createSharingSection } from "./SharingSection.js";
 
@@ -28,12 +28,9 @@ export function createGoalForm(o) {
     Field({ id: IDS.target, label: S["form.target"], type: "text", num: true, attrs: 'inputmode="decimal" autocomplete="off"' }) +
     Field({ id: IDS.initial, label: S["form.initial"], type: "text", num: true, attrs: 'inputmode="decimal" autocomplete="off"' }) + "</div>" +
     Field({ id: IDS.monthly, label: S["form.monthly"], type: "text", num: true, attrs: 'inputmode="decimal" autocomplete="off"' }) +
-    '<div class="row2">' +
-    Field({ id: "gf-track", label: S["form.track"], control: '<select class="input" id="gf-track">' + TRACKS.map(function (t) { return '<option value="' + t.id + '">' + esc(t.labelHe) + "</option>"; }).join("") + "</select>" }) +
-    Field({ id: IDS.ret, label: S["form.return"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="100" step="any"' }) + "</div>" +
-    Field({ id: IDS.fee, label: S["form.fee"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="10" step="any"' }) +
-    '<div class="track-tag-row"><span class="tag" id="gf-track-tag"></span> <span class="hint" id="gf-net"></span></div>' +
-    '<div class="hint" id="gf-track-hint" style="margin: -6px 0 14px;" hidden></div>' +
+    '<input type="hidden" id="gf-track">' +
+    '<div id="gf-track-slot"></div>' +
+    '<div class="hint" id="gf-track-hint" style="margin: 6px 0 14px;" hidden></div>' +
     Field({ id: IDS.start, label: S["form.startDate"], type: "date", num: true }) +
     '<div id="gf-sharing-slot"></div><p class="hint" id="gf-readonly" hidden>' + esc(S["share.readonly"]) + "</p>" +
     '<div class="summary" id="gf-summary" aria-live="polite"></div>' +
@@ -42,6 +39,14 @@ export function createGoalForm(o) {
     Button({ id: "gf-delete", variant: "danger", label: S["action.delete"], hidden: true }) + "</div></form>");
   var $ = function (id) { return form.querySelector("#" + id); };
   var modal = createModal({ sheet: form });
+  /* Return and fee live in the selected track's open row: return - fee = net. */
+  var eq = fromHTML('<div class="pln-eq">' +
+    Field({ id: IDS.ret, label: S["plan.track.returnShort"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="100" step="any"' }) +
+    '<span class="pln-op" aria-hidden="true">\u2212</span>' +
+    Field({ id: IDS.fee, label: S["plan.track.feeShort"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="10" step="any"' }) +
+    '<span class="pln-op" aria-hidden="true">=</span><span class="pln-netchip" id="gf-netchip" aria-live="polite"></span></div>');
+  var tracks = createTrackPicker({ eq: eq, onSelect: function (id) { selectTrack(id); } });
+  $("gf-track-slot").appendChild(tracks.el);
   var picker = wireIconPicker(form, EMOJI_SUGGESTED, function () { refresh(); });
   var sharing = o.sharing ? createSharingSection({ ownEmail: function () { return o.ownEmail ? o.ownEmail() : ""; } }) : null;
   if (sharing) $("gf-sharing-slot").appendChild(sharing.el);
@@ -75,8 +80,10 @@ export function createGoalForm(o) {
     ORDER.forEach(function (k) { setFieldError(form, IDS[k], errs[k] && (attempted || touched[k]) ? errs[k] : ""); });
     var core = !errs.target && !errs.initial && !errs.monthly && !errs.ret && !errs.fee && !errs.start;
     var net = core || (!errs.ret && !errs.fee) ? netReturnPct(v.ret, v.fee) : "";
-    $("gf-track-tag").textContent = trackTagText($("gf-track").value, net);
-    $("gf-net").textContent = net === "" ? "" : S["form.net"].replace("{pct}", String(net));
+    $("gf-netchip").textContent = net === "" ? "\u2014" : S["plan.netTag"].replace("{pct}", String(net));
+    var tr = trackById($("gf-track").value), start = v.start ? parseISODate(v.start) : todayDate();
+    tracks.paint({ selectedId: $("gf-track").value, ready: !errs.target && !errs.initial && !errs.monthly && v.target > 0, T: v.target, P: v.initial, PMT: v.monthly, start: start,
+      ret: errs.ret || errs.fee ? NaN : v.ret, fee: v.fee, edited: tr.defaultReturnPct !== v.ret || tr.defaultFeePct !== v.fee });
     return { errs: errs, plan: updatePlanSummary($("gf-summary"), v, core, { image: picker.get().image, emoji: picker.get().emoji, trackId: $("gf-track").value }) };
   }
   function trackHint() {
@@ -94,19 +101,19 @@ export function createGoalForm(o) {
     ORDER.forEach(function (k) { if (IDS[k] === ev.target.id) touched[k] = true; });
     refresh();
   });
-  $("gf-track").addEventListener("change", function () {
-    state.trackId = this.value;
-    var t = trackById(this.value);
+  function selectTrack(id) {
+    $("gf-track").value = id; state.trackId = id;
+    var t = trackById(id);
     $(IDS.ret).value = t.defaultReturnPct === null ? "" : t.defaultReturnPct;
     $(IDS.fee).value = t.defaultFeePct;
     trackHint(); refresh();
-  });
+  }
   form.addEventListener("submit", function (ev) {
     ev.preventDefault();
     attempted = true;
     var r = refresh();
     var first = ORDER.find(function (k) { return r.errs[k]; });
-    if (first) { $(IDS[first]).focus(); return; }
+    if (first) { if (first === "ret" || first === "fee") tracks.open($("gf-track").value); $(IDS[first]).focus(); return; }
     if (!r.plan || r.plan.status === "unreachable" || r.plan.status === "tooFar") { $("gf-summary").scrollIntoView({ block: "nearest" }); return; }
     if (!perms.canEdit) return;
     var v = read(), icon = picker.get();
@@ -140,14 +147,14 @@ export function createGoalForm(o) {
       $(IDS.target).value = fmtAmountInput(state.targetAmount);
       $(IDS.initial).value = state.initialAmount === 0 ? "" : fmtAmountInput(state.initialAmount);
       $(IDS.monthly).value = fmtAmountInput(state.monthlyDeposit);
-      $("gf-track").value = state.trackId;
+      $("gf-track").value = state.trackId; tracks.open(null);
       $(IDS.ret).value = state.annualReturnPct === null || state.annualReturnPct === "" ? "" : state.annualReturnPct;
       $(IDS.fee).value = state.managementFeePct === undefined || state.managementFeePct === null ? 0 : state.managementFeePct;
       $(IDS.start).value = state.startDate;
       picker.set({ emoji: state.emoji, image: state.image });
       perms = permissionsOf(editing ? state : null);
       Array.prototype.forEach.call(form.querySelectorAll("input:not([type=file]), select#gf-track"), function (i) { if (!i.closest(".sharing")) i.disabled = !perms.canEdit; });
-      picker.setDisabled(!perms.canEdit);
+      picker.setDisabled(!perms.canEdit); tracks.setDisabled(!perms.canEdit);
       $("gf-save").hidden = !perms.canEdit; $("gf-save").disabled = false;
       $("gf-readonly").hidden = perms.canEdit;
       if (sharing) { sharing.set(editing ? state.members : [], perms.canManageSharing, editing && !!state.isPublic, editing ? null : presetMode); sharing.el.hidden = !perms.canManageSharing && !(state.members && state.members.length); }

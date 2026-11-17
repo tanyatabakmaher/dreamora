@@ -9,21 +9,13 @@ import { Button } from "./ui/Button.js";
 import { createModal } from "./ui/Modal.js";
 import { createConfirm } from "./ConfirmDialog.js";
 import { IconPicker, wireIconPicker } from "./IconPicker.js";
+import { heat, mmYYYY } from "../lib/heat.js";
 
 /* "How much to deposit?" flow: a fixed target date, then the monthly deposit each track needs to reach it.
    Step 1: name, picture, target amount, target date. Step 2: starting amount + one track (rows show the deposit and a bar relative to the other tracks; the open row edits return and fee for this goal only).
    Step 3: summary and save. onSave(goal, null) is the same save the regular goal form uses. open(openerEl). */
 var MAX_MONTHS = 600;
-function mmYYYY(d) { return String(d.getMonth() + 1).padStart(2, "0") + "/" + d.getFullYear(); }
 function numOrNaN(v) { return v === "" || v === null || v === undefined ? NaN : Number(parseAmount(v)); }
-/* Deposit size as colour: cheap = mint, middle = gold, expensive = coral (all from the app palette). */
-var HEAT = ["#78CEB2", "#EBCB88", "#F2A08F"];
-function heat(pct) {
-  var x = Math.max(0, Math.min(100, pct)) / 100 * 2, i = Math.min(1, Math.floor(x)), f = x - i;
-  function ch(c, k) { return parseInt(c.slice(1 + k * 2, 3 + k * 2), 16); }
-  var out = [0, 1, 2].map(function (k) { return Math.round(ch(HEAT[i], k) + (ch(HEAT[i + 1], k) - ch(HEAT[i], k)) * f); });
-  return "rgb(" + out.join(",") + ")";
-}
 function fill(t, m) { return Object.keys(m).reduce(function (s, k) { return s.replace("{" + k + "}", m[k]); }, t); }
 
 export function createGoalPlanFlow(o) {

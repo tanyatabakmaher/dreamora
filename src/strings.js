@@ -188,6 +188,7 @@ export const S = {
   "plan.disclaimer": "התחזית מבוססת על ההנחות שהוזנו ואינה מובטחת.",
   "plan.leave.title": "לצאת בלי לשמור?", "plan.leave.body": "המטרה עוד לא נשמרה.", "plan.leave.yes": "יציאה בלי לשמור", "plan.leave.no": "להמשיך לערוך",
   "disclaimer": "התשואות המוצגות הן הערכה בלבד, אינן הבטחה ואינן מהוות ייעוץ השקעות.",
+  "track.lead": "בחרו מסלול ותראו מתי תגיעו ליעד", "track.dur.m": "בעוד {n} חודשים", "track.dur.m1": "בעוד חודש", "track.dur.m2": "בעוד חודשיים", "track.dur.y1": "בעוד שנה", "track.dur.y2": "בעוד שנתיים", "track.dur.y": "בעוד {n} שנים", "track.achieved": "הושג כבר", "track.unreachable": "לא מגיעים", "track.tooFar": "רחוק מדי",
   "track.hint.age50": "מסלול גמל או פנסיה. כספים אלה בדרך כלל נעולים לתקופה ארוכה",
   "summary.prefix": "תגיעו ליעד בעוד ",
   "summary.targetDate": "תאריך יעד משוער: ",

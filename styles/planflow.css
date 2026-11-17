@@ -121,3 +121,9 @@
 .pln-eqfoot .pln-delta { min-width: 0; }
 .pln-eq .input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .pln-eq .input::-webkit-outer-spin-button, .pln-eq .input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* Track list inside the regular goal form */
+.pln-formtracks { margin-bottom: var(--space-8); }
+.pln-lead { display: flex; flex-direction: column; gap: 2px; margin: 0 0 var(--space-8); }
+.pln-lead b { font-size: 14px; font-weight: 500; line-height: 1.5; }
+.pln-lead span { font-size: 12px; color: var(--color-text-muted); }
