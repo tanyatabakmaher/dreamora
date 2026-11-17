@@ -181,6 +181,7 @@ export const S = {
   "plan.s3.initial": "סכום התחלתי", "plan.s3.deposits": "הפקדות", "plan.s3.returns": "תשואה נטו",
   "plan.s3.track": "מסלול", "plan.s3.save": "שמירה",
   "plan.netTag": "{pct}% נטו",
+  "plan.hdr.pick": "בחרו מסלול", "plan.hdr.start": "התחלתי {amt}", "plan.hdr.deposits": "הפקדות {amt}", "plan.hdr.returns": "תשואה {amt}",
   "plan.goal.until": "תאריך יעד", "plan.goal.target": "יעד", "plan.goal.in": "בעוד {dur}",
   "plan.disclaimer": "התחזית מבוססת על ההנחות שהוזנו ואינה מובטחת.",
   "plan.leave.title": "לצאת בלי לשמור?", "plan.leave.body": "המטרה עוד לא נשמרה.", "plan.leave.yes": "יציאה בלי לשמור", "plan.leave.no": "להמשיך לערוך",

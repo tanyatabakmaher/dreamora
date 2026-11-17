@@ -39,8 +39,11 @@ export function createGoalPlanFlow(o) {
     Field({ id: "pln-date", label: S["plan.date"], type: "date", num: true, hint: S["plan.date.hint"] }) +
     '<div class="actions">' + Button({ id: "pln-next1", label: S["plan.next"], grow: true }) + "</div></section>" +
     '<section class="pln-step" data-step="2" hidden>' +
-    '<div class="pln-ticket"><div class="pln-tk-main"><span class="pln-pola" id="pln-pola"></span><span class="pln-tk-text"><span class="pln-goalname" id="pln-goalname"></span><span class="pln-tag" id="pln-goalamt"></span></span></div>' +
-    '<div class="pln-tk-stub"><span class="pln-tk-lbl">' + esc(S["plan.goal.until"]) + '</span><span class="pln-tk-date" id="pln-goaldate"></span><span class="pln-tk-lbl" id="pln-goalin"></span></div></div>' +
+    '<div class="pln-hdr"><div class="pln-hd-top"><span class="pln-pola" id="pln-pola"></span><span class="pln-hd-text"><span class="pln-goalname" id="pln-goalname"></span><span class="pln-tag" id="pln-tracktag"></span>' +
+    '<span class="pln-hd-date"><span class="pln-hd-lbl">' + esc(S["plan.goal.until"]) + '</span><span class="pln-tk-date" id="pln-goaldate"></span></span></span></div>' +
+    '<div class="pln-cv"><div class="pln-cv-top"><span class="pln-cv-start" id="pln-cvstart"></span><span class="pln-flag"><span class="pln-flagico" aria-hidden="true">\u2691</span><bdi id="pln-cvtarget"></bdi></span></div>' +
+    '<div class="pln-cv-bar"><i id="pln-cvfill"></i></div>' +
+    '<div class="pln-cv-bot"><span id="pln-cvdep"></span><span id="pln-cvret"></span></div></div></div>' +
     '<h2 class="pln-title">' + esc(S["plan.s2.title"]) + '</h2><p class="pln-sub">' + esc(S["plan.s2.sub"]) + "</p>" +
     Field({ id: "pln-initial", label: S["plan.initial"], type: "text", num: true, attrs: 'inputmode="decimal" autocomplete="off"' }) +
     '<div class="pln-chip" id="pln-initialchip" hidden></div>' +
@@ -54,11 +57,6 @@ export function createGoalPlanFlow(o) {
     '<div class="actions">' + Button({ id: "pln-save", label: S["plan.s3.save"], grow: true }) + "</div></section></div>");
   var $ = function (sel) { return root.querySelector(sel); };
   var modal = createModal({ sheet: root });
-  /* The ticket notches sit on the dashed line, which moves with the width of the date part. */
-  if (window.ResizeObserver) {
-    var stub = root.querySelector(".pln-tk-stub"), tk = root.querySelector(".pln-ticket");
-    new ResizeObserver(function () { if (stub.offsetWidth) tk.style.setProperty("--pln-notch", stub.offsetWidth - 9 + "px"); }).observe(stub);
-  }
   var picker = wireIconPicker(root, EMOJI_SUGGESTED, function () { dirty = true; }, "plnp");
   var leave = createConfirm({ title: S["plan.leave.title"], body: S["plan.leave.body"], yes: S["plan.leave.yes"], no: S["plan.leave.no"] });
   var step = 1, dirty = false, saved = false, today = todayDate();
@@ -182,6 +180,20 @@ export function createGoalPlanFlow(o) {
       var zero = requiredDeposit(st.T, 0, cur.net, st.months), now = requiredDeposit(st.T, st.P, cur.net, st.months), save = zero.deposit - now.deposit;
       chip.hidden = !(save > 0); chip.textContent = save > 0 ? fill(S["plan.initial.saves"], { amt: money(save) }) : "";
     } else chip.hidden = true;
+    paintHeader(cur);
+  }
+  /* Header: the chosen track with its net return, and how much of the target the deposits cover (the rest is return). */
+  function paintHeader(cur) {
+    var tag = $("#pln-tracktag"), ok = cur && cur.deposit !== null && cur.net !== null;
+    var tr = ok ? TRACKS.find(function (t) { return t.id === cur.id; }) : null;
+    tag.classList.toggle("empty", !ok);
+    tag.innerHTML = ok ? esc(tr.labelHe) + ' <span class="pln-dot" aria-hidden="true">\u00b7</span> <bdi>' + esc(fill(S["plan.netTag"], { pct: String(cur.net) })) + "</bdi>" : esc(S["plan.hdr.pick"]);
+    var P = st.P > 0 ? st.P : 0, dep = ok ? P + cur.deposit * st.months : P;
+    var cover = Math.max(0, Math.min(100, st.T > 0 ? dep / st.T * 100 : 0));
+    $("#pln-cvfill").style.width = cover + "%";
+    $("#pln-cvstart").textContent = fill(S["plan.hdr.start"], { amt: money(P) });
+    $("#pln-cvdep").textContent = ok ? fill(S["plan.hdr.deposits"], { amt: money(Math.min(dep, st.T)) }) : "";
+    $("#pln-cvret").textContent = ok ? fill(S["plan.hdr.returns"], { amt: money(Math.max(0, st.T - dep)) }) : "";
   }
   function enterStep2() {
     if (!tracksBuilt) buildTracks();
@@ -189,8 +201,7 @@ export function createGoalPlanFlow(o) {
     $("#pln-pola").innerHTML = pic.image ? '<img src="' + esc(pic.image) + '" alt="" width="56" height="56">' : '<span class="pln-emoji">' + esc(pic.emoji) + "</span>";
     $("#pln-goalname").textContent = readStep1().name;
     $("#pln-goaldate").textContent = mmYYYY(parseISODate(st.dateISO));
-    $("#pln-goalamt").innerHTML = '<span class="pln-tag-w">' + esc(S["plan.goal.target"]) + "</span> <bdi>" + esc(money(st.T)) + "</bdi>";
-    $("#pln-goalin").textContent = fill(S["plan.goal.in"], { dur: durText(st.months) });
+    $("#pln-cvtarget").textContent = money(st.T);
     paintTracks();
   }
   $("#pln-initial").addEventListener("input", function () {
