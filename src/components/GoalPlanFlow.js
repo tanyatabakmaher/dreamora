@@ -123,11 +123,14 @@ export function createGoalPlanFlow(o) {
       (t.risk ? '<span class="pln-risk r-' + t.risk + '"><span class="pln-sig" aria-hidden="true"><i></i><i></i><i></i></span>' + esc(S["plan.risk." + t.risk]) + "</span>" : "") + "</span>" +
       '<span class="pln-side"><span class="pln-amt"><bdi class="pln-amtnum"></bdi><small>' + esc(S["plan.perMonth"]) + '</small></span></span></button>' +
       '<div class="pln-bartrack"><i aria-hidden="true"></i><span class="pln-barlbl"></span></div>' +
-      '<div class="pln-panel" hidden><div class="row2">' +
-      Field({ id: "pln-ret-" + t.id, label: S["plan.track.return"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="100" step="any"' }) +
-      Field({ id: "pln-fee-" + t.id, label: S["plan.track.fee"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="10" step="any"' }) + "</div>" +
-      '<div class="pln-net"></div><div class="pln-delta"></div>' +
-      '<div class="pln-panelfoot"><span class="pln-local">' + esc(S["plan.track.local"]) + '</span><button type="button" class="pln-link pln-reset" hidden>' + esc(S["plan.track.reset"]) + "</button></div></div></div>";
+      '<div class="pln-panel" hidden><div class="pln-eq">' +
+      Field({ id: "pln-ret-" + t.id, label: S["plan.track.returnShort"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="100" step="any"' }) +
+      '<span class="pln-op" aria-hidden="true">\u2212</span>' +
+      Field({ id: "pln-fee-" + t.id, label: S["plan.track.feeShort"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="10" step="any"' }) +
+      '<span class="pln-op" aria-hidden="true">=</span><span class="pln-netchip" aria-live="polite"></span></div>' +
+      '<div class="pln-net" hidden></div>' +
+      '<div class="pln-eqfoot" hidden><span class="pln-delta"></span><button type="button" class="pln-link pln-reset">' + esc(S["plan.track.reset"]) + "</button></div>" +
+      '<div class="pln-local">' + esc(S["plan.track.local"]) + "</div></div></div>";
   }
   function buildTracks() {
     $("#pln-tracks").innerHTML = TRACKS.map(trackRowHtml).join("");
@@ -166,11 +169,12 @@ export function createGoalPlanFlow(o) {
       lbl.style.insetInlineEnd = "auto";
       var net = el.querySelector(".pln-net"), delta = el.querySelector(".pln-delta"), reset = el.querySelector(".pln-reset");
       var retEmpty = $("#pln-ret-" + r.id).value === "";
-      net.textContent = r.net === null ? (retEmpty ? S["plan.track.needReturn"] : S["plan.track.badValues"]) : fill(S["plan.track.net"], { pct: String(r.net) });
+      net.hidden = r.net !== null; net.textContent = r.net === null ? (retEmpty ? S["plan.track.needReturn"] : S["plan.track.badValues"]) : "";
+      el.querySelector(".pln-netchip").textContent = r.net === null ? "\u2014" : fill(S["plan.netTag"], { pct: String(r.net) });
       var diff = r.deposit !== null && r.defaultDeposit !== null ? r.deposit - r.defaultDeposit : 0;
       delta.textContent = r.edited && diff !== 0 ? fill(S[diff > 0 ? "plan.track.delta.up" : "plan.track.delta.down"], { amt: money(Math.abs(diff)) }) : "";
       delta.className = "pln-delta" + (diff > 0 ? " up" : diff < 0 ? " down" : "");
-      reset.hidden = !r.edited;
+      reset.hidden = !r.edited; el.querySelector(".pln-eqfoot").hidden = !r.edited;
       setFieldError(root, "pln-ret-" + r.id, "" ); setFieldError(root, "pln-fee-" + r.id, "");
     });
     var cur = rows.find(function (r) { return r.id === st.trackId; });

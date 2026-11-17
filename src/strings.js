@@ -181,6 +181,7 @@ export const S = {
   "plan.s3.until": "עד {date}", "plan.s3.months": "{dur} של חיסכון",
   "plan.s3.initial": "סכום התחלתי", "plan.s3.deposits": "הפקדות", "plan.s3.returns": "תשואה נטו",
   "plan.s3.track": "מסלול", "plan.s3.save": "שמירה",
+  "plan.track.returnShort": "תשואה (%)", "plan.track.feeShort": "דמי ניהול (%)",
   "plan.netTag": "{pct}% נטו",
   "plan.hdr.hint": "בחרו מסלול כדי לראות את תוכנית ההפקדות", "plan.hdr.tgtchip": "יעד {amt}", "plan.hdr.start": "התחלתי {amt}", "plan.hdr.deposits": "הפקדות {amt}", "plan.hdr.returns": "תשואה {amt}",
   "plan.goal.until": "תאריך יעד", "plan.goal.target": "יעד", "plan.goal.in": "בעוד {dur}",
