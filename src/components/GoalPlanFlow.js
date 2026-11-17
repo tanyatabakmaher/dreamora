@@ -120,9 +120,9 @@ export function createGoalPlanFlow(o) {
   /* ---- step 2 ---- */
   function trackRowHtml(t) {
     return '<div class="pln-track" data-id="' + t.id + '"><button type="button" class="pln-trackhead" role="radio" aria-checked="false" aria-expanded="false">' +
-      '<span class="pln-radio" aria-hidden="true"></span><span class="pln-trackname">' + esc(t.labelHe.length <= 8 ? t.labelHe.replace(/ /g, "\u00a0") : t.labelHe) + "</span>" +
-      (t.risk ? '<span class="pln-risk r-' + t.risk + '">' + esc(S["plan.risk." + t.risk]) + "</span>" : "") +
-      '<span class="pln-amt"><bdi class="pln-amtnum"></bdi><small>' + esc(S["plan.perMonth"]) + '</small></span><span class="pln-chev" aria-hidden="true">⌄</span></button>' +
+      '<span class="pln-radio" aria-hidden="true"></span><span class="pln-namecol"><span class="pln-trackname">' + esc(t.labelHe.length <= 8 ? t.labelHe.replace(/ /g, "\u00a0") : t.labelHe) + "</span>" +
+      (t.risk ? '<span class="pln-risk r-' + t.risk + '"><span class="pln-sig" aria-hidden="true"><i></i><i></i><i></i></span>' + esc(S["plan.risk." + t.risk]) + "</span>" : "") + "</span>" +
+      '<span class="pln-side"><span class="pln-amt"><bdi class="pln-amtnum"></bdi><small>' + esc(S["plan.perMonth"]) + '</small></span><span class="pln-nettag"></span></span></button>' +
       '<div class="pln-bartrack" aria-hidden="true"><i></i></div>' +
       '<div class="pln-panel" hidden><div class="row2">' +
       Field({ id: "pln-ret-" + t.id, label: S["plan.track.return"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="100" step="any"' }) +
@@ -153,6 +153,10 @@ export function createGoalPlanFlow(o) {
       var head = el.querySelector(".pln-trackhead");
       head.setAttribute("aria-checked", String(sel)); head.setAttribute("aria-expanded", String(open));
       el.querySelector(".pln-panel").hidden = !open;
+      var nt = el.querySelector(".pln-nettag");
+      nt.textContent = r.net === null ? S["plan.none"] : (r.edited ? "✎ " : "") + fill(S["plan.netTag"], { pct: String(r.net) });
+      nt.classList.toggle("edited", r.edited);
+      nt.hidden = r.net === null;
       el.querySelector(".pln-amtnum").textContent = r.deposit === null ? S["plan.none"] : r.status === "achieved" ? S["plan.achieved"] : money(r.deposit);
       var fillEl = el.querySelector(".pln-bartrack i"), col = heat(hi > lo && r.deposit !== null ? (r.deposit - lo) / (hi - lo) * 100 : 0), amtEl = el.querySelector(".pln-amt");
       fillEl.style.width = r.deposit === null ? "0%" : Math.max(r.deposit > 0 ? 3 : 0, r.barPct) + "%";

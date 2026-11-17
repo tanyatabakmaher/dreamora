@@ -39,13 +39,20 @@
 .pln-radio { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--color-text-faint); position: relative; }
 .pln-track.sel .pln-radio { border-color: var(--accent-gold); }
 .pln-track.sel .pln-radio::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--accent-gold); }
-.pln-trackname { flex: 1; min-width: 0; font-size: 15px; font-weight: 600; line-height: 1.3; }
-.pln-risk { flex: none; padding: 1px var(--space-8); border-radius: var(--radius-pill); font-size: 11px; font-weight: 500; line-height: 1.6; background: var(--color-input-bg); }
-.pln-risk.r-high { color: #F2A08F; } .pln-risk.r-mid { color: var(--accent-gold); } .pln-risk.r-low { color: var(--accent-mint); }
-.pln-amt { flex: none; display: flex; align-items: baseline; gap: 4px; font-weight: 700; font-size: 16px; }
+.pln-namecol { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+.pln-trackname { font-size: 15px; font-weight: 600; line-height: 1.3; }
+/* risk tag: the riskier the track, the redder (high = coral, mid = gold, low = mint); three-step signal */
+.pln-risk { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: var(--radius-pill); font-size: 12px; font-weight: 500; line-height: 1.4; white-space: nowrap; color: var(--rk); background: color-mix(in srgb, var(--rk) 14%, transparent); border: 1px solid color-mix(in srgb, var(--rk) 35%, transparent); }
+.pln-risk.r-high { --rk: #F2A08F; } .pln-risk.r-mid { --rk: var(--accent-gold); } .pln-risk.r-low { --rk: var(--accent-mint-strong, #78CEB2); }
+.pln-sig { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; }
+.pln-sig i { display: block; width: 3px; border-radius: 1px; background: color-mix(in srgb, var(--rk) 35%, transparent); }
+.pln-sig i:nth-child(1) { height: 5px; } .pln-sig i:nth-child(2) { height: 8px; } .pln-sig i:nth-child(3) { height: 11px; }
+.pln-risk.r-low .pln-sig i:nth-child(1), .pln-risk.r-mid .pln-sig i:nth-child(-n+2), .pln-risk.r-high .pln-sig i { background: var(--rk); }
+.pln-side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.pln-nettag[hidden] { display: none; }
+.pln-nettag { padding: 2px 8px; border-radius: var(--radius-pill); font-size: 12px; line-height: 1.5; white-space: nowrap; background: rgba(121, 227, 200, 0.12); color: #A6E7D6; }
+.pln-amt { flex: none; display: flex; align-items: baseline; gap: 4px; font-weight: 700; font-size: 16px; white-space: nowrap; }
 .pln-amt small { font-size: 11px; font-weight: 400; color: var(--color-text-muted); }
-.pln-chev { flex: none; color: var(--color-text-muted); transition: transform .2s ease; }
-.pln-track.open .pln-chev { transform: rotate(180deg); }
 .pln-bartrack { height: 6px; margin: 4px var(--space-12) var(--space-12); border-radius: 3px; background: #334B63; overflow: hidden; }
 .pln-bartrack i { display: block; height: 100%; border-radius: 3px; transition: width .25s ease; }
 .pln-panel { padding: 0 var(--space-12) var(--space-12); border-top: 1px solid var(--color-border); padding-top: var(--space-12); }
@@ -72,7 +79,7 @@
 .pln-legend { display: flex; flex-wrap: wrap; gap: var(--space-8) var(--space-16); margin: var(--space-8) 0 var(--space-16); font-size: 13px; color: var(--color-text-muted); }
 .pln-legend b { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-inline-end: 6px; }
 .pln-disc { margin: 0; font-size: 12px; color: var(--color-text-faint); text-align: center; }
-@media (prefers-reduced-motion: reduce) { .pln-bartrack i, .pln-chev, .pln-bar { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .pln-bartrack i, .pln-bar { transition: none; } }
 /* plain buttons: drop the global button frame */
 .pln-bar, .pln-link, .pln-trackhead { border: 0; box-shadow: none; font-family: inherit; }
 .pln-trackhead { border-radius: 0; }
@@ -81,3 +88,4 @@
 /* narrow phones: the word "target" leaves the amount tag, the picture shrinks, so no word or number is ever split */
 @container (max-width: 340px) { .pln-tag-w { display: none; } .pln-tk-main { gap: 8px; padding-inline: 10px; } .pln-pola { width: 46px; } .pln-tk-stub { padding-inline: 10px; } }
 @container (max-width: 320px) { .pln-amt small { display: none; } .pln-trackhead { gap: 6px; } }
+.pln-panelfoot { flex-wrap: wrap; } .pln-reset { white-space: nowrap; }
