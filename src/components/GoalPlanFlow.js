@@ -40,8 +40,9 @@ export function createGoalPlanFlow(o) {
     '<div class="actions">' + Button({ id: "pln-next1", label: S["plan.next"], grow: true }) + "</div></section>" +
     '<section class="pln-step" data-step="2" hidden>' +
     '<div class="pln-hdr"><div class="pln-hd-top"><span class="pln-pola" id="pln-pola"></span><span class="pln-hd-text"><span class="pln-goalname" id="pln-goalname"></span><span class="pln-tag" id="pln-tracktag"></span>' +
-    '<span class="pln-hd-date"><span class="pln-hd-lbl">' + esc(S["plan.goal.until"]) + '</span><span class="pln-tk-date" id="pln-goaldate"></span></span></span></div>' +
-    '<div class="pln-cv"><div class="pln-cv-top"><span class="pln-cv-start" id="pln-cvstart"></span><span class="pln-flag"><span class="pln-flagico" aria-hidden="true">\u2691</span><bdi id="pln-cvtarget"></bdi></span></div>' +
+    '<span class="pln-hd-date"><span class="pln-hd-lbl">' + esc(S["plan.goal.until"]) + '</span><span class="pln-tk-date" id="pln-goaldate"></span></span><span class="pln-tgtchip" id="pln-tgtchip"><span class="pln-flagico" aria-hidden="true">\u2691</span><bdi id="pln-tgtchiptxt"></bdi></span></span></div>' +
+    '<div class="pln-hint" id="pln-hdhint"><span aria-hidden="true">\u2193</span> ' + esc(S["plan.hdr.hint"]) + '</div>' +
+    '<div class="pln-cv" id="pln-cv"><div class="pln-cv-top"><span class="pln-cv-start" id="pln-cvstart"></span><span class="pln-flag"><span class="pln-flagico" aria-hidden="true">\u2691</span><bdi id="pln-cvtarget"></bdi></span></div>' +
     '<div class="pln-cv-bar"><i id="pln-cvfill"></i></div>' +
     '<div class="pln-cv-bot"><span id="pln-cvdep"></span><span id="pln-cvret"></span></div></div></div>' +
     '<h2 class="pln-title">' + esc(S["plan.s2.title"]) + '</h2><p class="pln-sub">' + esc(S["plan.s2.sub"]) + "</p>" +
@@ -186,8 +187,9 @@ export function createGoalPlanFlow(o) {
   function paintHeader(cur) {
     var tag = $("#pln-tracktag"), ok = cur && cur.deposit !== null && cur.net !== null;
     var tr = ok ? TRACKS.find(function (t) { return t.id === cur.id; }) : null;
-    tag.classList.toggle("empty", !ok);
-    tag.innerHTML = ok ? esc(tr.labelHe) + ' <span class="pln-dot" aria-hidden="true">\u00b7</span> <bdi>' + esc(fill(S["plan.netTag"], { pct: String(cur.net) })) + "</bdi>" : esc(S["plan.hdr.pick"]);
+    /* No track yet: just the target chip and a hint. With a track: the tag and the coverage bar. */
+    tag.hidden = !ok; $("#pln-cv").hidden = !ok; $("#pln-tgtchip").hidden = ok; $("#pln-hdhint").hidden = ok;
+    if (ok) tag.innerHTML = esc(tr.labelHe) + ' <span class="pln-dot" aria-hidden="true">\u00b7</span> <bdi>' + esc(fill(S["plan.netTag"], { pct: String(cur.net) })) + "</bdi>";
     var P = st.P > 0 ? st.P : 0, dep = ok ? P + cur.deposit * st.months : P;
     var cover = Math.max(0, Math.min(100, st.T > 0 ? dep / st.T * 100 : 0));
     $("#pln-cvfill").style.width = cover + "%";
@@ -202,6 +204,7 @@ export function createGoalPlanFlow(o) {
     $("#pln-goalname").textContent = readStep1().name;
     $("#pln-goaldate").textContent = mmYYYY(parseISODate(st.dateISO));
     $("#pln-cvtarget").textContent = money(st.T);
+    $("#pln-tgtchiptxt").textContent = fill(S["plan.hdr.tgtchip"], { amt: money(st.T) });
     paintTracks();
   }
   $("#pln-initial").addEventListener("input", function () {
