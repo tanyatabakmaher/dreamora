@@ -39,8 +39,8 @@ export function createGoalPlanFlow(o) {
     Field({ id: "pln-date", label: S["plan.date"], type: "date", num: true, hint: S["plan.date.hint"] }) +
     '<div class="actions">' + Button({ id: "pln-next1", label: S["plan.next"], grow: true }) + "</div></section>" +
     '<section class="pln-step" data-step="2" hidden>' +
-    '<div class="pln-goalhead"><span class="pln-pola" id="pln-pola"></span><span class="pln-goaltext"><span class="pln-goalname" id="pln-goalname"></span>' +
-    '<span class="pln-goaldate" id="pln-goaldate"></span><span class="pln-goalamt" id="pln-goalamt"></span></span></div>' +
+    '<div class="pln-ticket"><div class="pln-tk-main"><span class="pln-pola" id="pln-pola"></span><span class="pln-tk-text"><span class="pln-goalname" id="pln-goalname"></span><span class="pln-tag" id="pln-goalamt"></span></span></div>' +
+    '<div class="pln-tk-stub"><span class="pln-tk-lbl">' + esc(S["plan.goal.until"]) + '</span><span class="pln-tk-date" id="pln-goaldate"></span><span class="pln-tk-lbl" id="pln-goalin"></span></div></div>' +
     '<h2 class="pln-title">' + esc(S["plan.s2.title"]) + '</h2><p class="pln-sub">' + esc(S["plan.s2.sub"]) + "</p>" +
     Field({ id: "pln-initial", label: S["plan.initial"], type: "text", num: true, attrs: 'inputmode="decimal" autocomplete="off"' }) +
     '<div class="pln-chip" id="pln-initialchip" hidden></div>' +
@@ -175,8 +175,9 @@ export function createGoalPlanFlow(o) {
     var pic = picker.get();
     $("#pln-pola").innerHTML = pic.image ? '<img src="' + esc(pic.image) + '" alt="" width="56" height="56">' : '<span class="pln-emoji">' + esc(pic.emoji) + "</span>";
     $("#pln-goalname").textContent = readStep1().name;
-    $("#pln-goaldate").innerHTML = '<small>' + esc(S["plan.goal.until"]) + "</small> <bdi>" + esc(mmYYYY(parseISODate(st.dateISO))) + "</bdi>";
-    $("#pln-goalamt").innerHTML = "<bdi>" + esc(money(st.T)) + "</bdi>";
+    $("#pln-goaldate").textContent = mmYYYY(parseISODate(st.dateISO));
+    $("#pln-goalamt").innerHTML = esc(S["plan.goal.target"]) + " <bdi>" + esc(money(st.T)) + "</bdi>";
+    $("#pln-goalin").textContent = fill(S["plan.goal.in"], { dur: durText(st.months) });
     paintTracks();
   }
   $("#pln-initial").addEventListener("input", function () {
