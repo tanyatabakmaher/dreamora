@@ -240,8 +240,8 @@
 @media (min-width: 1024px) { .wrap { max-width: 1160px; } .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 /* Picture picker: every picture is a small polaroid; the selected one straightens and lifts */
-.pol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 16px 10px; padding: 8px 4px 4px; }
-.pol-cell { position: relative; }
+.pol-grid { --pol-w: 76px; display: grid; grid-template-columns: repeat(auto-fill, var(--pol-w)); justify-content: space-between; gap: 16px 8px; padding: 8px 4px 4px; }
+.pol-cell { position: relative; width: var(--pol-w); }
 .pol-grid .pic-opt { display: block; width: 100%; height: auto; padding: 3px 3px 10px; overflow: visible; border: 0; border-radius: 2px; background: var(--polaroid, #f4efe6); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.45); transform: rotate(-3deg); transition: transform 0.15s ease, box-shadow 0.15s ease; }
 .pol-grid .pol-cell:nth-child(4n+2) .pic-opt { transform: rotate(2.5deg); }
 .pol-grid .pol-cell:nth-child(4n+3) .pic-opt { transform: rotate(-1.5deg); }
@@ -251,7 +251,7 @@
 .pol-grid .pic-opt[aria-pressed="true"] { transform: rotate(0) scale(1.06); background: var(--polaroid, #f4efe6); box-shadow: 0 0 0 2px var(--color-focus), 0 6px 12px rgba(0, 0, 0, 0.5), 0 0 14px 1px var(--aurora-glow); }
 .pol-grid .pic-opt[aria-pressed="true"]::after { top: -7px; inset-inline-end: -7px; width: 16px; height: 16px; line-height: 16px; font-size: 10px; font-weight: 700; z-index: 1; }
 .pol-emoji span { display: grid; place-items: center; aspect-ratio: 1; font-size: 26px; background: #E8E1D2; border-radius: 1px; }
-.pol-upload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 100%; aspect-ratio: 1 / 1.2; padding: 4px; border: 1.5px dashed #6C8497; border-radius: 2px; background: transparent; color: #A9BDCB; font-family: inherit; font-size: 11px; line-height: 1.2; text-align: center; box-shadow: none; }
+.pol-upload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 100%; height: calc(var(--pol-w) + 7px); padding: 4px; border: 1.5px dashed #6C8497; border-radius: 2px; background: transparent; color: #A9BDCB; font-family: inherit; font-size: 11px; line-height: 1.2; text-align: center; box-shadow: none; }
 .pol-upload:hover { border-color: var(--color-focus); color: #DDE8F2; }
 .pol-plus { font-size: 20px; line-height: 1; }
 .pol-remove { position: absolute; top: -7px; inset-inline-start: -7px; z-index: 2; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: #F2A08F; color: #10202C; font-size: 10px; font-weight: 700; line-height: 18px; text-align: center; }

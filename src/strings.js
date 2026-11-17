@@ -48,6 +48,7 @@ export const S = {
   "form.emoji": "איך נראה החלום שלכם?",
   "form.image.upload": "העלאת תמונה",
   "form.image.replace": "החלפת תמונה",
+  "form.image.custom": "התמונה שהעליתם",
   "form.image.remove": "הסרת תמונה",
   "form.image.tooLarge": "התמונה גדולה מדי. נסו תמונה קטנה יותר",
   "error.storageFull": "אין מקום לשמירה. הסירו תמונה או מטרה ישנה",

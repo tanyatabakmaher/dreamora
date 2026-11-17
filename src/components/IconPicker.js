@@ -17,16 +17,16 @@ export function wireIconPicker(root, emojis, onChange, prefix) {
   var $ = function (id) { return root.querySelector("#" + id.replace(/^ip-/, P + "-")); };
   var value = { emoji: emojis[0], image: PRESET_ICONS[0].src };
   /* A goal saved earlier with an emoji outside the suggested set keeps it: it is shown as one more selected choice after the suggested ones. */
-  /* Every picture is a small polaroid. The uploaded picture (if any) comes first with a remove badge; the upload tile is the last cell. */
+  /* Every picture is a small polaroid, all the same size. The last cell is the upload tile; once a picture is uploaded it takes that place (with a remove badge). */
   function paint() {
     var preset = isPresetIcon(value.image), custom = !!value.image && !preset;
-    var html = custom ? '<div class="pol-cell"><button type="button" class="emoji-opt pic-opt" data-image="' + esc(value.image) + '" aria-label="' + esc(S["form.image.replace"]) + '" aria-pressed="true"><img src="' + esc(value.image) + '" alt=""></button>' +
-      '<button type="button" class="pol-remove" aria-label="' + esc(S["form.image.remove"]) + '">\u2715</button></div>' : "";
-    html += PRESET_ICONS.map(function (p) {
+    var html = PRESET_ICONS.map(function (p) {
       return '<div class="pol-cell"><button type="button" class="emoji-opt pic-opt" data-image="' + esc(p.src) + '" aria-label="' + esc(p.label) + '" aria-pressed="' + String(value.image === p.src) + '"><img src="' + esc(p.src) + '" alt=""></button></div>';
     }).join("");
     if (!value.image && value.emoji) html += '<div class="pol-cell"><button type="button" class="emoji-opt pic-opt pol-emoji" data-emoji="' + esc(value.emoji) + '" aria-pressed="true"><span>' + esc(value.emoji) + "</span></button></div>";
-    html += '<div class="pol-cell"><button type="button" class="pol-upload" id="' + P + '-upload"><span class="pol-plus" aria-hidden="true">\uff0b</span><span>' + esc(custom ? S["form.image.replace"] : S["form.image.upload"]) + "</span></button></div>";
+    html += custom ? '<div class="pol-cell"><button type="button" class="emoji-opt pic-opt" data-image="' + esc(value.image) + '" aria-label="' + esc(S["form.image.custom"]) + '" aria-pressed="true"><img src="' + esc(value.image) + '" alt=""></button>' +
+      '<button type="button" class="pol-remove" aria-label="' + esc(S["form.image.remove"]) + '">\u2715</button></div>'
+      : '<div class="pol-cell"><button type="button" class="pol-upload" id="' + P + '-upload"><span class="pol-plus" aria-hidden="true">\uff0b</span><span>' + esc(S["form.image.upload"]) + "</span></button></div>";
     $("ip-emoji").innerHTML = html;
   }
   $("ip-emoji").addEventListener("click", function (ev) {
