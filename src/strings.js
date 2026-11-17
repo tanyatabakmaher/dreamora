@@ -64,6 +64,7 @@ export const S = {
   "form.save": "שמירה",
   "form.cancel": "ביטול",
   "summary.title": "סיכום",
+  "loading.goals": "טוענים את המטרות שלכם",
   "summary.alreadyAchieved": "הסכום ההתחלתי כבר מכסה את היעד",
   "error.unreachable": "לא ניתן להגיע ליעד עם ההפקדה והתשואה הנוכחיות. הגדילו את ההפקדה החודשית",
   "error.tooFar": "היעד רחוק מדי (מעל 50 שנה). נסו להגדיל את ההפקדה החודשית",

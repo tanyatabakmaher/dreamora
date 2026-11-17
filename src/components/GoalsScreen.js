@@ -66,8 +66,8 @@ export function createGoalsScreen(o) {
     onLogout: function () { o.onLogout(); }
   });
   el.insertBefore(header.el, el.firstChild);
-  o.auth.getProfile().then(function (p) { profile = p; header.setProfile(p); if (typeof list !== "undefined") list.render(goals); }).catch(function () {});
-  var goals = [];
+  o.auth.getProfile().then(function (p) { profile = p; header.setProfile(p); if (typeof list !== "undefined" && loaded) list.render(goals); }).catch(function () {});
+  var goals = [], loaded = false; /* loaded: the first goals load has finished (until then the list shows the loader) */
   var list = createGoalList({
     canShare: function () { return !!o.sharing; },
     viewer: function () { return { name: profile.name, photo: profile.photo }; },
@@ -127,7 +127,7 @@ export function createGoalsScreen(o) {
     o.repo.load().catch(function () { showToast(S["load.failed"]); return []; }),
     o.notifRepo.load().catch(function () { return []; })
   ]); }).then(function (r) {
-    goals = r[0]; notifications = r[1];
+    goals = r[0]; notifications = r[1]; loaded = true;
     var mig = migrateGoals(goals, todayDate()); /* goals from before notifications: set silently, no history */
     goals = mig.goals;
     mig.changed.forEach(function (g) { o.repo.save(g).catch(function () {}); });

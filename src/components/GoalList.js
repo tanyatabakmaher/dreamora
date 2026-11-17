@@ -11,6 +11,13 @@ var FILTER_ICONS = { private: LockIcon, shared: UsersIcon, public: GlobeIcon };
 export function createGoalList(o) {
   var el = fromHTML('<main id="main"></main>');
   var goals = [], others = [], filter = "all"; /* others = public goals of other users, shown under the public filter only */
+  /* Shown until the first load finishes, so the empty state never flashes for someone who has goals. */
+  function showLoader() {
+    el.innerHTML = '<section class="goals-loader" role="status" aria-live="polite"><div class="gl-stack" aria-hidden="true">' +
+      '<span class="gl-pol gl-p1"><i></i></span><span class="gl-pol gl-p2"><i></i></span><span class="gl-pol gl-p3"><i></i></span></div>' +
+      '<p class="gl-text">' + S["loading.goals"] + '</p><div class="gl-dots" aria-hidden="true"><span></span><span></span><span></span></div></section>';
+  }
+  showLoader();
   function findGoal(id) { return goals.find(function (g) { return g.id === id; }) || others.find(function (g) { return g.id === id; }); }
   function render(list) {
     goals = list;
@@ -55,5 +62,5 @@ export function createGoalList(o) {
     if (card && ev.target === card) { ev.preventDefault(); o.onEdit(findGoal(card.dataset.id), card); }
   });
   function setOthers(list) { others = list || []; render(goals); }
-  return { el: el, render: render, setOthers: setOthers, reveal: reveal };
+  return { el: el, render: render, setOthers: setOthers, reveal: reveal, showLoader: showLoader };
 }
