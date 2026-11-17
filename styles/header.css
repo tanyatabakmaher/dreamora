@@ -30,3 +30,6 @@
 .bell-btn:hover, .bell-btn[aria-expanded="true"] { background: var(--color-surface-2); }
 .bell-btn .icon { width: 24px; height: 24px; }
 .bell-badge { position: absolute; top: 4px; right: 0; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--accent-gold); color: var(--color-on-primary); font-size: 11px; font-weight: 500; line-height: 18px; text-align: center; }
+
+/* Wide screens: same width as the three-column goals page */
+@media (min-width: 1024px) { .appbar-in { max-width: 1160px; } }

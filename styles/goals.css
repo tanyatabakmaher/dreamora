@@ -238,3 +238,6 @@
 @keyframes gl-img { 0% { background: #3A4F63; } 60%, 100% { background: #5DD3E8; } }
 @keyframes gl-dot { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .gl-pol, .gl-pol i, .gl-dots span { animation: none; } .gl-pol i { background: #5DD3E8; } }
+
+/* Wide screens: three goals per row (the page and the app bar get wider to fit them) */
+@media (min-width: 1024px) { .wrap { max-width: 1160px; } .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
