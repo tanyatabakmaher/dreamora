@@ -7,6 +7,8 @@ import { createNotificationsRepo } from "./services/notificationsRepo.js";
 import { createAuthScreen } from "./components/AuthScreen.js";
 import { showToast } from "./components/ui/Toast.js";
 import { createGoalsScreen } from "./components/GoalsScreen.js";
+import { createBudgetScreen } from "./components/BudgetScreen.js";
+import { createBudgetRepo } from "./services/budgetRepo.js";
 
 var root = document.getElementById("app");
 var auth = createAuth(CONFIG);
@@ -27,8 +29,13 @@ function showApp() {
     notifRepo: createNotificationsRepo(CONFIG),
     sharing: createSharingApi(CONFIG), /* null in demo mode: invitations are never simulated locally */
     auth: auth,
+    onBudget: showBudget,
     onLogout: function () { auth.signOut().then(function () { showAuth(); }).catch(function () { showToast(S["error.signOutFailed"]); }); }
   }));
+}
+
+function showBudget() {
+  mount(createBudgetScreen({ repo: createGoalsRepo(CONFIG), budgetRepo: createBudgetRepo(CONFIG), onBack: showApp }));
 }
 
 /* An email link that was already used or has expired comes back with an error in the address. */

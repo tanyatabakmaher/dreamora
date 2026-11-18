@@ -16,7 +16,7 @@ import { todayDate } from "../lib/format.js";
 import { migrateGoals, syncNotifications, unreadCount, markRead, markAllRead, removeForGoal } from "../lib/notifications.js";
 
 /* The main screen: brand bar, title row, goal list, goal form, profile dialog, delete confirmation.
-   o.repo = goals storage, o.notifRepo = notifications storage, o.sharing = sharing service or null (demo mode has no sharing), o.auth = auth service (getProfile / updateProfile), o.onLogout() */
+   o.repo = goals storage, o.notifRepo = notifications storage, o.sharing = sharing service or null (demo mode has no sharing), o.auth = auth service (getProfile / updateProfile), o.onLogout(), o.onBudget() opens the budget page */
 export function createGoalsScreen(o) {
   var el = fromHTML('<div><div class="wrap"><div class="titlebar"><h1>' + S["home.title"] + "</h1>" +
     Button({ id: "gs-add", label: S["home.addGoal"], icon: PlusIcon(), extraClass: "add-btn" }) +
@@ -63,6 +63,7 @@ export function createGoalsScreen(o) {
       notifScreen.open(notifications, todayDate(), opener, Math.max(0, Math.round(header.el.getBoundingClientRect().bottom)));
     },
     onProfile: function (opener) { profileDialog.open(profile, opener); },
+    onBudget: function () { if (o.onBudget) o.onBudget(); },
     onLogout: function () { o.onLogout(); }
   });
   el.insertBefore(header.el, el.firstChild);

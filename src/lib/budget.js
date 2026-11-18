@@ -1,0 +1,60 @@
+/* budget.js - pure budget logic ("התקציב שלי"). No UI, no storage.
+   One savings pool: the goals' monthly deposits are compared with the monthly amount the user plans to save.
+   Money that is not allocated to a goal earns nothing; the "if invested" figure is only an estimate. */
+import { TRACKS } from "../data/tracks.js";
+import { computeGoal, netReturnPct, monthsToGoal, addMonths, parseISODate } from "./calc.js";
+
+function num(v) { var n = Number(v); return isFinite(n) && n > 0 ? n : 0; }
+
+/* Goals that count against the budget: the user's own goals that are not achieved yet. */
+export function budgetGoals(goals, today) {
+  return (goals || []).filter(function (g) {
+    return !g.fromOthers && (g.myRole === undefined || g.myRole === "owner") && !computeGoal(g, today).achieved;
+  });
+}
+
+/* What is left each month after expenses (can be negative). */
+export function freeAmount(income, expenses) { return num(income) - num(expenses); }
+
+/* b = { pool, income, expenses, saving }. Returns everything the page shows.
+   status: "empty" (no active goals) | "fits" | "over". */
+export function summarize(b, goals, today) {
+  var mine = budgetGoals(goals, today);
+  var required = mine.reduce(function (s, g) { return s + num(g.monthlyDeposit); }, 0);
+  var allocated = mine.reduce(function (s, g) { return s + num(g.initialAmount); }, 0);
+  var income = num(b.income), expenses = num(b.expenses), saving = num(b.saving), pool = num(b.pool);
+  var free = income - expenses, gap = required - saving;
+  var status = mine.length === 0 ? "empty" : gap <= 0 ? "fits" : "over";
+  return {
+    goals: mine, required: required, free: free, saving: saving, gap: gap, status: status,
+    savingTooHigh: saving > Math.max(free, 0),
+    savingRatePct: income > 0 ? Math.round(saving / income * 1000) / 10 : null,
+    allocated: allocated, unallocated: Math.max(0, pool - allocated), poolShort: Math.max(0, allocated - pool),
+    /* one tap fix: raise the saving to the required amount when the free money covers it */
+    raiseTo: status === "over" && required <= free ? required : null
+  };
+}
+
+/* Yearly return the unallocated money would have earned in the default (first) track, net of its fee. An estimate, never promised. */
+export function investedEstimate(amount) {
+  var t = TRACKS[0], net = netReturnPct(t.defaultReturnPct, t.defaultFeePct);
+  return { netPct: net, perYear: Math.round(num(amount) * net / 100) };
+}
+
+/* If only `saving` per month is available: every goal gets the same share of its planned deposit, and the new target date follows.
+   Returns one row per goal: { id, name, oldDate, newDate, status } (newDate is null when the goal can no longer be reached). Empty when the budget already fits. */
+export function stretchPlan(goals, saving, today) {
+  var mine = budgetGoals(goals, today);
+  var required = mine.reduce(function (s, g) { return s + num(g.monthlyDeposit); }, 0);
+  if (required <= 0 || num(saving) >= required) return [];
+  var factor = num(saving) / required;
+  return mine.map(function (g) {
+    var r = netReturnPct(g.annualReturnPct, g.managementFeePct), start = parseISODate(g.startDate);
+    var old = monthsToGoal(g.targetAmount, num(g.initialAmount), num(g.monthlyDeposit), r);
+    var now = monthsToGoal(g.targetAmount, num(g.initialAmount), num(g.monthlyDeposit) * factor, r);
+    return { id: g.id, name: g.name, emoji: g.emoji || "",
+      oldDate: old.months === null ? null : addMonths(start, old.months),
+      newDate: now.status === "ok" ? addMonths(start, now.months) : null,
+      status: now.status };
+  });
+}
