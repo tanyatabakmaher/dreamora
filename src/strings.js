@@ -163,8 +163,6 @@ export const S = {
   "bd.all": "כל המטרות יחד",
   "bd.total.initial": "התחלה: {got} מתוך {need}",
   "bd.total.deposit": "חודשי: {got} מתוך {need}",
-  "bd.legend.initial": "סכום התחלתי",
-  "bd.legend.deposit": "הפקדה חודשית",
   "bd.row.covered": "מכוסה במלואה",
   "bd.row.lack.deposit": "חסרים {amount} בחודש",
   "bd.row.lack.both": "ו-{amount} להתחלה",

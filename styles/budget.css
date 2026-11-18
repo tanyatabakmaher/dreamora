@@ -5,7 +5,12 @@
   .bd-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
   /* Same height as the photo card: the right column's height comes from the hero only, and the goals column scrolls inside it */
   .bd-result { position: relative; min-height: 480px; }
-  .bd-result-in { position: absolute; inset: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-16); padding-inline-end: 2px; scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }
+  .bd-result-in { position: absolute; inset: 0; display: flex; flex-direction: column; gap: var(--space-16); overflow: hidden; }
+  #bd-sum { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .bd-sum { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  /* only the goals list scrolls; the summary text and the buttons below it stay put */
+  .bd-goals { flex: 1 1 auto; min-height: 96px; overflow-y: auto; padding-inline-end: 4px; scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }
+  #bd-notice { flex: none; }
 }
 .card-lite { background: var(--color-surface); border-radius: var(--radius-card); padding: var(--space-16); }
 @media (min-width: 640px) { .card-lite { padding: var(--space-24); } }
@@ -69,10 +74,11 @@
 .bd-goal-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; overflow-wrap: anywhere; }
 .bd-lack { font-size: 13px; line-height: 1.5; color: var(--date-value); }
 .bd-lack.ok { color: var(--accent-mint-strong); font-weight: 500; }
-.bd-legend { display: flex; flex-wrap: wrap; gap: var(--space-16); margin-top: var(--space-16); font-size: 12px; color: var(--color-text-secondary); }
 /* The small original polaroid: cream frame, wider strip at the bottom, a slight tilt */
 .bd-pol { flex: none; width: 56px; padding: 3px 3px 11px; background: var(--polaroid, #f4efe6); border-radius: 2px; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.45); transform: rotate(-3deg); }
 .bd-row:nth-child(even) .bd-pol { transform: rotate(2.5deg); }
 .bd-pol img, .bd-pol-emoji { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
 .bd-pol-emoji { display: grid; place-items: center; font-size: 24px; background: var(--color-surface-2); }
 .bd-titlebar h1:focus { outline: none; }
+.bd-foot { flex: none; }
+.bd-arrange { max-height: 160px; overflow-y: auto; }

@@ -52,7 +52,6 @@ function totalCard(al) {
     "<span><i class=\"d-i\"></i>" + esc(fill(S["bd.total.initial"], { got: money(al.initialGot), need: money(al.initialNeed) })) + "</span>" +
     "<span><i class=\"d-d\"></i>" + esc(fill(S["bd.total.deposit"], { got: money(al.depositGot), need: money(al.depositNeed) })) + "</span></div></div>";
 }
-var LEGEND = '<div class="bd-legend"><span><i class="d-i"></i>' + esc(S["bd.legend.initial"]) + '</span><span><i class="d-d"></i>' + esc(S["bd.legend.deposit"]) + "</span></div>";
 function amountField(id, icon, label, cls) {
   return '<label class="bd-chip ' + (cls || "") + '" for="' + id + '"><span class="bd-chip-top"><span>' + icon + " " + esc(label) + "</span>" + PencilIcon() + "</span>" +
     '<span class="bd-chip-val"><span aria-hidden="true">₪</span><input class="bd-in num" id="' + id + '" type="text" inputmode="numeric" autocomplete="off" dir="ltr" placeholder="0"></span></label>';
@@ -89,7 +88,8 @@ export function createBudgetScreen(o) {
     if (s.status === "empty") h += "<p>" + esc(S["bd.sum.none"]) + "</p>";
     else {
       var al = s.alloc;
-      h += totalCard(al) + '<ul class="bd-goals">' + al.rows.map(rowHtml).join("") + "</ul>" + LEGEND;
+      h += totalCard(al) + '<ul class="bd-goals">' + al.rows.map(rowHtml).join("") + "</ul>";
+      h += '<div class="bd-foot">';
       h += "<p>" + esc(s.status === "fits" ? S["bd.sum.fits"] : s.gap > 0 ? fill(S["bd.sum.over"], { required: money(s.required), saving: money(s.saving), gap: money(s.gap) }) :
         fill(S["bd.sum.overInitial"], { need: money(s.allocated), pool: money(b.pool), gap: money(s.poolShort) })) + "</p>";
       if (s.status === "over") h += '<p class="bd-tip">' + esc(S["bd.row.order"]) + "</p>";
@@ -103,6 +103,7 @@ export function createBudgetScreen(o) {
           }).join("") + '</ul><p class="bd-tip">' + esc(S["bd.arrange.tip"]) + "</p></div>";
         }
       }
+      h += "</div>";
     }
     q("#bd-sum").innerHTML = h + "</div>";
     var ab = q("#bd-arrange"); if (ab) ab.addEventListener("click", function () { arranging = !arranging; render(); });
