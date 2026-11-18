@@ -21,7 +21,7 @@ function mount(screen) {
   window.scrollTo(0, 0);
 }
 function showAuth(initialError) {
-  mount(createAuthScreen({ auth: auth, demo: CONFIG.mode !== "supabase", initialError: initialError, onAuthed: showApp }));
+  mount(createAuthScreen({ auth: auth, demo: CONFIG.mode !== "supabase", initialError: initialError, onAuthed: enter }));
 }
 function showApp() {
   mount(createGoalsScreen({
@@ -30,8 +30,21 @@ function showApp() {
     sharing: createSharingApi(CONFIG), /* null in demo mode: invitations are never simulated locally */
     auth: auth,
     onBudget: showBudget,
-    onLogout: function () { auth.signOut().then(function () { showAuth(); }).catch(function () { showToast(S["error.signOutFailed"]); }); }
+    onLogout: function () { try { window.sessionStorage.removeItem("budget_prompted"); } catch (e) {} auth.signOut().then(function () { showAuth(); }).catch(function () { showToast(S["error.signOutFailed"]); }); }
   }));
+}
+
+/* Right after sign-in: anyone with no budget yet (new or existing user) lands on "התקציב שלי" once per browser session; skipping goes on to the goals. */
+function enter() {
+  var seen = false;
+  try { seen = window.sessionStorage.getItem("budget_prompted") === "1"; } catch (e) {}
+  if (seen) { showApp(); return; }
+  var repo = createBudgetRepo(CONFIG);
+  repo.load().then(function (b) {
+    try { window.sessionStorage.setItem("budget_prompted", "1"); } catch (e) {}
+    if (b) showApp();
+    else mount(createBudgetScreen({ repo: createGoalsRepo(CONFIG), budgetRepo: repo, onboarding: true, onBack: showApp }));
+  }).catch(function () { showApp(); });
 }
 
 function showBudget() {
@@ -46,4 +59,4 @@ if (/error_code=otp_expired|error=access_denied/.test(window.location.hash)) {
 }
 
 if (linkError) showAuth(linkError);
-else auth.getSession().then(function (s) { if (s) showApp(); else showAuth(); }).catch(function () { showAuth(); });
+else auth.getSession().then(function (s) { if (s) enter(); else showAuth(); }).catch(function () { showAuth(); });

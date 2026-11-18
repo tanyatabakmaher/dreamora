@@ -9,7 +9,8 @@ import { showToast } from "./ui/Toast.js";
 
 /* "התקציב שלי": a full page (not a dialog) opened from the settings menu.
    The user enters only three numbers: the money they have today, monthly income and monthly expenses. The monthly saving is what is left (income minus expenses) and is checked live against the goals.
-   o.repo = goals storage, o.budgetRepo = budget storage, o.onBack(). */
+   o.repo = goals storage, o.budgetRepo = budget storage, o.onBack().
+   o.onboarding: shown once after sign-in to anyone without a budget; the back link says "skip" and a successful save also leaves the page. */
 function fill(t, vars) { return Object.keys(vars).reduce(function (s, k) { return s.split("{" + k + "}").join(vars[k]); }, t); }
 function numOf(el) { var n = Number(parseAmount(el.value)); return isFinite(n) && n > 0 ? n : 0; }
 
@@ -62,7 +63,7 @@ function amountField(id, icon, label, cls) {
 export function createBudgetScreen(o) {
   var el = fromHTML('<div class="bd-page"><div class="appbar"><div class="appbar-in">' +
     '<div class="appbar-start"><div class="appbar-brand">' + HeaderLogo({ height: 40 }) + "</div></div>" +
-    '<div class="appbar-end"><button type="button" class="linkbtn" id="bd-back">' + esc(S["bd.back"]) + "</button></div></div></div>" +
+    '<div class="appbar-end"><button type="button" class="linkbtn" id="bd-back">' + esc(S[o.onboarding ? "bd.skip" : "bd.back"]) + "</button></div></div></div>" +
     '<div class="wrap bd-wrap"><div class="titlebar bd-titlebar"><div><h1 id="bd-title" tabindex="-1">' + esc(S["bd.title"]) + '</h1><p class="bd-sub">' + esc(S["bd.subtitle"]) + "</p></div></div>" +
     '<div class="bd-grid"><section class="bd-hero"><div class="bd-hero-in">' +
     '<div class="bd-donut" aria-live="polite"><div id="bd-ring"></div><div class="bd-donut-disc"></div><div class="bd-donut-text" id="bd-donut-text"></div></div>' +
@@ -119,7 +120,7 @@ export function createBudgetScreen(o) {
   q("#bd-back").addEventListener("click", function () { o.onBack(); });
   q("#bd-save").addEventListener("click", function () {
     var btn = q("#bd-save"); btn.disabled = true;
-    o.budgetRepo.save(values()).then(function () { showToast(S["bd.saved"], "success"); })
+    o.budgetRepo.save(values()).then(function () { showToast(S["bd.saved"], "success"); if (o.onboarding) o.onBack(); })
       .catch(function () { showToast(S["bd.saveFailed"]); }).then(function () { btn.disabled = false; });
   });
 
