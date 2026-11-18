@@ -89,3 +89,8 @@
 .bd-titlebar h1:focus { outline: none; }
 .bd-foot { flex: none; }
 .bd-arrange { max-height: 160px; overflow-y: auto; }
+
+/* First-login sheet */
+.bd-dialog .bd-sub { margin: 0 0 var(--space-16); font-size: 14px; color: var(--color-text-muted); }
+.bd-dialog .bd-hero { border-radius: 18px; }
+.bdd-skip { margin-top: var(--space-8); }

@@ -9,13 +9,12 @@ import { showToast } from "./ui/Toast.js";
 
 /* "התקציב שלי": a full page (not a dialog) opened from the settings menu.
    The user enters only three numbers: the money they have today, monthly income and monthly expenses. The monthly saving is what is left (income minus expenses) and is checked live against the goals.
-   o.repo = goals storage, o.budgetRepo = budget storage, o.onBack().
-   o.onboarding: shown once after sign-in to anyone without a budget; the back link says "skip" and a successful save also leaves the page. */
-function fill(t, vars) { return Object.keys(vars).reduce(function (s, k) { return s.split("{" + k + "}").join(vars[k]); }, t); }
-function numOf(el) { var n = Number(parseAmount(el.value)); return isFinite(n) && n > 0 ? n : 0; }
+   o.repo = goals storage, o.budgetRepo = budget storage, o.onBack(). */
+export function fill(t, vars) { return Object.keys(vars).reduce(function (s, k) { return s.split("{" + k + "}").join(vars[k]); }, t); }
+export function numOf(el) { var n = Number(parseAmount(el.value)); return isFinite(n) && n > 0 ? n : 0; }
 
 /* Ring: the saved share of the income, drawn with the brand gradient. */
-function ring(pct) {
+export function ring(pct) {
   var size = 200, sw = 24, r = (size - sw) / 2, c = 2 * Math.PI * r, a = c * Math.max(0, Math.min(100, pct)) / 100;
   return '<svg class="bd-ring" viewBox="0 0 ' + size + " " + size + '" aria-hidden="true"><defs><linearGradient id="bd-grad" gradientUnits="userSpaceOnUse" x1="200" y1="0" x2="0" y2="200">' +
     '<stop offset="0" stop-color="var(--aurora-1)"/><stop offset=".5" stop-color="var(--aurora-2)"/><stop offset="1" stop-color="var(--aurora-3)"/></linearGradient></defs>' +
@@ -55,7 +54,7 @@ function totalCard(al) {
     "<span><i class=\"d-i\"></i>" + esc(fill(S["bd.total.initial"], { got: money(al.initialGot), need: money(al.initialNeed) })) + "</span>" +
     "<span><i class=\"d-d\"></i>" + esc(fill(S["bd.total.deposit"], { got: money(al.depositGot), need: money(al.depositNeed) })) + "</span></div></div>";
 }
-function amountField(id, icon, label, cls) {
+export function amountField(id, icon, label, cls) {
   return '<label class="bd-row-in ' + (cls || "") + '" for="' + id + '"><span class="bd-row-ic" aria-hidden="true">' + icon + '</span><span class="bd-row-label">' + esc(label) + "</span>" +
     '<span class="bd-row-val"><span aria-hidden="true">₪</span><input class="bd-in num" id="' + id + '" type="text" inputmode="numeric" autocomplete="off" dir="ltr" placeholder="0"></span>' + PencilIcon() + "</label>";
 }
@@ -63,7 +62,7 @@ function amountField(id, icon, label, cls) {
 export function createBudgetScreen(o) {
   var el = fromHTML('<div class="bd-page"><div class="appbar"><div class="appbar-in">' +
     '<div class="appbar-start"><div class="appbar-brand">' + HeaderLogo({ height: 40 }) + "</div></div>" +
-    '<div class="appbar-end"><button type="button" class="linkbtn" id="bd-back">' + esc(S[o.onboarding ? "bd.skip" : "bd.back"]) + "</button></div></div></div>" +
+    '<div class="appbar-end"><button type="button" class="linkbtn" id="bd-back">' + esc(S["bd.back"]) + "</button></div></div></div>" +
     '<div class="wrap bd-wrap"><div class="titlebar bd-titlebar"><div><h1 id="bd-title" tabindex="-1">' + esc(S["bd.title"]) + '</h1><p class="bd-sub">' + esc(S["bd.subtitle"]) + "</p></div></div>" +
     '<div class="bd-grid"><section class="bd-hero"><div class="bd-hero-in">' +
     '<div class="bd-donut" aria-live="polite"><div id="bd-ring"></div><div class="bd-donut-disc"></div><div class="bd-donut-text" id="bd-donut-text"></div></div>' +
@@ -120,7 +119,7 @@ export function createBudgetScreen(o) {
   q("#bd-back").addEventListener("click", function () { o.onBack(); });
   q("#bd-save").addEventListener("click", function () {
     var btn = q("#bd-save"); btn.disabled = true;
-    o.budgetRepo.save(values()).then(function () { showToast(S["bd.saved"], "success"); if (o.onboarding) o.onBack(); })
+    o.budgetRepo.save(values()).then(function () { showToast(S["bd.saved"], "success"); })
       .catch(function () { showToast(S["bd.saveFailed"]); }).then(function () { btn.disabled = false; });
   });
 

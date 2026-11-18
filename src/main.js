@@ -8,6 +8,7 @@ import { createAuthScreen } from "./components/AuthScreen.js";
 import { showToast } from "./components/ui/Toast.js";
 import { createGoalsScreen } from "./components/GoalsScreen.js";
 import { createBudgetScreen } from "./components/BudgetScreen.js";
+import { createBudgetDialog } from "./components/BudgetDialog.js";
 import { createBudgetRepo } from "./services/budgetRepo.js";
 
 var root = document.getElementById("app");
@@ -34,7 +35,7 @@ function showApp() {
   }));
 }
 
-/* Right after sign-in: anyone with no budget yet (new or existing user) lands on "התקציב שלי" once per browser session; skipping goes on to the goals. */
+/* Right after sign-in: anyone with no budget yet (new or existing user) sees a "התקציב שלי" sheet over the goals once per browser session. */
 function enter() {
   var seen = false;
   try { seen = window.sessionStorage.getItem("budget_prompted") === "1"; } catch (e) {}
@@ -43,7 +44,7 @@ function enter() {
   repo.load().then(function (b) {
     try { window.sessionStorage.setItem("budget_prompted", "1"); } catch (e) {}
     if (b) showApp();
-    else mount(createBudgetScreen({ repo: createGoalsRepo(CONFIG), budgetRepo: repo, onboarding: true, onBack: showApp }));
+    else { showApp(); createBudgetDialog({ budgetRepo: repo, onDone: function () {} }).open(); }
   }).catch(function () { showApp(); });
 }
 
