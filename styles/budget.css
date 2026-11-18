@@ -71,9 +71,11 @@
 .bd-goals { list-style: none; margin: var(--space-16) 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 @media (max-width: 899px) { .bd-goals { max-height: 460px; overflow-y: auto; padding-inline-end: 4px; } }
 .bd-row { display: flex; align-items: center; gap: var(--space-12); padding: 12px; border-radius: 16px; background: var(--color-surface-2); transition: opacity .2s ease; }
-/* Covered: a mint frame with a soft glow. Not covered: faded back, grey picture. */
-.bd-row.ok { box-shadow: 0 0 0 1px rgba(120, 206, 178, 0.45), 0 0 18px rgba(120, 206, 178, 0.18); }
-.bd-row.dim { opacity: 0.6; }
+/* Covered: a fading mint fill and a glow around the picture and rings, no border. Not covered: faded back, no fill, grey picture. */
+.bd-row.ok { background: linear-gradient(270deg, rgba(121, 227, 200, 0.2), rgba(121, 227, 200, 0.04) 70%, transparent); }
+.bd-row.ok .bd-pol { box-shadow: 0 0 16px rgba(121, 227, 200, 0.45); }
+.bd-row.ok .bd-rings { filter: drop-shadow(0 0 7px rgba(121, 227, 200, 0.55)); }
+.bd-row.dim { opacity: 0.55; background: transparent; }
 .bd-row.dim .bd-pol { filter: grayscale(0.85) brightness(0.85); }
 .bd-goal-main { flex: 1; min-width: 0; }
 .bd-goal-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; overflow-wrap: anywhere; }
