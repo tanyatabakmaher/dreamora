@@ -13,6 +13,22 @@ export function budgetGoals(goals, today) {
   });
 }
 
+/* Who gets covered, in the order the goals are listed (the first goals have priority).
+   The monthly saving is handed out to the goals' monthly deposits, and the savings pool to their starting amounts, each until it runs out.
+   Returns { rows, depositGot, depositNeed, initialGot, initialNeed }; a row is { goal, need, got, initialNeed, initialGot, depositShort, initialShort }. */
+export function allocate(b, goals, today) {
+  var left = num(b.saving), poolLeft = num(b.pool);
+  var out = { rows: [], depositGot: 0, depositNeed: 0, initialGot: 0, initialNeed: 0 };
+  budgetGoals(goals, today).forEach(function (g) {
+    var need = num(g.monthlyDeposit), init = num(g.initialAmount);
+    var got = Math.min(need, left), igot = Math.min(init, poolLeft);
+    left -= got; poolLeft -= igot;
+    out.rows.push({ goal: g, need: need, got: got, initialNeed: init, initialGot: igot, depositShort: got < need - 1e-9, initialShort: igot < init - 1e-9 });
+    out.depositGot += got; out.depositNeed += need; out.initialGot += igot; out.initialNeed += init;
+  });
+  return out;
+}
+
 /* What is left each month after expenses (can be negative). */
 export function freeAmount(income, expenses) { return num(income) - num(expenses); }
 
@@ -26,7 +42,7 @@ export function summarize(b, goals, today) {
   var free = income - expenses, gap = required - saving;
   var status = mine.length === 0 ? "empty" : gap <= 0 ? "fits" : "over";
   return {
-    goals: mine, required: required, free: free, saving: saving, gap: gap, status: status,
+    goals: mine, alloc: allocate(b, goals, today), required: required, free: free, saving: saving, gap: gap, status: status,
     savingTooHigh: saving > Math.max(free, 0),
     savingRatePct: income > 0 ? Math.round(saving / income * 1000) / 10 : null,
     allocated: allocated, unallocated: Math.max(0, pool - allocated), poolShort: Math.max(0, allocated - pool),

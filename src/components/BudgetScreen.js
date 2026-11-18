@@ -19,6 +19,31 @@ function ring(pct) {
   return '<svg class="bd-ring" viewBox="0 0 ' + size + " " + size + '" aria-hidden="true"><circle class="bd-ring-track" cx="100" cy="100" r="' + r + '" fill="none" stroke-width="' + sw + '"/>' +
     '<circle class="bd-ring-arc" cx="100" cy="100" r="' + r + '" fill="none" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + a.toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 100 100)"/></svg>';
 }
+/* A bar of what is covered in practice (filled) against what the goals need (the striped rest). */
+function bar(got, need) {
+  var pct = need > 0 ? Math.max(0, Math.min(100, got / need * 100)) : 100;
+  return '<span class="bd-bar' + (got < need - 1e-9 ? " short" : "") + '"><i style="width:' + pct.toFixed(1) + '%"></i></span>';
+}
+function meter(label, got, need) {
+  if (need <= 0) return "";
+  return '<div class="bd-meter"><div class="bd-meter-top"><span>' + esc(label) + '</span><b class="num">' + esc(fill(S["bd.meter.of"], { got: money(got), need: money(need) })) + "</b></div>" + bar(got, need) + "</div>";
+}
+/* The goal's own picture as a small polaroid (its emoji when it has no picture). */
+function polaroid(g) {
+  var pic = g.image ? '<img src="' + esc(g.image) + '" alt="" loading="lazy" decoding="async">' : '<span class="bd-pol-emoji" aria-hidden="true">' + esc(g.emoji || "🎯") + "</span>";
+  return '<span class="bd-pol" aria-hidden="true">' + pic + "</span>";
+}
+function rowHtml(r) {
+  var g = r.goal, tags = "";
+  if (r.depositShort) tags += '<em class="bd-flag">' + esc(S["bd.tag.deposit"]) + "</em>";
+  if (r.initialShort) tags += '<em class="bd-flag">' + esc(S["bd.tag.initial"]) + "</em>";
+  var lines = "";
+  if (r.need > 0) lines += '<div class="bd-line"><span>' + esc(S["bd.row.deposit"]) + '</span><b class="num">' + esc(r.depositShort ? fill(S["bd.meter.of"], { got: money(r.got), need: money(r.need) }) : money(r.need)) + "</b></div>" + bar(r.got, r.need);
+  else lines += '<div class="bd-line"><span>' + esc(S["card.noDeposit"]) + "</span></div>";
+  if (r.initialShort) lines += '<div class="bd-line"><span>' + esc(S["bd.row.initial"]) + '</span><b class="num">' + esc(fill(S["bd.meter.of"], { got: money(r.initialGot), need: money(r.initialNeed) })) + "</b></div>" + bar(r.initialGot, r.initialNeed);
+  return "<li>" + polaroid(g) + '<div class="bd-goal-main"><div class="bd-goal-head"><span class="bd-goal-name">' + esc(g.name) + "</span>" + tags + "</div>" + lines + "</div></li>";
+}
+
 function amountField(id, icon, label, cls) {
   return '<label class="bd-chip ' + (cls || "") + '" for="' + id + '"><span class="bd-chip-top"><span>' + icon + " " + esc(label) + "</span>" + PencilIcon() + "</span>" +
     '<span class="bd-chip-val"><span aria-hidden="true">₪</span><input class="bd-in num" id="' + id + '" type="text" inputmode="numeric" autocomplete="off" dir="ltr" placeholder="0"></span></label>';
@@ -34,7 +59,7 @@ export function createBudgetScreen(o) {
     '<div class="bd-donut" aria-live="polite"><div id="bd-ring"></div><div class="bd-donut-text" id="bd-donut-text"></div></div>' +
     '<div class="bd-two">' + amountField("bd-income", "💼", S["bd.income"]) + amountField("bd-expenses", "🧾", S["bd.expenses"]) + "</div>" +
     Button({ id: "bd-save", label: S["bd.save"], block: true }) +
-    '</div></section><section class="bd-result" aria-live="polite"><div id="bd-sum"></div><div id="bd-notice"></div></section></div></div></div>');
+    '</div></section><section class="bd-result" aria-live="polite"><div class="bd-result-in"><div id="bd-sum"></div><div id="bd-notice"></div></div></section></div></div></div>');
   var q = function (s) { return el.querySelector(s); };
   var goals = [], pool = q("#bd-pool"), income = q("#bd-income"), expenses = q("#bd-expenses"), arranging = false, destroyed = false;
   var inputs = [pool, income, expenses];
@@ -54,11 +79,11 @@ export function createBudgetScreen(o) {
     var h = '<div class="card-lite bd-sum ' + s.status + '"><h2>' + esc(S["bd.sum.title"]) + "</h2>";
     if (s.status === "empty") h += "<p>" + esc(S["bd.sum.none"]) + "</p>";
     else {
-      h += '<ul class="bd-goals">' + s.goals.map(function (g) {
-        return "<li><span>" + esc((g.emoji ? g.emoji + " " : "") + g.name) + '</span><b class="num">' + esc(fill(S["bd.goal.line"], { amount: money(g.monthlyDeposit || 0) })) + "</b>" +
-          (s.status === "over" ? '<em class="bd-flag">' + esc(S["bd.goal.over"]) + "</em>" : "") + "</li>";
-      }).join("") + "</ul>";
+      var al = s.alloc;
+      h += meter(S["bd.meter.deposit"], al.depositGot, al.depositNeed) + meter(S["bd.meter.initial"], al.initialGot, al.initialNeed);
+      h += '<ul class="bd-goals">' + al.rows.map(rowHtml).join("") + "</ul>";
       h += "<p>" + esc(s.status === "fits" ? S["bd.sum.fits"] : fill(S["bd.sum.over"], { required: money(s.required), saving: money(s.saving), gap: money(s.gap) })) + "</p>";
+      if (s.status === "over") h += '<p class="bd-tip">' + esc(S["bd.row.order"]) + "</p>";
       if (s.status === "over") {
         h += '<div class="bd-actions">' + Button({ id: "bd-arrange", label: arranging ? S["bd.fix.close"] : S["bd.fix.arrange"] }) + "</div>";
         if (arranging) {
@@ -69,7 +94,6 @@ export function createBudgetScreen(o) {
           }).join("") + '</ul><p class="bd-tip">' + esc(S["bd.arrange.tip"]) + "</p></div>";
         }
       }
-      if (s.poolShort > 0) h += '<p class="bd-warn">' + esc(fill(S["bd.pool.short"], { amount: money(s.allocated) })) + "</p>";
     }
     q("#bd-sum").innerHTML = h + "</div>";
     var ab = q("#bd-arrange"); if (ab) ab.addEventListener("click", function () { arranging = !arranging; render(); });

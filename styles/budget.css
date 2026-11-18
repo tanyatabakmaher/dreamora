@@ -1,7 +1,12 @@
 /* "התקציב שלי" page. Tokens only; soft gold marks "over budget" (red stays for errors). */
 .bd-sub { margin: var(--space-4) 0 0; color: var(--color-text-muted); font-size: 14px; }
 .bd-grid { display: grid; gap: var(--space-24); }
-@media (min-width: 900px) { .bd-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+@media (min-width: 900px) {
+  .bd-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
+  /* Same height as the photo card: the right column's height comes from the hero only, and the goals column scrolls inside it */
+  .bd-result { position: relative; min-height: 480px; }
+  .bd-result-in { position: absolute; inset: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-16); padding-inline-end: 2px; scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }
+}
 .card-lite { background: var(--color-surface); border-radius: var(--radius-card); padding: var(--space-16); }
 @media (min-width: 640px) { .card-lite { padding: var(--space-24); } }
 /* Hero card: the vision-board photo, light at the top and fading to the dark surface at the bottom */
@@ -28,14 +33,11 @@
 .bd-donut-big { font-size: 34px; font-weight: 700; color: var(--accent-mint); direction: ltr; }
 .bd-donut-hint { font-size: 14px; color: var(--color-text-secondary); }
 .bd-result { display: flex; flex-direction: column; gap: var(--space-16); }
+.bd-result-in { display: flex; flex-direction: column; gap: var(--space-16); }
 .bd-sum h2 { margin: 0 0 var(--space-12); font-size: 18px; font-weight: 500; }
 .bd-sum p { margin: var(--space-12) 0 0; font-size: 14px; line-height: 1.5; }
 .bd-sum.fits { box-shadow: inset 0 0 0 1px var(--deposit-border); }
 .bd-sum.over { box-shadow: inset 0 0 0 1px var(--date-border); }
-.bd-goals { list-style: none; margin: 0; padding: 0; }
-.bd-goals li { display: flex; align-items: center; gap: var(--space-8); min-height: 40px; border-bottom: 1px solid var(--color-border); font-size: 14px; }
-.bd-goals li span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.bd-flag { font-style: normal; font-size: 11px; font-weight: 500; padding: 2px var(--space-8); border-radius: var(--radius-pill); background: var(--date-bg); color: var(--date-value); border: 1px solid var(--date-border); }
 .bd-actions { display: flex; flex-wrap: wrap; gap: var(--space-8); margin-top: var(--space-16); }
 .bd-arrange { margin-top: var(--space-16); padding: var(--space-12); border-radius: var(--radius-control); background: var(--color-input-bg); }
 .bd-arrange h3 { margin: 0 0 var(--space-8); font-size: 14px; font-weight: 500; }
@@ -45,3 +47,24 @@
 .bd-notice { padding: var(--space-16); border-radius: var(--radius-card); background: var(--date-bg); border: 1px solid var(--date-border); }
 .bd-notice b { color: var(--date-label); font-size: 14px; }
 .bd-notice p { margin: var(--space-4) 0 0; font-size: 14px; line-height: 1.5; }
+
+/* Meters and goal rows: filled = covered in practice, striped gold = what is missing */
+.bd-meter { margin-bottom: var(--space-12); }
+.bd-meter-top, .bd-line { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-8); font-size: 13px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.bd-meter-top b, .bd-line b { color: var(--color-text); font-weight: 500; }
+.bd-bar { display: block; height: 10px; border-radius: 999px; overflow: hidden; background: var(--color-surface-2); margin-bottom: var(--space-8); }
+.bd-bar.short { background: repeating-linear-gradient(135deg, rgba(235, 203, 136, 0.45) 0 5px, rgba(235, 203, 136, 0.12) 5px 10px); box-shadow: inset 0 0 0 1px var(--date-border); }
+.bd-bar i { display: block; height: 100%; background: var(--accent-mint-strong); border-radius: 999px; }
+.bd-goals { list-style: none; margin: var(--space-16) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-16); }
+@media (max-width: 899px) { .bd-goals { max-height: 460px; overflow-y: auto; padding-inline-end: 4px; } }
+.bd-goals li { display: flex; align-items: flex-start; gap: var(--space-12); }
+.bd-goal-main { flex: 1; min-width: 0; }
+.bd-goal-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 6px; }
+.bd-goal-name { font-size: 15px; font-weight: 500; overflow-wrap: anywhere; margin-inline-end: auto; }
+.bd-flag { font-style: normal; font-size: 11px; font-weight: 500; padding: 2px var(--space-8); border-radius: var(--radius-pill); background: var(--date-bg); color: var(--date-value); border: 1px solid var(--date-border); white-space: nowrap; }
+/* The small original polaroid: cream frame, wider strip at the bottom, a slight tilt */
+.bd-pol { flex: none; width: 56px; padding: 3px 3px 11px; background: var(--polaroid, #f4efe6); border-radius: 2px; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.45); transform: rotate(-3deg); }
+.bd-goals li:nth-child(even) .bd-pol { transform: rotate(2.5deg); }
+.bd-pol img, .bd-pol-emoji { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.bd-pol-emoji { display: grid; place-items: center; font-size: 24px; background: var(--color-surface-2); }
+.bd-titlebar h1:focus { outline: none; }

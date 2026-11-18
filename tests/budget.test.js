@@ -1,4 +1,4 @@
-import { summarize, freeAmount, investedEstimate, stretchPlan, budgetGoals } from "../src/lib/budget.js";
+import { allocate, summarize, freeAmount, investedEstimate, stretchPlan, budgetGoals } from "../src/lib/budget.js";
 let fail = 0;
 function check(name, cond, info) {
   if (!cond) { fail++; console.log("FAIL", name, info === undefined ? "" : info); }
@@ -39,5 +39,14 @@ check("half the saving doubles the time", p.length === 1 && p[0].status === "ok"
 check("no stretch needed when it fits", stretchPlan(one, 1000, today).length === 0);
 p = stretchPlan(one, 0, today);
 check("zero saving: goal becomes unreachable", p[0].newDate === null && p[0].status === "unreachable");
+// allocate: first goals are covered first; the rest get what is left
+let al = allocate({ pool: 70000, saving: 2000 }, goals, today);
+check("deposits: first goal full, second partial, third none", al.rows[0].got === 1000 && al.rows[1].got === 1000 && al.rows[2].got === 0, al.rows.map((r) => r.got).join());
+check("deposit flags follow the shortfall", !al.rows[0].depositShort && al.rows[1].depositShort && al.rows[2].depositShort);
+check("starting amounts: pool 70,000 covers 5,000 + 3,000 + 2,000 fully", al.rows.every((r) => !r.initialShort) && al.initialGot === 10000);
+al = allocate({ pool: 6000, saving: 5000 }, goals, today);
+check("pool 6,000: first full 5,000, second gets 1,000, third 0", al.rows[0].initialGot === 5000 && al.rows[1].initialGot === 1000 && al.rows[2].initialGot === 0, al.rows.map((r) => r.initialGot).join());
+check("initial shortfall is separate from the deposit shortfall", !al.rows[1].depositShort && al.rows[1].initialShort);
+check("totals", al.depositNeed === 2300 && al.depositGot === 2300 && al.initialNeed === 10000 && al.initialGot === 6000);
 console.log(fail ? fail + " FAILED" : "all passed");
 process.exit(fail ? 1 : 0);
