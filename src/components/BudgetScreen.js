@@ -13,11 +13,13 @@ import { showToast } from "./ui/Toast.js";
 function fill(t, vars) { return Object.keys(vars).reduce(function (s, k) { return s.split("{" + k + "}").join(vars[k]); }, t); }
 function numOf(el) { var n = Number(parseAmount(el.value)); return isFinite(n) && n > 0 ? n : 0; }
 
-/* Ring: the saved share of the income. */
+/* Ring: the saved share of the income, drawn with the brand gradient. */
 function ring(pct) {
   var size = 200, sw = 24, r = (size - sw) / 2, c = 2 * Math.PI * r, a = c * Math.max(0, Math.min(100, pct)) / 100;
-  return '<svg class="bd-ring" viewBox="0 0 ' + size + " " + size + '" aria-hidden="true"><circle class="bd-ring-track" cx="100" cy="100" r="' + r + '" fill="none" stroke-width="' + sw + '"/>' +
-    '<circle class="bd-ring-arc" cx="100" cy="100" r="' + r + '" fill="none" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + a.toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 100 100)"/></svg>';
+  return '<svg class="bd-ring" viewBox="0 0 ' + size + " " + size + '" aria-hidden="true"><defs><linearGradient id="bd-grad" gradientUnits="userSpaceOnUse" x1="200" y1="0" x2="0" y2="200">' +
+    '<stop offset="0" stop-color="var(--aurora-1)"/><stop offset=".5" stop-color="var(--aurora-2)"/><stop offset="1" stop-color="var(--aurora-3)"/></linearGradient></defs>' +
+    '<circle class="bd-ring-track" cx="100" cy="100" r="' + r + '" fill="none" stroke-width="' + sw + '"/>' +
+    '<circle class="bd-ring-arc" cx="100" cy="100" r="' + r + '" fill="none" stroke="url(#bd-grad)" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + a.toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 100 100)"/></svg>';
 }
 function pct(got, need) { return need > 0 ? Math.max(0, Math.min(100, got / need * 100)) : 100; }
 /* Double ring: the outer ring is the starting amount, the inner ring the monthly deposit. A goal that is fully covered gets two closed rings and a check mark. */
@@ -53,8 +55,8 @@ function totalCard(al) {
     "<span><i class=\"d-d\"></i>" + esc(fill(S["bd.total.deposit"], { got: money(al.depositGot), need: money(al.depositNeed) })) + "</span></div></div>";
 }
 function amountField(id, icon, label, cls) {
-  return '<label class="bd-chip ' + (cls || "") + '" for="' + id + '"><span class="bd-chip-top"><span>' + icon + " " + esc(label) + "</span>" + PencilIcon() + "</span>" +
-    '<span class="bd-chip-val"><span aria-hidden="true">₪</span><input class="bd-in num" id="' + id + '" type="text" inputmode="numeric" autocomplete="off" dir="ltr" placeholder="0"></span></label>';
+  return '<label class="bd-row-in ' + (cls || "") + '" for="' + id + '"><span class="bd-row-ic" aria-hidden="true">' + icon + '</span><span class="bd-row-label">' + esc(label) + "</span>" +
+    '<span class="bd-row-val"><span aria-hidden="true">₪</span><input class="bd-in num" id="' + id + '" type="text" inputmode="numeric" autocomplete="off" dir="ltr" placeholder="0"></span>' + PencilIcon() + "</label>";
 }
 
 export function createBudgetScreen(o) {
@@ -63,9 +65,8 @@ export function createBudgetScreen(o) {
     '<div class="appbar-end"><button type="button" class="linkbtn" id="bd-back">' + esc(S["bd.back"]) + "</button></div></div></div>" +
     '<div class="wrap bd-wrap"><div class="titlebar bd-titlebar"><div><h1 id="bd-title" tabindex="-1">' + esc(S["bd.title"]) + '</h1><p class="bd-sub">' + esc(S["bd.subtitle"]) + "</p></div></div>" +
     '<div class="bd-grid"><section class="bd-hero"><div class="bd-hero-in">' +
-    amountField("bd-pool", "🫙", S["bd.pool"], "bd-pool") +
-    '<div class="bd-donut" aria-live="polite"><div id="bd-ring"></div><div class="bd-donut-text" id="bd-donut-text"></div></div>' +
-    '<div class="bd-two">' + amountField("bd-income", "💼", S["bd.income"]) + amountField("bd-expenses", "🧾", S["bd.expenses"]) + "</div>" +
+    '<div class="bd-donut" aria-live="polite"><div id="bd-ring"></div><div class="bd-donut-disc"></div><div class="bd-donut-text" id="bd-donut-text"></div></div>' +
+    '<div class="bd-ledger">' + amountField("bd-pool", "🫙", S["bd.pool"], "bd-pool") + amountField("bd-income", "💼", S["bd.income"], "bd-income") + amountField("bd-expenses", "🧾", S["bd.expenses"], "bd-expenses") + "</div>" +
     Button({ id: "bd-save", label: S["bd.save"], block: true }) +
     '</div></section><section class="bd-result" aria-live="polite"><div class="bd-result-in"><div id="bd-sum"></div><div id="bd-notice"></div></div></section></div></div></div>');
   var q = function (s) { return el.querySelector(s); };
