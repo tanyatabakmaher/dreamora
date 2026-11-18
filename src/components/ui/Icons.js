@@ -23,3 +23,4 @@ export function CheckCircleIcon() { return svg('<circle cx="12" cy="12" r="10"/>
 export function GlobeIcon() { return svg('<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>'); }
 export function MenuIcon() { return svg('<path d="M4 6h16M4 12h16M4 18h16"/>'); }
 export function WalletIcon() { return svg('<path d="M20 12V8a2 2 0 0 0-2-2H5a2 2 0 0 1 0-4h13M3 5v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M21 12h-4a2 2 0 0 0 0 4h4z"/>'); }
+export function PencilIcon() { return svg(`<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>`); }

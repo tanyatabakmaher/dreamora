@@ -3,49 +3,54 @@ import { S } from "../strings.js";
 import { money, fmtDate, todayDate, fmtAmountInput, parseAmount } from "../lib/format.js";
 import { summarize, investedEstimate, stretchPlan } from "../lib/budget.js";
 import { Button } from "./ui/Button.js";
-import { Field } from "./ui/Field.js";
 import { HeaderLogo } from "./ui/Logo.js";
+import { PencilIcon } from "./ui/Icons.js";
 import { showToast } from "./ui/Toast.js";
 
-/* "התקציב שלי": a full page (not a dialog) opened from the settings menu. One screen: the pool, income, expenses and planned monthly saving, with a live check against the goals.
+/* "התקציב שלי": a full page (not a dialog) opened from the settings menu.
+   The user enters only three numbers: the money they have today, monthly income and monthly expenses. The monthly saving is what is left (income minus expenses) and is checked live against the goals.
    o.repo = goals storage, o.budgetRepo = budget storage, o.onBack(). */
 function fill(t, vars) { return Object.keys(vars).reduce(function (s, k) { return s.split("{" + k + "}").join(vars[k]); }, t); }
 function numOf(el) { var n = Number(parseAmount(el.value)); return isFinite(n) && n > 0 ? n : 0; }
 
+/* Ring: the saved share of the income. */
+function ring(pct) {
+  var size = 200, sw = 24, r = (size - sw) / 2, c = 2 * Math.PI * r, a = c * Math.max(0, Math.min(100, pct)) / 100;
+  return '<svg class="bd-ring" viewBox="0 0 ' + size + " " + size + '" aria-hidden="true"><circle class="bd-ring-track" cx="100" cy="100" r="' + r + '" fill="none" stroke-width="' + sw + '"/>' +
+    '<circle class="bd-ring-arc" cx="100" cy="100" r="' + r + '" fill="none" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + a.toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 100 100)"/></svg>';
+}
+function amountField(id, icon, label, cls) {
+  return '<label class="bd-chip ' + (cls || "") + '" for="' + id + '"><span class="bd-chip-top"><span>' + icon + " " + esc(label) + "</span>" + PencilIcon() + "</span>" +
+    '<span class="bd-chip-val"><span aria-hidden="true">₪</span><input class="bd-in num" id="' + id + '" type="text" inputmode="numeric" autocomplete="off" dir="ltr" placeholder="0"></span></label>';
+}
+
 export function createBudgetScreen(o) {
-  var amt = 'inputmode="numeric" autocomplete="off" dir="ltr"';
   var el = fromHTML('<div class="bd-page"><div class="appbar"><div class="appbar-in">' +
     '<div class="appbar-start"><div class="appbar-brand">' + HeaderLogo({ height: 40 }) + "</div></div>" +
     '<div class="appbar-end"><button type="button" class="linkbtn" id="bd-back">' + esc(S["bd.back"]) + "</button></div></div></div>" +
     '<div class="wrap bd-wrap"><div class="titlebar bd-titlebar"><div><h1 id="bd-title" tabindex="-1">' + esc(S["bd.title"]) + '</h1><p class="bd-sub">' + esc(S["bd.subtitle"]) + "</p></div></div>" +
-    '<div class="bd-grid"><section class="bd-form">' +
-    Field({ id: "bd-pool", label: S["bd.pool"], hint: S["bd.pool.hint"], num: true, type: "text", attrs: amt }) +
-    Field({ id: "bd-income", label: S["bd.income"], num: true, type: "text", attrs: amt }) +
-    Field({ id: "bd-expenses", label: S["bd.expenses"], num: true, type: "text", attrs: amt }) +
-    '<div class="bd-free" id="bd-free" aria-live="polite"></div>' +
-    Field({ id: "bd-saving", label: S["bd.saving"], hint: S["bd.saving.hint"], num: true, type: "text", attrs: amt }) +
+    '<div class="bd-grid"><section class="bd-hero"><div class="bd-hero-in">' +
+    amountField("bd-pool", "🫙", S["bd.pool"], "bd-pool") +
+    '<div class="bd-donut" aria-live="polite"><div id="bd-ring"></div><div class="bd-donut-text" id="bd-donut-text"></div></div>' +
+    '<div class="bd-two">' + amountField("bd-income", "💼", S["bd.income"]) + amountField("bd-expenses", "🧾", S["bd.expenses"]) + "</div>" +
     Button({ id: "bd-save", label: S["bd.save"], block: true }) +
-    '</section><section class="bd-result" aria-live="polite"><div id="bd-bar"></div><div id="bd-sum"></div><div id="bd-notice"></div></section></div></div></div>');
+    '</div></section><section class="bd-result" aria-live="polite"><div id="bd-sum"></div><div id="bd-notice"></div></section></div></div></div>');
   var q = function (s) { return el.querySelector(s); };
-  var goals = [], pool = q("#bd-pool"), income = q("#bd-income"), expenses = q("#bd-expenses"), saving = q("#bd-saving"), arranging = false, destroyed = false;
-  var inputs = [pool, income, expenses, saving];
+  var goals = [], pool = q("#bd-pool"), income = q("#bd-income"), expenses = q("#bd-expenses"), arranging = false, destroyed = false;
+  var inputs = [pool, income, expenses];
 
-  function values() { return { pool: numOf(pool), income: numOf(income), expenses: numOf(expenses), saving: numOf(saving) }; }
+  function values() {
+    var i = numOf(income), e = numOf(expenses);
+    return { pool: numOf(pool), income: i, expenses: e, saving: Math.max(0, i - e) };
+  }
 
   function render() {
     var b = values(), today = todayDate(), s = summarize(b, goals, today);
-    q("#bd-free").textContent = fill(S["bd.free"], { amount: money(Math.max(s.free, 0)) });
-    q("#bd-free").classList.toggle("neg", s.free < 0);
-    q("#bd-saving-hint").textContent = fill(S["bd.saving.hint"], { amount: money(Math.max(s.free, 0)) });
-    var err = q("#bd-saving-err"); err.textContent = s.savingTooHigh && b.saving > 0 ? S["bd.saving.tooHigh"] : "";
-    q("#bd-saving-field").classList.toggle("invalid", !!err.textContent);
-    /* bar: expenses / saving / the rest of the income */
-    var inc = b.income, ex = inc > 0 ? Math.min(100, b.expenses / inc * 100) : 0, sv = inc > 0 ? Math.min(100 - ex, b.saving / inc * 100) : 0;
-    q("#bd-bar").innerHTML = inc > 0 ?
-      '<div class="bd-bar" role="img" aria-label="' + esc(S["bd.legend.expenses"] + " " + Math.round(ex) + "%, " + S["bd.legend.saving"] + " " + Math.round(sv) + "%") + '">' +
-      '<span class="bd-seg ex" style="width:' + ex.toFixed(1) + '%"></span><span class="bd-seg sv" style="width:' + sv.toFixed(1) + '%"></span></div>' +
-      '<div class="bd-legend"><span><i class="ex"></i>' + esc(S["bd.legend.expenses"]) + '</span><span><i class="sv"></i>' + esc(S["bd.legend.saving"]) + '</span><span><i class="fr"></i>' + esc(S["bd.legend.free"]) + "</span></div>" : "";
-    /* summary against the goals */
+    var negative = b.income > 0 && b.expenses > b.income, empty = b.income <= 0;
+    q("#bd-ring").innerHTML = ring(s.savingRatePct || 0);
+    q("#bd-donut-text").innerHTML = empty ? '<span class="bd-donut-hint">' + esc(S["bd.donut.empty"]) + "</span>" :
+      '<span class="bd-donut-label">' + esc(S["bd.donut.label"]) + '</span><span class="bd-donut-big num">' + esc(money(b.saving)) + "</span>" +
+      '<span class="bd-donut-pct' + (negative ? " neg" : "") + '">' + esc(negative ? S["bd.donut.negative"] : fill(S["bd.donut.pct"], { pct: Math.round(s.savingRatePct || 0) })) + "</span>";
     var h = '<div class="card-lite bd-sum ' + s.status + '"><h2>' + esc(S["bd.sum.title"]) + "</h2>";
     if (s.status === "empty") h += "<p>" + esc(S["bd.sum.none"]) + "</p>";
     else {
@@ -55,22 +60,19 @@ export function createBudgetScreen(o) {
       }).join("") + "</ul>";
       h += "<p>" + esc(s.status === "fits" ? S["bd.sum.fits"] : fill(S["bd.sum.over"], { required: money(s.required), saving: money(s.saving), gap: money(s.gap) })) + "</p>";
       if (s.status === "over") {
-        h += '<div class="bd-actions">' + (s.raiseTo !== null ? Button({ id: "bd-raise", label: fill(S["bd.fix.raise"], { amount: money(s.raiseTo) }) }) : "") +
-          Button({ id: "bd-arrange", variant: "ghost", label: arranging ? S["bd.fix.close"] : S["bd.fix.arrange"] }) + "</div>";
+        h += '<div class="bd-actions">' + Button({ id: "bd-arrange", label: arranging ? S["bd.fix.close"] : S["bd.fix.arrange"] }) + "</div>";
         if (arranging) {
           var plan = stretchPlan(goals, b.saving, today);
           h += '<div class="bd-arrange"><h3>' + esc(fill(S["bd.arrange.title"], { saving: money(b.saving) })) + "</h3><ul>" + plan.map(function (r) {
             var line = r.newDate ? fill(S["bd.arrange.row"], { goal: r.name, from: r.oldDate ? fmtDate(r.oldDate) : "-", to: fmtDate(r.newDate) }) : fill(S["bd.arrange.never"], { goal: r.name });
             return "<li>" + esc(line) + "</li>";
-          }).join("") + "</ul><p class=\"bd-tip\">" + esc(S["bd.arrange.tip"]) + "</p></div>";
+          }).join("") + '</ul><p class="bd-tip">' + esc(S["bd.arrange.tip"]) + "</p></div>";
         }
       }
       if (s.poolShort > 0) h += '<p class="bd-warn">' + esc(fill(S["bd.pool.short"], { amount: money(s.allocated) })) + "</p>";
     }
     q("#bd-sum").innerHTML = h + "</div>";
-    var rb = q("#bd-raise"); if (rb) rb.addEventListener("click", function () { saving.value = fmtAmountInput(s.raiseTo); render(); });
     var ab = q("#bd-arrange"); if (ab) ab.addEventListener("click", function () { arranging = !arranging; render(); });
-    /* unallocated money: no return, with a rough "if invested" estimate */
     var n = q("#bd-notice");
     if (s.unallocated > 0) {
       var e = investedEstimate(s.unallocated);
@@ -90,7 +92,7 @@ export function createBudgetScreen(o) {
   Promise.all([o.budgetRepo.load(), o.repo.load()]).then(function (r) {
     if (destroyed) return;
     var b = r[0]; goals = r[1] || [];
-    if (b) inputs.forEach(function (i, k) { var v = [b.pool, b.income, b.expenses, b.saving][k]; i.value = v ? fmtAmountInput(v) : ""; });
+    if (b) { pool.value = b.pool ? fmtAmountInput(b.pool) : ""; income.value = b.income ? fmtAmountInput(b.income) : ""; expenses.value = b.expenses ? fmtAmountInput(b.expenses) : ""; }
     render();
   }).catch(function () { if (!destroyed) showToast(S["bd.loadFailed"]); });
   setTimeout(function () { var t = q("#bd-title"); if (t) t.focus(); }, 0);
