@@ -19,31 +19,40 @@ function ring(pct) {
   return '<svg class="bd-ring" viewBox="0 0 ' + size + " " + size + '" aria-hidden="true"><circle class="bd-ring-track" cx="100" cy="100" r="' + r + '" fill="none" stroke-width="' + sw + '"/>' +
     '<circle class="bd-ring-arc" cx="100" cy="100" r="' + r + '" fill="none" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + a.toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 100 100)"/></svg>';
 }
-/* A bar of what is covered in practice (filled) against what the goals need (the striped rest). */
-function bar(got, need) {
-  var pct = need > 0 ? Math.max(0, Math.min(100, got / need * 100)) : 100;
-  return '<span class="bd-bar' + (got < need - 1e-9 ? " short" : "") + '"><i style="width:' + pct.toFixed(1) + '%"></i></span>';
-}
-function meter(label, got, need) {
-  if (need <= 0) return "";
-  return '<div class="bd-meter"><div class="bd-meter-top"><span>' + esc(label) + '</span><b class="num">' + esc(fill(S["bd.meter.of"], { got: money(got), need: money(need) })) + "</b></div>" + bar(got, need) + "</div>";
+function pct(got, need) { return need > 0 ? Math.max(0, Math.min(100, got / need * 100)) : 100; }
+/* Double ring: the outer ring is the starting amount, the inner ring the monthly deposit. A goal that is fully covered gets two closed rings and a check mark. */
+function rings(pi, pm, size, sw, ok) {
+  var h = size / 2, r1 = (size - sw) / 2, r2 = r1 - sw - 3, c1 = 2 * Math.PI * r1, c2 = 2 * Math.PI * r2;
+  function arc(cls, r, c, p) { return p > 0 ? '<circle class="' + cls + '" cx="' + h + '" cy="' + h + '" r="' + r + '" fill="none" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + (c * Math.min(p, 100) / 100).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 ' + h + " " + h + ')"/>' : ""; }
+  return '<svg class="bd-rings" viewBox="0 0 ' + size + " " + size + '" width="' + size + '" height="' + size + '" role="img" aria-label="' + esc(fill(S["bd.ring.aria"], { i: Math.round(pi), d: Math.round(pm) })) + '">' +
+    '<circle class="bd-r-track" cx="' + h + '" cy="' + h + '" r="' + r1 + '" fill="none" stroke-width="' + sw + '"/><circle class="bd-r-track" cx="' + h + '" cy="' + h + '" r="' + r2 + '" fill="none" stroke-width="' + sw + '"/>' +
+    arc("bd-r-i", r1, c1, pi) + arc("bd-r-d", r2, c2, pm) +
+    (ok ? '<text class="bd-r-check" x="' + h + '" y="' + (h + size * 0.08) + '" text-anchor="middle" font-size="' + Math.round(size * 0.24) + '">✓</text>' : "") + "</svg>";
 }
 /* The goal's own picture as a small polaroid (its emoji when it has no picture). */
 function polaroid(g) {
   var pic = g.image ? '<img src="' + esc(g.image) + '" alt="" loading="lazy" decoding="async">' : '<span class="bd-pol-emoji" aria-hidden="true">' + esc(g.emoji || "🎯") + "</span>";
   return '<span class="bd-pol" aria-hidden="true">' + pic + "</span>";
 }
-function rowHtml(r) {
-  var g = r.goal, tags = "";
-  if (r.depositShort) tags += '<em class="bd-flag">' + esc(S["bd.tag.deposit"]) + "</em>";
-  if (r.initialShort) tags += '<em class="bd-flag">' + esc(S["bd.tag.initial"]) + "</em>";
-  var lines = "";
-  if (r.need > 0) lines += '<div class="bd-line"><span>' + esc(S["bd.row.deposit"]) + '</span><b class="num">' + esc(r.depositShort ? fill(S["bd.meter.of"], { got: money(r.got), need: money(r.need) }) : money(r.need)) + "</b></div>" + bar(r.got, r.need);
-  else lines += '<div class="bd-line"><span>' + esc(S["card.noDeposit"]) + "</span></div>";
-  if (r.initialShort) lines += '<div class="bd-line"><span>' + esc(S["bd.row.initial"]) + '</span><b class="num">' + esc(fill(S["bd.meter.of"], { got: money(r.initialGot), need: money(r.initialNeed) })) + "</b></div>" + bar(r.initialGot, r.initialNeed);
-  return "<li>" + polaroid(g) + '<div class="bd-goal-main"><div class="bd-goal-head"><span class="bd-goal-name">' + esc(g.name) + "</span>" + tags + "</div>" + lines + "</div></li>";
+function lackLine(r) {
+  if (!r.depositShort && !r.initialShort) return '<div class="bd-lack ok">' + esc(S["bd.row.covered"]) + " ✓</div>";
+  var t = r.depositShort ? fill(S["bd.row.lack.deposit"], { amount: "<b>" + money(r.need - r.got) + "</b>" }) + (r.initialShort ? " " + fill(S["bd.row.lack.both"], { amount: "<b>" + money(r.initialNeed - r.initialGot) + "</b>" }) : "")
+    : fill(S["bd.row.lack.initial"], { amount: "<b>" + money(r.initialNeed - r.initialGot) + "</b>" });
+  return '<div class="bd-lack">' + t + "</div>";
 }
-
+/* A covered goal lights up; a goal that does not converge fades into the background. */
+function rowHtml(r) {
+  var ok = !r.depositShort && !r.initialShort;
+  return '<li class="bd-row ' + (ok ? "ok" : "dim") + '">' + polaroid(r.goal) + '<div class="bd-goal-main"><div class="bd-goal-name">' + esc(r.goal.name) + "</div>" + lackLine(r) + "</div>" +
+    rings(pct(r.initialGot, r.initialNeed), pct(r.got, r.need), 64, 7, ok) + "</li>";
+}
+function totalCard(al) {
+  var ok = al.depositGot >= al.depositNeed && al.initialGot >= al.initialNeed;
+  return '<div class="bd-total">' + rings(pct(al.initialGot, al.initialNeed), pct(al.depositGot, al.depositNeed), 104, 11, ok) + '<div class="bd-total-text"><b>' + esc(S["bd.all"]) + "</b>" +
+    "<span><i class=\"d-i\"></i>" + esc(fill(S["bd.total.initial"], { got: money(al.initialGot), need: money(al.initialNeed) })) + "</span>" +
+    "<span><i class=\"d-d\"></i>" + esc(fill(S["bd.total.deposit"], { got: money(al.depositGot), need: money(al.depositNeed) })) + "</span></div></div>";
+}
+var LEGEND = '<div class="bd-legend"><span><i class="d-i"></i>' + esc(S["bd.legend.initial"]) + '</span><span><i class="d-d"></i>' + esc(S["bd.legend.deposit"]) + "</span></div>";
 function amountField(id, icon, label, cls) {
   return '<label class="bd-chip ' + (cls || "") + '" for="' + id + '"><span class="bd-chip-top"><span>' + icon + " " + esc(label) + "</span>" + PencilIcon() + "</span>" +
     '<span class="bd-chip-val"><span aria-hidden="true">₪</span><input class="bd-in num" id="' + id + '" type="text" inputmode="numeric" autocomplete="off" dir="ltr" placeholder="0"></span></label>';
@@ -80,11 +89,11 @@ export function createBudgetScreen(o) {
     if (s.status === "empty") h += "<p>" + esc(S["bd.sum.none"]) + "</p>";
     else {
       var al = s.alloc;
-      h += meter(S["bd.meter.deposit"], al.depositGot, al.depositNeed) + meter(S["bd.meter.initial"], al.initialGot, al.initialNeed);
-      h += '<ul class="bd-goals">' + al.rows.map(rowHtml).join("") + "</ul>";
-      h += "<p>" + esc(s.status === "fits" ? S["bd.sum.fits"] : fill(S["bd.sum.over"], { required: money(s.required), saving: money(s.saving), gap: money(s.gap) })) + "</p>";
+      h += totalCard(al) + '<ul class="bd-goals">' + al.rows.map(rowHtml).join("") + "</ul>" + LEGEND;
+      h += "<p>" + esc(s.status === "fits" ? S["bd.sum.fits"] : s.gap > 0 ? fill(S["bd.sum.over"], { required: money(s.required), saving: money(s.saving), gap: money(s.gap) }) :
+        fill(S["bd.sum.overInitial"], { need: money(s.allocated), pool: money(b.pool), gap: money(s.poolShort) })) + "</p>";
       if (s.status === "over") h += '<p class="bd-tip">' + esc(S["bd.row.order"]) + "</p>";
-      if (s.status === "over") {
+      if (s.gap > 0) {
         h += '<div class="bd-actions">' + Button({ id: "bd-arrange", label: arranging ? S["bd.fix.close"] : S["bd.fix.arrange"] }) + "</div>";
         if (arranging) {
           var plan = stretchPlan(goals, b.saving, today);

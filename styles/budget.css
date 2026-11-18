@@ -48,23 +48,31 @@
 .bd-notice b { color: var(--date-label); font-size: 14px; }
 .bd-notice p { margin: var(--space-4) 0 0; font-size: 14px; line-height: 1.5; }
 
-/* Meters and goal rows: filled = covered in practice, striped gold = what is missing */
-.bd-meter { margin-bottom: var(--space-12); }
-.bd-meter-top, .bd-line { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-8); font-size: 13px; color: var(--color-text-secondary); margin-bottom: 4px; }
-.bd-meter-top b, .bd-line b { color: var(--color-text); font-weight: 500; }
-.bd-bar { display: block; height: 10px; border-radius: 999px; overflow: hidden; background: var(--color-surface-2); margin-bottom: var(--space-8); }
-.bd-bar.short { background: repeating-linear-gradient(135deg, rgba(235, 203, 136, 0.45) 0 5px, rgba(235, 203, 136, 0.12) 5px 10px); box-shadow: inset 0 0 0 1px var(--date-border); }
-.bd-bar i { display: block; height: 100%; background: var(--accent-mint-strong); border-radius: 999px; }
-.bd-goals { list-style: none; margin: var(--space-16) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-16); }
+/* Double rings: outer = starting amount (blue), inner = monthly deposit (mint) */
+.bd-r-track { stroke: rgba(56, 80, 97, 0.55); }
+.bd-r-i { stroke: var(--aurora-4); }
+.bd-r-d { stroke: var(--accent-mint-strong); }
+.bd-r-check { fill: var(--color-text); font-weight: 800; }
+.d-i, .d-d { display: inline-block; width: 10px; height: 10px; margin-inline-end: 6px; border-radius: 50%; }
+.d-i { background: var(--aurora-4); } .d-d { background: var(--accent-mint-strong); }
+.bd-total { display: flex; align-items: center; gap: var(--space-16); }
+.bd-total-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+.bd-total-text b { font-size: 15px; font-weight: 600; color: var(--color-text); }
+.bd-goals { list-style: none; margin: var(--space-16) 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 @media (max-width: 899px) { .bd-goals { max-height: 460px; overflow-y: auto; padding-inline-end: 4px; } }
-.bd-goals li { display: flex; align-items: flex-start; gap: var(--space-12); }
+.bd-row { display: flex; align-items: center; gap: var(--space-12); padding: 12px; border-radius: 16px; background: var(--color-surface-2); transition: opacity .2s ease; }
+/* Covered: a mint frame with a soft glow. Not covered: faded back, grey picture. */
+.bd-row.ok { box-shadow: 0 0 0 1px rgba(120, 206, 178, 0.45), 0 0 18px rgba(120, 206, 178, 0.18); }
+.bd-row.dim { opacity: 0.6; }
+.bd-row.dim .bd-pol { filter: grayscale(0.85) brightness(0.85); }
 .bd-goal-main { flex: 1; min-width: 0; }
-.bd-goal-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 6px; }
-.bd-goal-name { font-size: 15px; font-weight: 500; overflow-wrap: anywhere; margin-inline-end: auto; }
-.bd-flag { font-style: normal; font-size: 11px; font-weight: 500; padding: 2px var(--space-8); border-radius: var(--radius-pill); background: var(--date-bg); color: var(--date-value); border: 1px solid var(--date-border); white-space: nowrap; }
+.bd-goal-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; overflow-wrap: anywhere; }
+.bd-lack { font-size: 13px; line-height: 1.5; color: var(--date-value); }
+.bd-lack.ok { color: var(--accent-mint-strong); font-weight: 500; }
+.bd-legend { display: flex; flex-wrap: wrap; gap: var(--space-16); margin-top: var(--space-16); font-size: 12px; color: var(--color-text-secondary); }
 /* The small original polaroid: cream frame, wider strip at the bottom, a slight tilt */
 .bd-pol { flex: none; width: 56px; padding: 3px 3px 11px; background: var(--polaroid, #f4efe6); border-radius: 2px; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.45); transform: rotate(-3deg); }
-.bd-goals li:nth-child(even) .bd-pol { transform: rotate(2.5deg); }
+.bd-row:nth-child(even) .bd-pol { transform: rotate(2.5deg); }
 .bd-pol img, .bd-pol-emoji { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
 .bd-pol-emoji { display: grid; place-items: center; font-size: 24px; background: var(--color-surface-2); }
 .bd-titlebar h1:focus { outline: none; }

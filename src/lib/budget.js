@@ -40,14 +40,15 @@ export function summarize(b, goals, today) {
   var allocated = mine.reduce(function (s, g) { return s + num(g.initialAmount); }, 0);
   var income = num(b.income), expenses = num(b.expenses), saving = num(b.saving), pool = num(b.pool);
   var free = income - expenses, gap = required - saving;
-  var status = mine.length === 0 ? "empty" : gap <= 0 ? "fits" : "over";
+  var poolShort = Math.max(0, allocated - pool);
+  var status = mine.length === 0 ? "empty" : gap <= 0 && poolShort <= 0 ? "fits" : "over"; /* over: the monthly deposits or the starting amounts do not fit */
   return {
     goals: mine, alloc: allocate(b, goals, today), required: required, free: free, saving: saving, gap: gap, status: status,
     savingTooHigh: saving > Math.max(free, 0),
     savingRatePct: income > 0 ? Math.round(saving / income * 1000) / 10 : null,
-    allocated: allocated, unallocated: Math.max(0, pool - allocated), poolShort: Math.max(0, allocated - pool),
+    allocated: allocated, unallocated: Math.max(0, pool - allocated), poolShort: poolShort,
     /* one tap fix: raise the saving to the required amount when the free money covers it */
-    raiseTo: status === "over" && required <= free ? required : null
+    raiseTo: gap > 0 && required <= free ? required : null
   };
 }
 

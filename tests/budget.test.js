@@ -39,6 +39,8 @@ check("half the saving doubles the time", p.length === 1 && p[0].status === "ok"
 check("no stretch needed when it fits", stretchPlan(one, 1000, today).length === 0);
 p = stretchPlan(one, 0, today);
 check("zero saving: goal becomes unreachable", p[0].newDate === null && p[0].status === "unreachable");
+s = summarize({ pool: 6000, income: 12000, expenses: 8500, saving: 2500 }, goals, today);
+check("deposits fit but starting amounts do not: still over, no deposit gap", s.status === "over" && s.gap <= 0 && s.poolShort === 4000, s.status + " " + s.poolShort);
 // allocate: first goals are covered first; the rest get what is left
 let al = allocate({ pool: 70000, saving: 2000 }, goals, today);
 check("deposits: first goal full, second partial, third none", al.rows[0].got === 1000 && al.rows[1].got === 1000 && al.rows[2].got === 0, al.rows.map((r) => r.got).join());
