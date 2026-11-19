@@ -3,7 +3,7 @@ import { S } from "../strings.js";
 /* Semicircle gauge, modern and tapered: the band is thin at the start (0%) and grows steadily thicker toward the end (100%), with rounded ends.
    The neutral track is the whole band; progress is drawn over it in mint (a soft gradient from strong mint to light mint). The four milestone parts (25 / 50 / 75 / 100)
    are separated only by a hairline in the card color, no gaps. RTL: 0% on the right, 100% on the left, drawn over the top. No knob, no ticks, no traffic light.
-   Centered: the percentage, then the accumulated amount, then "of target". Pure: Gauge({ pct, accumulated, target, id, bare }) returns an SVG string. */
+   Centered: the percentage, then the accumulated amount, then "of target". The interest earned so far (o.interest, optional) shows as a cool-tinted tip at the end of the progress band (its share of the target, at least 1.2%) and a small "of which interest" line under the amount. Pure: Gauge({ pct, accumulated, target, id, bare, interest }) returns an SVG string. */
 var CX = 100, CY = 100, R = 78;
 var W_START = 3.5, W_END = 11; /* band thickness at 0% and at 100% */
 var MILESTONES = [25, 50, 75];
@@ -31,9 +31,10 @@ function num(n) { return Math.round(n).toLocaleString("he-IL"); }
 
 export function Gauge(o) {
   var pct = Math.max(0, Math.min(100, o.pct)), gid = "gg-" + o.id, fillRef = ' fill="url(#' + gid + ')"';
-  var svg0 = '<svg viewBox="0 0 200 122" role="img" aria-label="';
+  var interest = !o.bare && o.interest >= 1 && pct > 0 ? Math.round(o.interest) : 0;
+  var svg0 = '<svg viewBox="0 0 200 ' + (interest ? 132 : 122) + '" role="img" aria-label="';
   var label = o.bare ? S["a11y.progress"].replace("{pct}", String(Math.round(pct))) :
-    S["card.gaugeAria"].replace("{pct}", String(Math.round(pct))).replace("{amount}", num(o.accumulated)).replace("{target}", num(o.target));
+    S["card.gaugeAria"].replace("{pct}", String(Math.round(pct))).replace("{amount}", num(o.accumulated)).replace("{target}", num(o.target)) + (interest ? ", " + S["card.interestOf"].replace("{amount}", num(interest)) : "");
   /* Aurora gradient spans the active arc only (start at 0% on the right, end at the progress tip). */
   var gx1 = CX + R, gx2 = Math.min(pointOnArc(pct, R)[0], gx1 - 8);
   var svg = svg0.replace("<svg ", '<svg class="' + (pct >= 100 ? "g-done" : "") + '" ') + esc(label) + '"><defs>' +
@@ -42,7 +43,8 @@ export function Gauge(o) {
     '<stop offset="0.7" style="stop-color:var(--aurora-3)"/><stop offset="1" style="stop-color:var(--aurora-4)"/></linearGradient>' +
     '<linearGradient id="gp-' + o.id + '" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--aurora-3)"/><stop offset="1" style="stop-color:var(--aurora-4)"/></linearGradient></defs>' +
     '<path class="g-track" d="' + bandPath(0, 100) + '"/>' + cap(0, "g-track") + cap(100, "g-track");
-  if (pct > 0) svg += '<g class="g-glow"><path class="g-fill" d="' + bandPath(0, pct) + '"' + fillRef + "/>" + cap(0, "g-fill", fillRef) + cap(pct, "g-fill", fillRef) + "</g>";
+  if (pct > 0) svg += '<g class="g-glow"><path class="g-fill" d="' + bandPath(0, pct) + '"' + fillRef + "/>" + cap(0, "g-fill", fillRef) + cap(pct, "g-fill", fillRef) +
+    (interest ? '<path class="g-int" d="' + bandPath(Math.max(0, pct - Math.max(1.2, Math.min(pct, interest / o.target * 100))), pct) + '"/>' + cap(pct, "g-int") : "") + "</g>";
   MILESTONES.forEach(function (m) {
     var a = pointOnArc(m, R - thickness(m) / 2 - 1), b = pointOnArc(m, R + thickness(m) / 2 + 1);
     svg += '<line class="g-sep" x1="' + a[0].toFixed(2) + '" y1="' + a[1].toFixed(2) + '" x2="' + b[0].toFixed(2) + '" y2="' + b[1].toFixed(2) + '"/>';
@@ -50,7 +52,8 @@ export function Gauge(o) {
   if (!o.bare) {
     svg += '<text class="g-pct" x="100" y="56" text-anchor="middle" dominant-baseline="central" fill="url(#gp-' + o.id + ')">' + Math.round(pct) + "%</text>" +
       '<text class="g-amount" x="100" y="90" text-anchor="middle">' + "₪" + num(o.accumulated) + "</text>" +
-      '<text class="g-sub" x="100" y="108" text-anchor="middle">' + S["card.of"].replace("{target}", num(o.target)) + "</text>";
+      '<text class="g-sub" x="100" y="108" text-anchor="middle">' + S["card.of"].replace("{target}", num(o.target)) + "</text>" +
+      (interest ? '<text class="g-int-t" x="100" y="125" text-anchor="middle">' + S["card.interestOf"].replace("{amount}", num(interest)) + "</text>" : "");
   }
   return svg + "</svg>";
 }

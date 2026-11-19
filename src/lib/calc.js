@@ -116,13 +116,14 @@ export function computeGoal(goal, today) {
   const plan = monthsToGoal(T, P, PMT, r);
   const k = completedMonths(start, today);
   const balance = balanceAfter(P, PMT, r, k);
+  const interest = Math.max(0, balance - (P + PMT * k)); /* what the return added so far: balance minus what was actually put in */
   const achieved = balance >= T;
   const progressPct = achieved ? 100 : Math.min(100, (balance / T) * 100);
   const remaining = Math.max(T - balance, 0);
   const targetDate = plan.months === null ? null : addMonths(start, plan.months);
   const nextMilestonePct = nextMilestone(progressPct);
   const amountToNextMilestone = nextMilestonePct === null ? 0 : Math.max(nextMilestonePct / 100 * T - balance, 0);
-  return { plan, months: plan.months, targetDate, k, balance, achieved, progressPct, remaining,
+  return { plan, months: plan.months, targetDate, k, balance, interest, achieved, progressPct, remaining,
     daysRemaining: daysRemaining(today, targetDate), nextMilestonePct, amountToNextMilestone };
 }
 

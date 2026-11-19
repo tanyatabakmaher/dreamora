@@ -36,7 +36,7 @@ export function GoalCard(g, today, viewer) {
     '<div class="banner-tag">' + TrackTag(g.trackId, netReturnPct(g.annualReturnPct, g.managementFeePct)) + "</div>" +
     '<div class="banner-name">' + (g.ownerName ? '<div class="owner-line">' + esc(S["card.by"].replace("{name}", g.ownerName)) + "</div>" : "") + "<h2>" + esc(g.name) + "</h2></div>" +
     AvatarStack(g, viewer) + ShareIndicator(g) + "</div>" +
-    '<div class="gauge">' + Gauge({ pct: c.progressPct, accumulated: c.balance, target: g.targetAmount, id: g.id.replace(/[^A-Za-z0-9_-]/g, "") }) + "</div>" +
+    '<div class="gauge">' + Gauge({ pct: c.progressPct, accumulated: c.balance, interest: c.interest, target: g.targetAmount, id: g.id.replace(/[^A-Za-z0-9_-]/g, "") }) + "</div>" +
     '<div class="chips">' +
     Chip({ tone: "lavender", icon: CalendarIcon(), label: S["card.target"], value: c.targetDate ? fmtDate(c.targetDate) : "—" }) +
     Chip({ tone: "sky", icon: HourglassIcon(), label: S["card.daysLeft"], value: c.daysRemaining === null ? "—" : S["card.daysValue"].replace("{days}", String(c.daysRemaining)) }) +

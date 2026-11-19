@@ -31,6 +31,7 @@ export const S = {
   "home.empty.subtitle": "בואו נתחיל במטרה הראשונה שלכם",
   "home.empty.cta": "יצירת מטרה ראשונה",
   "card.of": "מתוך {target} ₪",
+  "card.interestOf": "מתוכם ריבית ₪{amount}",
   "card.target": "יעד",
   "card.daysLeft": "נותרו",
   "card.daysValue": "{days} ימים",

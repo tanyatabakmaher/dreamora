@@ -42,6 +42,8 @@ check("completed: future start = 0", c.completedMonths(d("2027-01-01"), d("2026-
 const g = { targetAmount: 10000, initialAmount: 0, monthlyDeposit: 500, annualReturnPct: 9, startDate: "2026-03-14" };
 let o = c.computeGoal(g, d("2026-11-14")); // 8 completed months
 check("compute k=8", o.k === 8, o.k);
+check("interest = balance - deposited (8 x 500)", Math.abs(o.interest - (o.balance - 4000)) < 1e-9 && o.interest > 0, o.interest.toFixed(2));
+check("no interest before any month is complete", c.computeGoal(g, d("2026-03-20")).interest === 0);
 check("compute not achieved, pct sane", !o.achieved && o.progressPct > 38 && o.progressPct < 45, o.progressPct.toFixed(1));
 check("compute targetDate = start+19m", c.toISODate(o.targetDate) === "2027-10-14", c.toISODate(o.targetDate));
 o = c.computeGoal(g, d("2030-01-01"));

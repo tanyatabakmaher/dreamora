@@ -42,6 +42,8 @@
 .g-fill { stroke: none; }
 .g-glow { filter: drop-shadow(0 0 4px var(--aurora-glow)); }
 .g-done .g-glow { filter: brightness(1.1) saturate(1.1) drop-shadow(0 0 5px rgba(93, 211, 232, 0.28)); }
+.g-int { fill: var(--aurora-4); stroke: none; }
+.g-int-t { font-size: 8.5px; font-weight: 600; fill: var(--aurora-4); }
 .g-sep { stroke: var(--color-surface); stroke-width: 1.5; }
 .g-pct { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; } /* 22px at the card's rendered gauge width */
 .g-amount { font-size: 23px; font-weight: 700; fill: var(--gauge-amount); font-variant-numeric: tabular-nums; } /* 30px rendered */
