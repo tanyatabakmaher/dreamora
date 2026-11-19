@@ -58,10 +58,10 @@ export function createBudgetSummary(o) {
     /* narrow: the gap leads (or "covered"), a bar shows how much of the need is there, and the exact amounts are one small line */
     var rowNarrow = function (cls, label, have, need, leftKey) {
       var gap = need - have, ok = gap <= 0;
-      var top = ok ? pill(true, S["bs.covered"]) : '<b class="bs-gap num">-' + esc(money(gap)) + "</b>";
+      var top = ok ? pill(true, S["bs.covered"]) : '<b class="bs-gap">-' + esc(money(gap)) + "</b>";
       var line = ok ? esc(fill(S["bs.need"], { need: money(need) })) : '<span class="num">' + esc(money(have)) + " / " + esc(money(need)) + "</span>";
       var left = ok && have > need ? '<div class="bs-left">' + esc(fill(S[leftKey], { amount: money(have - need) })) + "</div>" : "";
-      return '<div class="bs-nrow"><div class="bs-nrow-top">' + dot(cls) + "<span>" + esc(label) + "</span>" + top + '</div><div class="bs-bar' + (ok ? "" : " gap") + '"><i style="width:' + pct(have, need).toFixed(0) + '%"></i></div><div class="bs-nline">' + line + "</div>" + left + "</div>";
+      return '<div class="bs-nrow"><div class="bs-nrow-top">' + dot(cls) + "<span>" + esc(label) + "</span>" + top + '</div><div class="bs-bar ' + cls + '"><i style="width:' + pct(have, need).toFixed(0) + '%"></i></div><div class="bs-nline">' + line + "</div>" + left + "</div>";
     };
     el.innerHTML = '<div class="bs-card"><div class="bs-panel">' +
       /* wide screens */
