@@ -10,6 +10,9 @@ import { PencilIcon } from "./ui/Icons.js";
 function fill(t, vars) { return Object.keys(vars).reduce(function (s, k) { return s.split("{" + k + "}").join(vars[k]); }, t); }
 function pct(used, avail) { return avail > 0 ? Math.max(0, Math.min(100, used / avail * 100)) : (used > 0 ? 100 : 0); }
 
+/* rings show what is left of what is available: full when nothing is allocated, empty when used up or over (same as the goal form panel) */
+function left(avail, used) { return avail > 0 ? Math.max(0, Math.min(100, (avail - used) / avail * 100)) : 0; }
+
 function rings(pi, pm, size, sw, gid) {
   var h = size / 2, r1 = (size - sw) / 2, r2 = r1 - sw - 4;
   function arc(r, p, g) {
@@ -44,7 +47,7 @@ export function createBudgetSummary(o) {
     var iniPill = iniGap > 0 ? pill(false, fill(S["bs.lack"], { gap: money(iniGap) })) : pill(true, S["bs.covered"]);
     var depPill = depGap > 0 ? pill(false, fill(S["bs.lack"], { gap: money(depGap) })) : pill(true, S["bs.covered"]);
     var ring = function (size, sw, id) {
-      return '<div class="bs-ringbox">' + rings(pct(s.allocated, budget.pool), pct(s.required, s.saving), size, sw, id) +
+      return '<div class="bs-ringbox">' + rings(left(budget.pool, s.allocated), left(s.saving, s.required), size, sw, id) +
         '<div class="bs-center' + (bad ? " bad" : "") + '" aria-hidden="true">' + (bad ? "!" : "✓") + "</div></div>";
     };
     var edit = '<button type="button" class="bs-edit" aria-label="' + esc(S["bs.editAria"]) + '">' + PencilIcon() + "</button>";
