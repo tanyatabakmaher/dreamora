@@ -136,6 +136,7 @@ export const S = {
   "header.menuAria": "תפריט",
   "header.settingsAria": "הגדרות",
   "menu.logout": "התנתקות",
+  "menu.goals": "המטרות שלי",
   "menu.budget": "התקציב שלי",
   "bd.title": "התקציב שלי",
   "bd.subtitle": "מזינים הכנסה והוצאות, ומה שנשאר הוא החיסכון החודשי שלכם",

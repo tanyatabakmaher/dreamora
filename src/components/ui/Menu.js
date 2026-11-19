@@ -1,12 +1,12 @@
 import { esc } from "../../lib/dom.js";
-/* Dropdown menu opened from a button. items: [{ id, label, icon (markup), danger, onSelect }]. Add an item to the list to add an action.
+/* Dropdown menu opened from a button. items: [{ id, label, icon (markup), danger, current (the page we are on), onSelect }]. Add an item to the list to add an action.
    Returns { el, close, destroy }. Place `el` in the same positioned wrapper as the button. */
 export function createMenu(o) {
   var btn = o.button, items = o.items;
   var el = document.createElement("div");
   el.className = "menu"; el.setAttribute("role", "menu"); el.hidden = true;
   el.innerHTML = items.map(function (it) {
-    return '<button type="button" role="menuitem" class="menu-item' + (it.danger ? " danger" : "") + '" data-id="' + esc(it.id) + '">' +
+    return '<button type="button" role="menuitem" class="menu-item' + (it.danger ? " danger" : "") + (it.current ? " current" : "") + '" data-id="' + esc(it.id) + '"' + (it.current ? ' aria-current="page"' : "") + ">" +
       (it.icon || "") + "<span>" + esc(it.label) + "</span></button>";
   }).join("");
   function isOpen() { return !el.hidden; }

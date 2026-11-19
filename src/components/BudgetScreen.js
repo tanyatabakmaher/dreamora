@@ -3,7 +3,10 @@ import { S } from "../strings.js";
 import { money, fmtDate, todayDate, fmtAmountInput, parseAmount } from "../lib/format.js";
 import { summarize, investedEstimate, stretchPlan } from "../lib/budget.js";
 import { Button } from "./ui/Button.js";
-import { HeaderLogo } from "./ui/Logo.js";
+import { createAppHeader } from "./AppHeader.js";
+import { createProfileDialog } from "./ProfileDialog.js";
+import { createNotificationsScreen } from "./NotificationsScreen.js";
+import { markRead, markAllRead, unreadCount } from "../lib/notifications.js";
 import { PencilIcon } from "./ui/Icons.js";
 import { showToast } from "./ui/Toast.js";
 
@@ -60,9 +63,7 @@ export function amountField(id, icon, label, cls) {
 }
 
 export function createBudgetScreen(o) {
-  var el = fromHTML('<div class="bd-page"><div class="appbar"><div class="appbar-in">' +
-    '<div class="appbar-start"><div class="appbar-brand">' + HeaderLogo({ height: 40 }) + "</div></div>" +
-    '<div class="appbar-end"><button type="button" class="linkbtn" id="bd-back">' + esc(S["bd.back"]) + "</button></div></div></div>" +
+  var el = fromHTML('<div class="bd-page">' +
     '<div class="wrap bd-wrap"><div class="titlebar bd-titlebar"><div><h1 id="bd-title" tabindex="-1">' + esc(S["bd.title"]) + '</h1><p class="bd-sub">' + esc(S["bd.subtitle"]) + "</p></div></div>" +
     '<div class="bd-grid"><section class="bd-hero"><div class="bd-hero-in">' +
     '<div class="bd-donut" aria-live="polite"><div id="bd-ring"></div><div class="bd-donut-disc"></div><div class="bd-donut-text" id="bd-donut-text"></div></div>' +
@@ -70,6 +71,47 @@ export function createBudgetScreen(o) {
     Button({ id: "bd-save", label: S["bd.save"], block: true }) +
     '</div></section><section class="bd-result" aria-live="polite"><div class="bd-result-in"><div id="bd-sum"></div><div id="bd-notice"></div></div></section></div></div></div>');
   var q = function (s) { return el.querySelector(s); };
+  /* The same brand bar as the goals page; the menu marks this page as the current one. Opening a notification goes back to the goals. */
+  var profile = { name: "", email: "", photo: null, phone: "" }, notifications = [];
+  var profileDialog = createProfileDialog({
+    save: function (p) { return o.auth.updateProfile(p); },
+    onSaved: function (p) { profile = p; header.setProfile(p); }
+  });
+  var notifScreen = createNotificationsScreen({
+    onOpen: function (n) {
+      notifications = markRead(notifications, n.id); refreshBell();
+      o.notifRepo.markRead(n.id).catch(function () { showToast(S["notif.failed"]); });
+      notifScreen.close(); o.onBack();
+    },
+    onRespond: function (n, accept) {
+      if (!o.sharing) return;
+      o.sharing.respond(n.id, accept).then(function (goalId) {
+        notifications = notifications.map(function (x) {
+          return x.id === n.id ? Object.assign({}, x, { read: true, payload: Object.assign({}, x.payload, { state: accept && goalId ? "accepted" : "declined" }) }) : x;
+        });
+        refreshBell(); notifScreen.update(notifications, todayDate());
+        if (accept && goalId) { notifScreen.close(); o.onBack(); }
+      }).catch(function () { showToast(S["notif.failed"]); notifScreen.update(notifications, todayDate()); });
+    },
+    onMarkAll: function () {
+      notifications = markAllRead(notifications); refreshBell(); notifScreen.update(notifications, todayDate());
+      o.notifRepo.markAllRead().catch(function () { showToast(S["notif.failed"]); });
+    }
+  });
+  function refreshBell() { header.setUnread(unreadCount(notifications)); }
+  var header = createAppHeader({
+    current: "budget",
+    onGoals: function () { o.onBack(); },
+    onNotifications: function (opener) {
+      if (notifScreen.isOpen()) { notifScreen.close(); return; }
+      notifScreen.open(notifications, todayDate(), opener, Math.max(0, Math.round(header.el.getBoundingClientRect().bottom)));
+    },
+    onProfile: function (opener) { profileDialog.open(profile, opener); },
+    onLogout: function () { o.onLogout(); }
+  });
+  el.insertBefore(header.el, el.firstChild);
+  o.auth.getProfile().then(function (p) { profile = p; header.setProfile(p); }).catch(function () {});
+  o.notifRepo.load().then(function (n) { notifications = n; refreshBell(); }).catch(function () {});
   var goals = [], pool = q("#bd-pool"), income = q("#bd-income"), expenses = q("#bd-expenses"), arranging = false, destroyed = false;
   var inputs = [pool, income, expenses];
 
@@ -116,7 +158,6 @@ export function createBudgetScreen(o) {
   }
 
   inputs.forEach(function (i) { i.addEventListener("input", function () { i.value = fmtAmountInput(i.value); render(); }); });
-  q("#bd-back").addEventListener("click", function () { o.onBack(); });
   q("#bd-save").addEventListener("click", function () {
     var btn = q("#bd-save"); btn.disabled = true;
     o.budgetRepo.save(values()).then(function () { showToast(S["bd.saved"], "success"); })
@@ -131,5 +172,5 @@ export function createBudgetScreen(o) {
     render();
   }).catch(function () { if (!destroyed) showToast(S["bd.loadFailed"]); });
   setTimeout(function () { var t = q("#bd-title"); if (t) t.focus(); }, 0);
-  return { el: el, destroy: function () { destroyed = true; el.remove(); } };
+  return { el: el, destroy: function () { destroyed = true; notifScreen.destroy(); profileDialog.destroy(); header.destroy(); el.remove(); } };
 }

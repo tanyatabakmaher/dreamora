@@ -24,6 +24,10 @@ function mount(screen) {
 function showAuth(initialError) {
   mount(createAuthScreen({ auth: auth, demo: CONFIG.mode !== "supabase", initialError: initialError, onAuthed: enter }));
 }
+function logout() {
+  try { window.sessionStorage.removeItem("budget_prompted"); } catch (e) {}
+  auth.signOut().then(function () { showAuth(); }).catch(function () { showToast(S["error.signOutFailed"]); });
+}
 function showApp() {
   mount(createGoalsScreen({
     repo: createGoalsRepo(CONFIG),
@@ -31,7 +35,7 @@ function showApp() {
     sharing: createSharingApi(CONFIG), /* null in demo mode: invitations are never simulated locally */
     auth: auth,
     onBudget: showBudget,
-    onLogout: function () { try { window.sessionStorage.removeItem("budget_prompted"); } catch (e) {} auth.signOut().then(function () { showAuth(); }).catch(function () { showToast(S["error.signOutFailed"]); }); }
+    onLogout: logout
   }));
 }
 
@@ -49,7 +53,7 @@ function enter() {
 }
 
 function showBudget() {
-  mount(createBudgetScreen({ repo: createGoalsRepo(CONFIG), budgetRepo: createBudgetRepo(CONFIG), onBack: showApp }));
+  mount(createBudgetScreen({ repo: createGoalsRepo(CONFIG), budgetRepo: createBudgetRepo(CONFIG), auth: auth, notifRepo: createNotificationsRepo(CONFIG), sharing: createSharingApi(CONFIG), onLogout: logout, onBack: showApp }));
 }
 
 /* An email link that was already used or has expired comes back with an error in the address. */

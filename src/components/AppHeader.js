@@ -2,12 +2,12 @@ import { fromHTML, esc } from "../lib/dom.js";
 import { S } from "../strings.js";
 import { Avatar } from "./ui/Avatar.js";
 import { HeaderLogo } from "./ui/Logo.js";
-import { MenuIcon, LogoutIcon, BellIcon, WalletIcon } from "./ui/Icons.js";
+import { MenuIcon, LogoutIcon, BellIcon, WalletIcon, FlagIcon } from "./ui/Icons.js";
 import { badgeText } from "../lib/notifications.js";
 import { createMenu } from "./ui/Menu.js";
 
 /* The purple brand bar, laid out for right-to-left: logo + wordmark at the start (right); at the end (left) the menu button (opens a dropdown from the right edge) then the logo; at the end (left): notifications bell with unread badge, a divider, then the profile (name and avatar, avatar on the outer edge, opens the profile).
-   o.onProfile(openerEl), o.onNotifications(openerEl), o.onLogout(), o.onBudget() (optional). setUnread(count). setProfile({name, photo}) refreshes the avatar and name. */
+   o.onProfile(openerEl), o.onNotifications(openerEl), o.onLogout(), o.onBudget() and o.onGoals() (optional), o.current = "goals" (default) | "budget": the menu marks that page. setUnread(count). setProfile({name, photo}) refreshes the avatar and name. */
 export function createAppHeader(o) {
   var el = fromHTML('<div class="appbar"><div class="appbar-in">' +
     '<div class="appbar-start"><div class="menu-wrap"><button type="button" class="gear-btn" id="ah-settings" aria-label="' + esc(S["header.menuAria"]) + '">' + MenuIcon() + "</button></div>" +
@@ -19,7 +19,8 @@ export function createAppHeader(o) {
   var profileBtn = el.querySelector("#ah-profile");
   var menu = createMenu({
     button: el.querySelector("#ah-settings"),
-    items: [{ id: "budget", label: S["menu.budget"], icon: WalletIcon(), onSelect: function () { if (o.onBudget) o.onBudget(); } },
+    items: [{ id: "goals", label: S["menu.goals"], icon: FlagIcon(), current: o.current !== "budget", onSelect: function () { if (o.current === "budget" && o.onGoals) o.onGoals(); } },
+      { id: "budget", label: S["menu.budget"], icon: WalletIcon(), current: o.current === "budget", onSelect: function () { if (o.current !== "budget" && o.onBudget) o.onBudget(); } },
       { id: "logout", label: S["menu.logout"], icon: LogoutIcon(), danger: true, onSelect: function () { o.onLogout(); } }]
   });
   el.querySelector(".menu-wrap").appendChild(menu.el);
