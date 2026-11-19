@@ -53,6 +53,8 @@ export function createGoalList(o) {
     if (f) { filter = f.dataset.filter; render(goals); var again = el.querySelector('[data-filter="' + filter + '"]'); if (again) again.focus(); return; }
     var add = ev.target.closest('[data-action="add"]');
     if (add) { o.onAdd(add); return; }
+    var del = ev.target.closest('[data-action="delete"]');
+    if (del) { ev.stopPropagation(); var dc = del.closest(".card"); if (o.onDelete && dc) o.onDelete(findGoal(dc.dataset.id), del); return; }
     var card = ev.target.closest(".card");
     if (card) o.onEdit(findGoal(card.dataset.id), card);
   });

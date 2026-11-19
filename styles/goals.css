@@ -268,3 +268,10 @@
   .fab-plus svg { width: 14px; height: 14px; stroke-width: 3.2; }
   .fab:active { transform: scale(0.96); }
 }
+
+/* Cream strip under the picture: start date and the delete button */
+.card-foot { position: absolute; inset-inline: -9px; bottom: -30px; height: 30px; display: flex; align-items: center; justify-content: space-between; padding-inline: 8px 6px; color: color-mix(in srgb, var(--bg-app) 62%, var(--polaroid, #f4efe6)); font-size: 11px; cursor: default; }
+.card-start { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-del { display: grid; place-items: center; width: 30px; height: 30px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: none; color: inherit; cursor: pointer; flex: none; }
+.card-del:hover { color: color-mix(in srgb, var(--danger) 65%, var(--bg-app)); background: color-mix(in srgb, var(--danger) 18%, transparent); }
+.card-del:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 0; }

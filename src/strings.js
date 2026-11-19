@@ -36,6 +36,8 @@ export const S = {
   "card.daysValue": "{days} ימים",
   "card.trackReturn": "{track} · {pct}% לשנה",
   "card.monthlyDeposit": "מפקידים {amount} ₪ בכל חודש",
+  "card.startedOn": "התחלת חיסכון: {date}",
+  "card.deleteAria": "מחיקת המטרה: {name}",
   "card.noDeposit": "אין הפקדה חודשית",
   "card.achievedBadge": "🎉 הושג!",
   "card.achievedHeader": "היעד הושג בהצלחה!",

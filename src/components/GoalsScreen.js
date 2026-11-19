@@ -76,7 +76,8 @@ export function createGoalsScreen(o) {
     canShare: function () { return !!o.sharing; },
     viewer: function () { return { name: profile.name, photo: profile.photo }; },
     onAdd: function (opener) { chooser.open(opener, opener.dataset.mode || null); },
-    onEdit: function (g, opener) { if (g) form.open(g, opener); }
+    onEdit: function (g, opener) { if (g) form.open(g, opener); },
+    onDelete: function (g, opener) { if (g) removeGoal(g, opener); }
   });
   /* The budget overview sits between the title and the list; it re-renders whenever the list does. */
   var summary = createBudgetSummary({ budgetRepo: o.budgetRepo, onOpen: function () { if (o.onBudget) o.onBudget(); } });
@@ -86,6 +87,18 @@ export function createGoalsScreen(o) {
   el.querySelector(".wrap").appendChild(list.el);
   if (o.budgetRepo) summary.load();
   var confirm = createConfirm({ title: S["delete.confirm.title"], body: S["delete.confirm.body"], yes: S["delete.confirm.yes"], no: S["delete.confirm.no"] });
+  /* Delete after the "are you sure" dialog; used by the card's trash button and by the edit form. */
+  function removeGoal(g, openerEl, closeForm) {
+    confirm.ask(openerEl).then(function (yes) {
+      if (!yes) return;
+      goals = goals.filter(function (x) { return x.id !== g.id; });
+      notifications = removeForGoal(notifications, g.id); refreshBell();
+      list.render(goals);
+      if (closeForm) closeForm();
+      o.notifRepo.removeForGoal(g.id).catch(function () {});
+      o.repo.remove(g.id).catch(function () { showToast(S["save.failed"]); });
+    });
+  }
   function reloadGoals() {
     return o.repo.load().then(function (g) { goals = g; list.render(goals); }).catch(function () {});
   }
@@ -113,17 +126,7 @@ export function createGoalsScreen(o) {
     sharing: !!o.sharing,
     ownEmail: function () { return profile.email; },
     onSave: saveGoal,
-    onDelete: function (g, openerEl, closeForm) {
-      confirm.ask(openerEl).then(function (yes) {
-        if (!yes) return;
-        goals = goals.filter(function (x) { return x.id !== g.id; });
-        notifications = removeForGoal(notifications, g.id); refreshBell();
-        list.render(goals);
-        closeForm();
-        o.notifRepo.removeForGoal(g.id).catch(function () {});
-        o.repo.remove(g.id).catch(function () { showToast(S["save.failed"]); });
-      });
-    }
+    onDelete: function (g, openerEl, closeForm) { removeGoal(g, openerEl, closeForm); }
   });
   /* Adding a goal starts with a choice: "know the deposit" continues to the existing form, "know the date" to the plan flow (which saves through the same saveGoal). */
   var planFlow = createGoalPlanFlow({ onSave: saveGoal });
