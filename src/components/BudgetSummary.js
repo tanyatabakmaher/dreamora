@@ -15,13 +15,9 @@ function rings(pi, pm, size, sw, gid) {
   function arc(r, p, g) {
     var c = 2 * Math.PI * r;
     return '<circle cx="' + h + '" cy="' + h + '" r="' + r + '" fill="none" class="bs-track" stroke-width="' + sw + '"/>' +
-      '<circle cx="' + h + '" cy="' + h + '" r="' + r + '" fill="none" stroke="url(#' + gid + g + ')" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + (c * p / 100).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 ' + h + " " + h + ')"/>';
+      '<circle cx="' + h + '" cy="' + h + '" r="' + r + '" fill="none" class="bs-r-' + g + '" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + (c * p / 100).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 ' + h + " " + h + ')"/>';
   }
-  var grad = function (id, a, b, c) {
-    return '<linearGradient id="' + gid + id + '" gradientUnits="userSpaceOnUse" x1="' + size + '" y1="0" x2="0" y2="' + size + '"><stop offset="0" stop-color="' + a + '"/>' + (c ? '<stop offset=".5" stop-color="' + b + '"/><stop offset="1" stop-color="' + c + '"/>' : '<stop offset="1" stop-color="' + b + '"/>') + "</linearGradient>";
-  };
-  return '<svg class="bs-rings" viewBox="0 0 ' + size + " " + size + '" width="' + size + '" height="' + size + '" aria-hidden="true"><defs>' +
-    grad("i", "var(--aurora-1)", "var(--aurora-2)", "var(--aurora-3)") + grad("m", "var(--accent-gold)", "#F2DEAB") + "</defs>" + arc(r1, pi, "i") + arc(r2, pm, "m") + "</svg>";
+  return '<svg class="bs-rings" viewBox="0 0 ' + size + " " + size + '" width="' + size + '" height="' + size + '" aria-hidden="true">' + arc(r1, pi, "i") + arc(r2, pm, "m") + "</svg>";
 }
 var dot = function (cls) { return '<i class="bs-dot ' + cls + '"></i>'; };
 function pill(ok, text) { return '<span class="bs-pill ' + (ok ? "ok" : "gap") + '">' + esc(text) + "</span>"; }
