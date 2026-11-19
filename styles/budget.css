@@ -145,4 +145,6 @@
   .bs-nline { font-size: 11px; color: var(--color-text-secondary); }
   .bs-nline .num { direction: ltr; display: inline-block; }
   .bs-left { margin-top: 2px; font-size: 11px; color: var(--accent-mint-strong); }
+  .bs-left.m { color: var(--accent-gold); }
+  .bs-pill.ok.m { background: rgba(235, 203, 136, 0.18); color: var(--accent-gold); }
 }
