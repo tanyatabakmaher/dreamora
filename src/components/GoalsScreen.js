@@ -20,7 +20,9 @@ import { migrateGoals, syncNotifications, unreadCount, markRead, markAllRead, re
 export function createGoalsScreen(o) {
   var el = fromHTML('<div><div class="wrap"><div class="titlebar"><h1>' + S["home.title"] + "</h1>" +
     Button({ id: "gs-add", label: S["home.addGoal"], icon: PlusIcon(), extraClass: "add-btn" }) +
-    '</div></div><footer class="foot">' + S["disclaimer"] + "</footer></div>");
+    '</div></div><button type="button" class="fab" id="gs-fab" aria-label="' + S["home.addGoal"] + '"><span class="fab-pol fab-pol-back" aria-hidden="true"><img src="pics/icons/goal-5.webp" alt="" draggable="false"></span>' +
+    '<span class="fab-pol fab-pol-front" aria-hidden="true"><img src="pics/icons/goal-1.webp" alt="" draggable="false"></span><span class="fab-plus" aria-hidden="true">' + PlusIcon() + "</span></button>" +
+    '<footer class="foot">' + S["disclaimer"] + "</footer></div>");
   var profile = { name: "", email: "", photo: null, phone: "" };
   var profileDialog = createProfileDialog({
     save: function (p) { return o.auth.updateProfile(p); },
@@ -123,6 +125,7 @@ export function createGoalsScreen(o) {
     onKnownDate: function (opener) { planFlow.open(opener); }
   });
   el.querySelector("#gs-add").addEventListener("click", function () { chooser.open(this, null); });
+  el.querySelector("#gs-fab").addEventListener("click", function () { chooser.open(this, null); });
   /* Invitations sent to this email before there was an account become notifications first, then everything loads. */
   (o.sharing ? o.sharing.syncRequests().catch(function () {}) : Promise.resolve()).then(function () { return Promise.all([
     o.repo.load().catch(function () { showToast(S["load.failed"]); return []; }),

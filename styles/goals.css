@@ -6,8 +6,7 @@
 @media (max-width: 639px) {
   .titlebar { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-8); }
   .titlebar h1 { min-width: 0; }
-  .titlebar .add-btn { flex: none; width: auto; min-height: 36px; padding: 0 var(--space-12); font-size: 13px; gap: 4px; }
-  .titlebar .add-btn svg { width: 14px; height: 14px; }
+  .titlebar .add-btn { display: none; }
 }
 @media (min-width: 640px) { .titlebar { flex-direction: row; align-items: center; justify-content: space-between; } .titlebar h1 { font-size: 32px; } }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-24); }
@@ -256,3 +255,16 @@
 .pol-plus { font-size: 20px; line-height: 1; }
 .pol-remove { position: absolute; top: -7px; inset-inline-start: -7px; z-index: 2; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: #F2A08F; color: #10202C; font-size: 10px; font-weight: 700; line-height: 18px; text-align: center; }
 .pol-grid button:disabled { opacity: 0.55; }
+
+/* Mobile only: a floating add button made of two polaroids and a small plus badge (the desktop keeps the button in the title row). */
+.fab { display: none; }
+@media (max-width: 639px) {
+  .fab { display: block; position: fixed; z-index: 6; inset-inline-end: 18px; bottom: calc(72px + env(safe-area-inset-bottom)); width: 86px; height: 86px; padding: 0; border: 0; background: none; cursor: pointer; }
+  .fab-pol { position: absolute; display: block; padding: 3px 3px 9px; background: var(--polaroid, #f4efe6); border-radius: 3px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); box-sizing: border-box; }
+  .fab-pol img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .fab-pol-back { width: 50px; height: 57px; right: 4px; top: 4px; transform: rotate(-12deg); }
+  .fab-pol-front { width: 62px; height: 69px; right: 18px; top: 14px; transform: rotate(7deg); }
+  .fab-plus { position: absolute; right: 0; bottom: 0; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-gold); color: var(--bg-app); border: 3px solid var(--bg-app); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5); box-sizing: border-box; }
+  .fab-plus svg { width: 14px; height: 14px; stroke-width: 3.2; }
+  .fab:active { transform: scale(0.96); }
+}
