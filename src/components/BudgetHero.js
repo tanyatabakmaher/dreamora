@@ -34,24 +34,23 @@ export function createBudgetHero() {
     var src = image ? bannerSrc(image) : FALLBACK;
     bg.style.backgroundImage = 'url("' + src.replace(/"/g, "%22") + '")';
   }
-  function line(cls, label, left, leftKey, overAmt) {
+  function line(cls, label, left, leftKey, overAmt, total) {
     return '<div class="bh-line"><span class="bh-dot ' + cls + '"></span><span class="bh-lbl">' + esc(label) + "</span>" +
       '<div class="bh-left' + (overAmt > 0 ? " over" : "") + '">' +
-      (overAmt > 0 ? S["bh.over"].replace("{amount}", "<b>" + esc(money(overAmt)) + "</b>") : S[leftKey].replace("{amount}", "<b>" + esc(money(left)) + "</b>")) + "</div></div>";
+      (overAmt > 0 ? S["bh.over"].replace("{amount}", "<b>" + esc(money(overAmt)) + "</b>") : S[leftKey].replace("{amount}", "<b>" + esc(money(left)) + "</b>").replace("{total}", esc(money(total)))) + "</div></div>";
   }
   function update(avail, initial, monthly) {
     if (!avail) { panel.hidden = true; return; }
     var P = Math.max(0, Number(initial) || 0), D = Math.max(0, Number(monthly) || 0);
-    /* The rings show what is still free for this goal: full when nothing is typed yet, emptying as the goal uses it (free = what the other goals have not taken). */
-    var freeI = Math.max(0, avail.pool - avail.usedInitial), freeM = Math.max(0, avail.saving - avail.usedMonthly);
-    var leftI = freeI - P, leftM = freeM - D;
+    /* The rings show what is still free for this goal: full when nothing is typed yet, emptying as the goal uses it (out of the whole budget, same as the summary on the goals screen). */
+    var leftI = avail.pool - avail.usedInitial - P, leftM = avail.saving - avail.usedMonthly - D;
     var overI = leftI < 0 ? -leftI : 0, overM = leftM < 0 ? -leftM : 0;
     var over = overI > 0 || overM > 0;
     panel.hidden = false;
     panel.innerHTML = '<div class="bh-ring">' + rings(78,
-        [{ p: pct(Math.max(0, leftI), freeI), cls: "bh-i" }],
-        [{ p: pct(Math.max(0, leftM), freeM), cls: "bh-m" }], over) + "</div>" +
-      '<div class="bh-lines">' + line("i", S["bh.initial"], leftI, "bh.left.initial", overI) + line("m", S["bh.monthly"], leftM, "bh.left.month", overM) + "</div>";
+        [{ p: pct(Math.max(0, leftI), avail.pool), cls: "bh-i" }],
+        [{ p: pct(Math.max(0, leftM), avail.saving), cls: "bh-m" }], over) + "</div>" +
+      '<div class="bh-lines">' + line("i", S["bh.initial"], leftI, "bh.left.initial", overI, avail.pool) + line("m", S["bh.monthly"], leftM, "bh.left.month", overM, avail.saving) + "</div>";
   }
   setImage(null);
   return { el: el, top: el.querySelector(".bh-top"), setImage: setImage, update: update };
