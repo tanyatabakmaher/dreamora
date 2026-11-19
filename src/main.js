@@ -34,6 +34,7 @@ function showApp() {
     notifRepo: createNotificationsRepo(CONFIG),
     sharing: createSharingApi(CONFIG), /* null in demo mode: invitations are never simulated locally */
     auth: auth,
+    budgetRepo: createBudgetRepo(CONFIG),
     onBudget: showBudget,
     onLogout: logout
   }));

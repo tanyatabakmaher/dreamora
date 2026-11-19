@@ -7,6 +7,7 @@ import { createGoalForm } from "./GoalForm.js";
 import { createGoalPlanFlow } from "./GoalPlanFlow.js";
 import { createGoalStartChooser } from "./GoalStartChooser.js";
 import { createConfirm } from "./ConfirmDialog.js";
+import { createBudgetSummary } from "./BudgetSummary.js";
 import { createAppHeader } from "./AppHeader.js";
 import { createProfileDialog } from "./ProfileDialog.js";
 import { PlusIcon } from "./ui/Icons.js";
@@ -77,7 +78,13 @@ export function createGoalsScreen(o) {
     onAdd: function (opener) { chooser.open(opener, opener.dataset.mode || null); },
     onEdit: function (g, opener) { if (g) form.open(g, opener); }
   });
+  /* The budget overview sits between the title and the list; it re-renders whenever the list does. */
+  var summary = createBudgetSummary({ budgetRepo: o.budgetRepo, onOpen: function () { if (o.onBudget) o.onBudget(); } });
+  var listRender = list.render;
+  list.render = function (g) { listRender.call(list, g); summary.update(g); };
+  el.querySelector(".wrap").appendChild(summary.el);
   el.querySelector(".wrap").appendChild(list.el);
+  if (o.budgetRepo) summary.load();
   var confirm = createConfirm({ title: S["delete.confirm.title"], body: S["delete.confirm.body"], yes: S["delete.confirm.yes"], no: S["delete.confirm.no"] });
   function reloadGoals() {
     return o.repo.load().then(function (g) { goals = g; list.render(goals); }).catch(function () {});
@@ -148,5 +155,5 @@ export function createGoalsScreen(o) {
     reloadGoals();
   }
   if (o.sharing) document.addEventListener("visibilitychange", onVisible);
-  return { el: el, destroy: function () { document.removeEventListener("visibilitychange", onVisible); notifScreen.destroy(); chooser.destroy(); planFlow.destroy(); form.destroy(); confirm.destroy(); profileDialog.destroy(); header.destroy(); el.remove(); } };
+  return { el: el, destroy: function () { document.removeEventListener("visibilitychange", onVisible); notifScreen.destroy(); chooser.destroy(); planFlow.destroy(); form.destroy(); confirm.destroy(); profileDialog.destroy(); summary.destroy(); header.destroy(); el.remove(); } };
 }
