@@ -3,9 +3,8 @@ import { S } from "../strings.js";
 import { fmtAmountInput, parseAmount } from "../lib/format.js";
 
 /* The top card of "התקציב שלי" (page and first-login sheet): one ring, a three-number row, a two-way switch and the amount rows.
-   Mode "ie": the user enters the money they have, income and expenses (saving = income - expenses).
-   Mode "s": the user enters only what they save each month (income and expenses stay empty and private).
-   The mode is not stored on its own: a budget with a saving but no income or expenses opens in "s". */
+   Mode "s" (first tab): the user enters only what they save each month. Mode "ie": income and expenses (saving = income - expenses).
+   Both tabs keep their own numbers; the chosen tab decides which one counts, and it is saved and restored (new users start on "s"). */
 export function fill(t, vars) { return Object.keys(vars).reduce(function (s, k) { return s.split("{" + k + "}").join(vars[k]); }, t); }
 export function numOf(el) { var n = Number(parseAmount(el.value)); return isFinite(n) && n > 0 ? n : 0; }
 
@@ -39,19 +38,19 @@ function field(id, icon, label, cls) {
 /* o.uid: unique prefix for ids; o.onChange(): called after any edit or switch. */
 export function createBudgetForm(o) {
   var u = o.uid;
-  var el = fromHTML('<div class="bd-form" data-mode="ie">' +
+  var el = fromHTML('<div class="bd-form" data-mode="s">' +
     '<div class="bd-donut" aria-live="polite"><div class="bd-ringbox"></div><div class="bd-donut-disc"></div><div class="bd-donut-text"></div></div>' +
     '<div class="bd-tri" hidden></div>' +
     '<div class="bd-seg" role="radiogroup" aria-label="' + esc(S["bd.mode.aria"]) + '"><i aria-hidden="true"></i>' +
-    '<button type="button" class="on" role="radio" aria-checked="true" data-mode="ie">' + esc(S["bd.mode.ie"]) + "</button>" +
-    '<button type="button" role="radio" aria-checked="false" data-mode="s">' + esc(S["bd.mode.s"]) + "</button></div>" +
+    '<button type="button" role="radio" aria-checked="false" data-mode="s">' + esc(S["bd.mode.s"]) + "</button>" +
+    '<button type="button" role="radio" aria-checked="false" data-mode="ie">' + esc(S["bd.mode.ie"]) + "</button></div>" +
     '<div class="bd-ledger">' + field(u + "-pool", ICON.pool, S["bd.pool"], "bd-pool") +
     '<div class="bd-ie">' + field(u + "-income", ICON.income, S["bd.income"], "bd-income") + field(u + "-expenses", ICON.expenses, S["bd.expenses"], "bd-expenses") + "</div>" +
     '<div class="bd-sv" hidden>' + field(u + "-saving", ICON.saving, S["bd.saving"], "bd-saving") + "</div></div>" +
     '<div class="bd-result-row bd-ie"><span class="bd-fl-ic" aria-hidden="true">' + ICON.saving + '</span><span class="bd-rr-label">' + esc(S["bd.result"]) + '</span><b class="bd-rr-val num"></b></div>' +
     '<div class="bd-private bd-sv" hidden><span aria-hidden="true">' + ICON.lock + "</span>" + esc(S["bd.private"]) + "</div></div>");
   var q = function (s) { return el.querySelector(s); }, qa = function (s) { return Array.prototype.slice.call(el.querySelectorAll(s)); };
-  var pool = q("#" + u + "-pool"), income = q("#" + u + "-income"), expenses = q("#" + u + "-expenses"), saving = q("#" + u + "-saving"), mode = "ie";
+  var pool = q("#" + u + "-pool"), income = q("#" + u + "-income"), expenses = q("#" + u + "-expenses"), saving = q("#" + u + "-saving"), mode = "s";
 
   function setMode(m) {
     mode = m; el.setAttribute("data-mode", m);
@@ -60,14 +59,13 @@ export function createBudgetForm(o) {
     qa(".bd-sv").forEach(function (n) { n.hidden = m !== "s"; });
   }
   function values() {
-    if (mode === "s") return { pool: numOf(pool), income: 0, expenses: 0, saving: numOf(saving) };
-    var i = numOf(income), e = numOf(expenses);
-    return { pool: numOf(pool), income: i, expenses: e, saving: Math.max(0, i - e) };
+    var i = numOf(income), e = numOf(expenses), m = numOf(saving);
+    return { pool: numOf(pool), income: i, expenses: e, saving: mode === "s" ? m : Math.max(0, i - e), mode: mode, savingManual: m };
   }
   function setValues(b) {
     function f(x) { return x ? fmtAmountInput(x) : ""; }
-    pool.value = f(b.pool); income.value = f(b.income); expenses.value = f(b.expenses); saving.value = f(b.saving);
-    setMode(!(b.income > 0 || b.expenses > 0) && b.saving > 0 ? "s" : "ie");
+    pool.value = f(b.pool); income.value = f(b.income); expenses.value = f(b.expenses); saving.value = f(b.savingManual);
+    setMode(b.mode === "ie" ? "ie" : "s");
   }
   /* s = summarize(...) result, or null. With goals the ring shows what is left for deposits; without goals it shows the monthly saving itself. */
   function paint(s) {
@@ -89,5 +87,6 @@ export function createBudgetForm(o) {
   }
   [pool, income, expenses, saving].forEach(function (i) { i.addEventListener("input", function () { i.value = fmtAmountInput(i.value); o.onChange(); }); });
   qa(".bd-seg button").forEach(function (b) { b.addEventListener("click", function () { setMode(b.getAttribute("data-mode")); o.onChange(); }); });
+  setMode(mode);
   return { el: el, values: values, setValues: setValues, paint: paint, mode: function () { return mode; } };
 }

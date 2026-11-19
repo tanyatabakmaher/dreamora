@@ -37,8 +37,8 @@
 .bd-in::placeholder { color: var(--color-text-faint); font-weight: 500; }
 .bd-seg { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 999px; background: rgba(10, 20, 31, 0.7); }
 .bd-seg i { position: absolute; top: 4px; bottom: 4px; inset-inline-start: 4px; width: calc(50% - 4px); border-radius: 999px; background: var(--accent-gold); box-shadow: 0 4px 14px color-mix(in srgb, var(--accent-gold) 28%, transparent); transition: transform .25s ease; }
-/* the page is right-to-left: the second segment is to the left of the first */
-.bd-form[data-mode="s"] .bd-seg i { transform: translateX(-100%); }
+/* the page is right-to-left: the second tab is to the left of the first */
+.bd-form[data-mode="ie"] .bd-seg i { transform: translateX(-100%); }
 .bd-seg button { position: relative; z-index: 1; min-height: 40px; padding: 6px; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--color-text-secondary); cursor: pointer; transition: color .2s; }
 .bd-seg button.on { color: var(--bg-app); }
 .bd-seg button:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; border-radius: 999px; }
