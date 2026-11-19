@@ -26,16 +26,16 @@ function rings(pi, pm, size, sw, gid) {
 function leftLine(have, need) {
   return need <= have ? fill(S["bs.leftOf"], { left: money(have - need), have: money(have) }) : fill(S["bs.have"], { have: money(have), need: money(need) });
 }
-/* The goals on a line: up to three mini polaroids hanging from a thin gold string (first goal at the start side), a "+N" polaroid for the rest, and the count. */
+/* The goals on a line: up to three mini polaroids fanned out (first goal at the start side, on top), a thin gold edge peeking out behind them when there are more, and the count ("6 goals · +3"). */
 function pins(goals) {
   if (!goals.length) return "";
-  var shown = goals.slice(0, 3), more = goals.length - shown.length, tilt = [-3, 2, -2, 2];
+  var shown = goals.slice(0, 3), more = goals.length - shown.length, tilt = [-4, 3, -3];
   var pol = shown.map(function (g, i) {
     var pic = g.image ? '<img src="' + esc(g.image) + '" alt="" loading="lazy" decoding="async">' : '<span class="bs-emoji">' + esc(g.emoji || "🎯") + "</span>";
-    return '<span class="bs-pin" style="--t:' + tilt[i] + 'deg"><span class="bs-pol">' + pic + "</span></span>";
-  }).join("") + (more > 0 ? '<span class="bs-pin" style="--t:' + tilt[3] + 'deg"><span class="bs-pol bs-more">+' + more + "</span></span>" : "");
+    return '<span class="bs-pol" style="--t:' + tilt[i] + "deg;z-index:" + (6 - i) + '">' + pic + "</span>";
+  }).join("") + (more > 0 ? '<span class="bs-edge" aria-hidden="true"></span>' : "");
   var n = goals.length, label = fill(S[n === 1 ? "bs.goals.one" : "bs.goals"], { n: n });
-  return '<div class="bs-goals" role="img" aria-label="' + esc(label) + '"><div class="bs-string"></div><div class="bs-pins">' + pol + '</div><div class="bs-gcount">' + esc(label) + "</div></div>";
+  return '<div class="bs-goals" role="img" aria-label="' + esc(label) + '"><div class="bs-fan">' + pol + '</div><div class="bs-gcount">' + esc(label) + (more > 0 ? ' <span class="bs-gmore">· +' + more + "</span>" : "") + "</div></div>";
 }
 var dot = function (cls) { return '<i class="bs-dot ' + cls + '"></i>'; };
 function pill(ok, text) { return '<span class="bs-pill ' + (ok ? "ok" : "gap") + '">' + esc(text) + "</span>"; }
