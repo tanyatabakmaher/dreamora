@@ -22,6 +22,21 @@ function rings(pi, pm, size, sw, gid) {
   }
   return '<svg class="bs-rings" viewBox="0 0 ' + size + " " + size + '" width="' + size + '" height="' + size + '" aria-hidden="true">' + arc(r1, pi, "i") + arc(r2, pm, "m") + "</svg>";
 }
+/* How much is still free: "left X of Y"; when the goals use more than there is, "allocated X of Y" (the gap itself is shown in red next to it). */
+function leftLine(have, need) {
+  return need <= have ? fill(S["bs.leftOf"], { left: money(have - need), have: money(have) }) : fill(S["bs.have"], { have: money(have), need: money(need) });
+}
+/* The goals on a line: up to three mini polaroids hanging from a thin gold string (first goal at the start side), a "+N" polaroid for the rest, and the count. */
+function pins(goals) {
+  if (!goals.length) return "";
+  var shown = goals.slice(0, 3), more = goals.length - shown.length, tilt = [-3, 2, -2, 2];
+  var pol = shown.map(function (g, i) {
+    var pic = g.image ? '<img src="' + esc(g.image) + '" alt="" loading="lazy" decoding="async">' : '<span class="bs-emoji">' + esc(g.emoji || "🎯") + "</span>";
+    return '<span class="bs-pin" style="--t:' + tilt[i] + 'deg"><span class="bs-pol">' + pic + "</span></span>";
+  }).join("") + (more > 0 ? '<span class="bs-pin" style="--t:' + tilt[3] + 'deg"><span class="bs-pol bs-more">+' + more + "</span></span>" : "");
+  var n = goals.length, label = fill(S[n === 1 ? "bs.goals.one" : "bs.goals"], { n: n });
+  return '<div class="bs-goals" role="img" aria-label="' + esc(label) + '"><div class="bs-string"></div><div class="bs-pins">' + pol + '</div><div class="bs-gcount">' + esc(label) + "</div></div>";
+}
 var dot = function (cls) { return '<i class="bs-dot ' + cls + '"></i>'; };
 function pill(ok, text) { return '<span class="bs-pill ' + (ok ? "ok" : "gap") + '">' + esc(text) + "</span>"; }
 
@@ -52,22 +67,22 @@ export function createBudgetSummary(o) {
     };
     var edit = '<button type="button" class="bs-edit" aria-label="' + esc(S["bs.editAria"]) + '">' + PencilIcon() + "</button>";
     var rowWide = function (cls, label, p, have, need) {
-      return '<div class="bs-row"><div class="bs-row-top">' + dot(cls) + "<span>" + esc(label) + "</span>" + p + '</div><div class="bs-sub">' + esc(fill(S["bs.have"], { have: money(have), need: money(need) })) + "</div></div>";
+      return '<div class="bs-row"><div class="bs-row-top">' + dot(cls) + "<span>" + esc(label) + "</span>" + p + '</div><div class="bs-sub">' + esc(leftLine(have, need)) + "</div></div>";
     };
     /* narrow: the gap leads (or "covered"), a bar shows how much of the need is there, and the exact amounts are one small line */
     var rowNarrow = function (cls, label, have, need, leftKey) {
       var gap = need - have, ok = gap <= 0;
       var top = ok ? pill(true, S["bs.covered"]).replace("bs-pill ok", "bs-pill ok " + cls) : '<b class="bs-gap">-' + esc(money(gap)) + "</b>";
-      var line = esc(fill(S["bs.have"], { have: money(have), need: money(need) }));
-      var left = ok && have > need ? '<div class="bs-left ' + cls + '">' + esc(fill(S[leftKey], { amount: money(have - need) })) + "</div>" : "";
+      var line = esc(leftLine(have, need));
+      var left = "";
       return '<div class="bs-nrow"><div class="bs-nrow-top">' + dot(cls) + "<span>" + esc(label) + "</span>" + top + '</div><div class="bs-bar ' + cls + '"><i style="width:' + pct(need, have).toFixed(0) + '%"></i></div><div class="bs-nline">' + line + "</div>" + left + "</div>";
     };
     el.innerHTML = '<div class="bs-card"><div class="bs-panel">' +
       /* wide screens */
-      '<div class="bs-wide">' + ring(128, 10, "bsw") + '<div class="bs-body"><div class="bs-head"><b>' + esc(S["bs.title"]) + "</b>" + edit + "</div>" +
+      '<div class="bs-wide">' + ring(128, 10, "bsw") + '<div class="bs-body"><div class="bs-head"><b>' + esc(S["bs.title"]) + "</b>" + edit + "</div>" + pins(goals) +
         rowWide("i", S["bs.initial"], iniPill, budget.pool, s.allocated) + '<div class="bs-sep"></div>' + rowWide("m", S["bs.monthly"], depPill, s.saving, s.required) + "</div></div>" +
       /* narrow screens */
-      '<div class="bs-narrow"><div class="bs-top">' + ring(84, 8, "bsn") + '<div class="bs-topt"><div class="bs-head"><b>' + esc(S["bs.title"]) + '</b>' + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + '</div><div class="bs-totals">' + dot("i") + '<span class="num">' + esc(money(budget.pool)) + "</span>" + dot("m") + '<span class="num">' + esc(fill(S["bs.totals"], { monthly: money(s.saving) })) + "</span></div></div></div>" +
+      '<div class="bs-narrow"><div class="bs-top">' + ring(84, 8, "bsn") + '<div class="bs-topt"><div class="bs-head"><b>' + esc(S["bs.title"]) + '</b>' + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + '</div>' + pins(goals) + "</div></div>" +
         '<div class="bs-nrows">' + rowNarrow("i", S["bs.initial"], budget.pool, s.allocated, "bs.left.initial") + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + "</div></div>" +
       "</div></div>";
     Array.prototype.forEach.call(el.querySelectorAll(".bs-edit"), function (b) { b.addEventListener("click", function () { o.onOpen(this); }); });
