@@ -8,6 +8,7 @@ import { createGoalPlanFlow } from "./GoalPlanFlow.js";
 import { createGoalStartChooser } from "./GoalStartChooser.js";
 import { createConfirm } from "./ConfirmDialog.js";
 import { createBudgetSummary } from "./BudgetSummary.js";
+import { summarize } from "../lib/budget.js";
 import { createAppHeader } from "./AppHeader.js";
 import { createProfileDialog } from "./ProfileDialog.js";
 import { PlusIcon } from "./ui/Icons.js";
@@ -77,7 +78,7 @@ export function createGoalsScreen(o) {
     canShare: function () { return !!o.sharing; },
     viewer: function () { return { name: profile.name, photo: profile.photo }; },
     onAdd: function (opener) { chooser.open(opener, opener.dataset.mode || null); },
-    onEdit: function (g, opener) { if (g) form.open(g, opener); },
+    onEdit: function (g, opener) { if (g) { loadBudget(); form.open(g, opener); } },
     onDelete: function (g, opener) { if (g) removeGoal(g, opener); }
   });
   /* The budget overview sits between the title and the list; it re-renders whenever the list does. */
@@ -128,17 +129,27 @@ export function createGoalsScreen(o) {
     }
     saving.then(function () { sync(); }, function () {});
   }
+  /* Free budget for the new-goal dialogs: what the user has and saves, and what the other goals already use (null without a budget). */
+  var budgetData = null;
+  function loadBudget() { if (o.budgetRepo) o.budgetRepo.load().then(function (b) { budgetData = b || null; }).catch(function () {}); }
+  loadBudget();
+  function avail(excludeId) {
+    if (!budgetData) return null;
+    var s = summarize(budgetData, goals.filter(function (x) { return x.id !== excludeId; }), todayDate());
+    return { pool: Number(budgetData.pool) || 0, usedInitial: s.allocated, saving: s.saving, usedMonthly: s.required };
+  }
   var form = createGoalForm({
+    avail: avail,
     sharing: !!o.sharing,
     ownEmail: function () { return profile.email; },
     onSave: saveGoal,
     onDelete: function (g, openerEl, closeForm) { removeGoal(g, openerEl, closeForm); }
   });
   /* Adding a goal starts with a choice: "know the deposit" continues to the existing form, "know the date" to the plan flow (which saves through the same saveGoal). */
-  var planFlow = createGoalPlanFlow({ onSave: saveGoal });
+  var planFlow = createGoalPlanFlow({ onSave: saveGoal, avail: avail });
   var chooser = createGoalStartChooser({
-    onKnownDeposit: function (opener, mode) { form.open(null, opener, mode); },
-    onKnownDate: function (opener) { planFlow.open(opener); }
+    onKnownDeposit: function (opener, mode) { loadBudget(); form.open(null, opener, mode); },
+    onKnownDate: function (opener) { loadBudget(); planFlow.open(opener); }
   });
   el.querySelector("#gs-add").addEventListener("click", function () { chooser.open(this, null); });
   var fab = el.querySelector("#gs-fab");

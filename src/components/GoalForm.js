@@ -12,6 +12,7 @@ import { updatePlanSummary } from "./PlanSummary.js";
 import { createTrackPicker } from "./TrackPicker.js";
 import { PRESET_ICONS } from "../data/presetIcons.js";
 import { createSharingSection } from "./SharingSection.js";
+import { createBudgetHero } from "./BudgetHero.js";
 
 /* Create / edit a goal in a bottom sheet. onSave(goal, sharingDiff|null) may return a promise when sharing changed (the dialog then waits and stays open on failure),
    onDelete(goal, openerEl, closeForm). o.sharing = true shows the sharing section; o.ownEmail() gives the signed-in email. open(goal|null, openerEl). */
@@ -39,6 +40,10 @@ export function createGoalForm(o) {
     Button({ id: "gf-delete", variant: "danger", label: S["action.delete"], hidden: true }) + "</div></form>");
   var $ = function (id) { return form.querySelector("#" + id); };
   var modal = createModal({ sheet: form });
+  /* Picture behind the title row plus how much of the free budget this goal uses (o.avail(excludeGoalId) -> numbers, or null without a budget). */
+  var hero = createBudgetHero();
+  hero.top.appendChild(form.querySelector(".sheet-head"));
+  form.insertBefore(hero.el, form.firstChild);
   /* Return and fee live in the selected track's open row: return - fee = net. */
   var eq = fromHTML('<div class="pln-eq">' +
     Field({ id: IDS.ret, label: S["plan.track.returnShort"], type: "number", num: true, attrs: 'inputmode="decimal" min="0" max="100" step="any"' }) +
@@ -47,7 +52,7 @@ export function createGoalForm(o) {
     '<span class="pln-op" aria-hidden="true">=</span><span class="pln-netchip" id="gf-netchip" aria-live="polite"></span></div>');
   var tracks = createTrackPicker({ eq: eq, onSelect: function (id) { selectTrack(id); } });
   $("gf-track-slot").appendChild(tracks.el);
-  var picker = wireIconPicker(form, EMOJI_SUGGESTED, function () { refresh(); });
+  var picker = wireIconPicker(form, EMOJI_SUGGESTED, function () { hero.setImage(picker.get().image); refresh(); });
   var sharing = o.sharing ? createSharingSection({ ownEmail: function () { return o.ownEmail ? o.ownEmail() : ""; } }) : null;
   if (sharing) $("gf-sharing-slot").appendChild(sharing.el);
   var perms = permissionsOf(null);
@@ -80,6 +85,7 @@ export function createGoalForm(o) {
     ORDER.forEach(function (k) { setFieldError(form, IDS[k], errs[k] && (attempted || touched[k]) ? errs[k] : ""); });
     var core = !errs.target && !errs.initial && !errs.monthly && !errs.ret && !errs.fee && !errs.start;
     var net = core || (!errs.ret && !errs.fee) ? netReturnPct(v.ret, v.fee) : "";
+    hero.update(o.avail ? o.avail(state && state.id) : null, v.initial, v.monthly);
     $("gf-netchip").textContent = net === "" ? "\u2014" : S["plan.netTag"].replace("{pct}", String(net));
     var tr = trackById($("gf-track").value), start = v.start ? parseISODate(v.start) : todayDate();
     tracks.paint({ selectedId: $("gf-track").value, ready: !errs.target && !errs.initial && !errs.monthly && v.target > 0, T: v.target, P: v.initial, PMT: v.monthly, start: start,
@@ -152,6 +158,7 @@ export function createGoalForm(o) {
       $(IDS.fee).value = state.managementFeePct === undefined || state.managementFeePct === null ? 0 : state.managementFeePct;
       $(IDS.start).value = state.startDate;
       picker.set({ emoji: state.emoji, image: state.image });
+      hero.setImage(state.image);
       perms = permissionsOf(editing ? state : null);
       Array.prototype.forEach.call(form.querySelectorAll("input:not([type=file]), select#gf-track"), function (i) { if (!i.closest(".sharing")) i.disabled = !perms.canEdit; });
       picker.setDisabled(!perms.canEdit); tracks.setDisabled(!perms.canEdit);

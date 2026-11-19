@@ -10,6 +10,7 @@ import { createModal } from "./ui/Modal.js";
 import { createConfirm } from "./ConfirmDialog.js";
 import { IconPicker, wireIconPicker } from "./IconPicker.js";
 import { heat, mmYYYY } from "../lib/heat.js";
+import { createBudgetHero } from "./BudgetHero.js";
 
 /* "How much to deposit?" flow: a fixed target date, then the monthly deposit each track needs to reach it.
    Step 1: name, picture, target amount, target date. Step 2: starting amount + one track (rows show the deposit and a bar relative to the other tracks; the open row edits return and fee for this goal only).
@@ -50,7 +51,11 @@ export function createGoalPlanFlow(o) {
     '<div class="actions">' + Button({ id: "pln-save", label: S["plan.s3.save"], grow: true }) + "</div></section></div>");
   var $ = function (sel) { return root.querySelector(sel); };
   var modal = createModal({ sheet: root });
-  var picker = wireIconPicker(root, EMOJI_SUGGESTED, function () { dirty = true; }, "plnp");
+  /* Picture behind the top bar plus how much of the free budget this goal uses (o.avail() -> numbers, or null without a budget). */
+  var hero = createBudgetHero();
+  hero.top.appendChild($(".pln-top"));
+  root.insertBefore(hero.el, root.firstChild);
+  var picker = wireIconPicker(root, EMOJI_SUGGESTED, function () { dirty = true; hero.setImage(picker.get().image); }, "plnp");
   var leave = createConfirm({ title: S["plan.leave.title"], body: S["plan.leave.body"], yes: S["plan.leave.yes"], no: S["plan.leave.no"] });
   var step = 1, dirty = false, saved = false, today = todayDate();
   var st = { T: NaN, months: 0, dateISO: "", P: 0, trackId: null, openId: null, edits: {} }, rows = [], tracksBuilt = false;
@@ -63,6 +68,12 @@ export function createGoalPlanFlow(o) {
     leave.ask($("#pln-close")).then(function (yes) { if (yes) realClose(); });
   };
 
+  function paintHero() {
+    var cur = step >= 2 ? rows.find(function (r) { return r.id === st.trackId; }) : null;
+    hero.update(o.avail ? o.avail() : null, step >= 2 ? st.P : 0, cur && cur.deposit !== null ? cur.deposit : 0);
+  }
+  root.addEventListener("input", function () { setTimeout(paintHero, 0); });
+  root.addEventListener("click", function () { setTimeout(paintHero, 0); });
   function show(n) {
     step = n;
     Array.prototype.forEach.call(root.querySelectorAll(".pln-step"), function (s) { s.hidden = Number(s.dataset.step) !== n; });
@@ -73,6 +84,7 @@ export function createGoalPlanFlow(o) {
     });
     $("#pln-back").hidden = n === 1;
     root.scrollTop = 0;
+    paintHero();
   }
 
   /* ---- step 1 ---- */
@@ -284,7 +296,7 @@ export function createGoalPlanFlow(o) {
     st = { T: NaN, months: 0, dateISO: "", P: 0, trackId: null, openId: null, edits: {} }; plan = null;
     ["#pln-name", "#pln-target", "#pln-date", "#pln-initial"].forEach(function (s) { $(s).value = ""; });
     $("#pln-date").min = toISODate(addMonths(today, 1)); $("#pln-date").max = toISODate(addMonths(today, MAX_MONTHS));
-    picker.set({});
+    picker.set({}); hero.setImage(picker.get().image);
     showStep1Errors({ errs: {} }); setFieldError(root, "pln-initial", "");
     $("#pln-next1").disabled = false; $("#pln-save").disabled = false;
     tracksBuilt = false; $("#pln-tracks").innerHTML = "";
