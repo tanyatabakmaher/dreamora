@@ -4,18 +4,20 @@ import { fmtDate } from "../lib/format.js";
 import { parseISODate } from "../lib/calc.js";
 import { groupByDate } from "../lib/notifications.js";
 import { createModal } from "./ui/Modal.js";
-import { CloseIcon, BellIcon, GiftIcon, ConfettiIcon, UsersIcon } from "./ui/Icons.js";
+import { CloseIcon, BellIcon, GiftIcon, ConfettiIcon, UsersIcon, TrashIcon } from "./ui/Icons.js";
 
 /* Full notifications list, no filters. Sections by date, newest first; unread = purple dot + light background.
    o.onRespond(notification, accept) for share requests; o.onOpen(notification) when an item is pressed (the caller marks it read and shows the goal), o.onMarkAll(). open(list, today, openerEl, top) / update(list, today). */
 var TYPES = {
   milestone: { icon: GiftIcon, tone: "milestone" },
   achieved: { icon: ConfettiIcon, tone: "achieved" },
-  shareRequest: { icon: UsersIcon, tone: "share" }
+  shareRequest: { icon: UsersIcon, tone: "share" },
+  goalLeft: { icon: UsersIcon, tone: "share" },
+  goalDeleted: { icon: TrashIcon, tone: "share" }
 };
 function sentence(n, withMarkup) {
   var goal = withMarkup ? "<b>" + esc(n.goalName) + "</b>" : n.goalName;
-  var tpl = n.type === "achieved" ? S["notif.achieved"] : n.type === "shareRequest" ? S["notif.shareRequest"] : S["notif.milestone"];
+  var tpl = n.type === "achieved" ? S["notif.achieved"] : n.type === "shareRequest" ? S["notif.shareRequest"] : n.type === "goalLeft" ? S["notif.goalLeft"] : n.type === "goalDeleted" ? S["notif.goalDeleted"] : S["notif.milestone"];
   var from = n.payload && n.payload.fromName ? (withMarkup ? esc(n.payload.fromName) : n.payload.fromName) : "";
   return tpl.replace("{pct}", String(n.milestonePct || "")).replace("{goal}", goal).replace("{from}", from);
 }

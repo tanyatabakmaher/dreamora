@@ -87,16 +87,21 @@ export function createGoalsScreen(o) {
   el.querySelector(".wrap").appendChild(list.el);
   if (o.budgetRepo) summary.load();
   var confirm = createConfirm({ title: S["delete.confirm.title"], body: S["delete.confirm.body"], yes: S["delete.confirm.yes"], no: S["delete.confirm.no"] });
-  /* Delete after the "are you sure" dialog; used by the card's trash button and by the edit form. */
+  /* Delete (owner) or leave (participant) after the "are you sure" dialog; used by the card's trash button and by the edit form.
+     A participant who leaves disappears from the goal's participants and the owner is notified; the owner deleting tells the participants (both done by the database). */
   function removeGoal(g, openerEl, closeForm) {
-    confirm.ask(openerEl).then(function (yes) {
+    var leaving = !!g.myRole && g.myRole !== "owner" && !!o.sharing;
+    var texts = leaving ? { title: S["leave.confirm.title"], body: S["leave.confirm.body"], yes: S["leave.confirm.yes"] }
+      : (g.members && g.members.length ? { body: S["delete.confirm.bodyShared"] } : null);
+    confirm.ask(openerEl, texts).then(function (yes) {
       if (!yes) return;
       goals = goals.filter(function (x) { return x.id !== g.id; });
       notifications = removeForGoal(notifications, g.id); refreshBell();
       list.render(goals);
       if (closeForm) closeForm();
       o.notifRepo.removeForGoal(g.id).catch(function () {});
-      o.repo.remove(g.id).catch(function () { showToast(S["save.failed"]); });
+      var done = leaving ? o.sharing.leave(g.id) : o.repo.remove(g.id);
+      done.catch(function () { showToast(S["save.failed"]); reloadGoals(); });
     });
   }
   function reloadGoals() {

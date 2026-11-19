@@ -3,6 +3,7 @@
      loadMembers(goalIds) -> Promise<{ [goalId]: { members: Member[], myRole } }>   members = everyone except the signed-in user
      apply(goalId, { add, update, remove }) -> Promise<void>
      respond(notificationId, accept) -> Promise<goalId|null>
+     leave(goalId) -> Promise<void>
      syncRequests() -> Promise<number>   creates notifications for invitations sent to this email before the person had an account */
 import { getClient } from "./supabaseClient.js";
 
@@ -38,6 +39,10 @@ export function createSharingApi(config) {
     },
     respond: function (id, accept) {
       return client().then(function (c) { return c.rpc("respond_share_request", { p_notification_id: id, p_accept: !!accept }); }).then(ok).then(function (r) { return r.data || null; });
+    },
+    /* A participant leaves a shared goal; the owner gets a notification. */
+    leave: function (goalId) {
+      return client().then(function (c) { return c.rpc("leave_goal", { p_goal_id: goalId }); }).then(ok).then(function () {});
     },
     syncRequests: function () {
       return client().then(function (c) { return c.rpc("sync_share_requests"); }).then(ok).then(function (r) { return r.data || 0; });

@@ -26,10 +26,10 @@ export function GoalCard(g, today, viewer) {
           ? S["card.monthlyDeposit"].replace("{amount}", '<b class="num">' + Math.round(g.monthlyDeposit).toLocaleString("he-IL") + "</b>")
           : S["card.noDeposit"]) +
       "</span></div>";
-  var start = parseISODate(g.startDate), canDelete = permissionsOf(g).canDelete && !g.fromOthers;
+  var start = parseISODate(g.startDate), role = permissionsOf(g).role, canDelete = !g.fromOthers; /* the owner deletes; a participant leaves */
   /* Sits in the cream strip under the picture: when saving started, and the delete button (owners only). */
   var foot = '<div class="card-foot"><span class="card-start">' + (start ? esc(S["card.startedOn"].replace("{date}", fmtDate(start))) : "") + "</span>" +
-    (canDelete ? '<button type="button" class="card-del" data-action="delete" aria-label="' + esc(S["card.deleteAria"].replace("{name}", g.name)) + '">' + TrashIcon() + "</button>" : "") + "</div>";
+    (canDelete ? '<button type="button" class="card-del" data-action="delete" aria-label="' + esc(S[role === "owner" ? "card.deleteAria" : "card.leaveAria"].replace("{name}", g.name)) + '">' + TrashIcon() + "</button>" : "") + "</div>";
   return '<article class="card' + (c.achieved ? " achieved" : "") + '" tabindex="0" role="button" data-id="' + esc(g.id) + '" aria-label="' + esc(S["action.edit"] + ": " + g.name) + '">' +
     (c.achieved ? '<div class="success-head">' + CheckCircleIcon() + "<span>" + esc(S["card.achievedHeader"]) + "</span></div>" : "") +
     '<div class="card-banner" style="--n:' + getAvatarStack(g, viewer).layers.length + '"><span class="banner-pic" aria-hidden="true">' + banner + "</span>" +

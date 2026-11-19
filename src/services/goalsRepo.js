@@ -106,7 +106,8 @@ export function createRemoteRepo(config) {
       });
     },
     remove: function (id) {
-      return client().then(function (c) { return c.from("goals").delete().eq("id", id); }).then(ok).then(function () { images.discard(known[id]); delete known[id]; });
+      /* delete_goal (supabase/011) also tells the joined participants who deleted the goal */
+      return client().then(function (c) { return c.rpc("delete_goal", { p_goal_id: id }); }).then(ok).then(function () { images.discard(known[id]); delete known[id]; });
     }
   };
 }

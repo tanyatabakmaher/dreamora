@@ -1,5 +1,5 @@
 /* In-app notifications: pure functions, no UI and no storage.
-   Notification = { id, goalId, goalName, type: "milestone"|"achieved"|"shareRequest", milestonePct?, date: "YYYY-MM-DD", read, payload? }
+   Notification = { id, goalId, goalName, type: "milestone"|"achieved"|"shareRequest"|"goalLeft"|"goalDeleted", milestonePct?, date: "YYYY-MM-DD", read, payload? }
    "shareRequest" is reserved for the sharing phase: it can be shown, but nothing in Phase 1 creates it. */
 import { MILESTONES, netReturnPct, computeGoal, currentMilestone, milestoneMonth, addMonths, parseISODate, toISODate } from "./calc.js";
 import { uid } from "./dom.js";
