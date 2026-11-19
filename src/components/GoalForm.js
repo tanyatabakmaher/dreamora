@@ -56,7 +56,7 @@ export function createGoalForm(o) {
   var sharing = o.sharing ? createSharingSection({ ownEmail: function () { return o.ownEmail ? o.ownEmail() : ""; } }) : null;
   if (sharing) $("gf-sharing-slot").appendChild(sharing.el);
   var perms = permissionsOf(null);
-  var state = null, attempted = false, touched = {};
+  var state = null, attempted = false, touched = {}, editingNow = false;
 
   function num(v) { return v === "" || v === null || v === undefined ? NaN : Number(parseAmount(v)); }
   function read() {
@@ -80,8 +80,13 @@ export function createGoalForm(o) {
     if (!v.start) e.start = S["error.required"];
     return e;
   }
+  function paintTitle() {
+    var n = $(IDS.name).value.trim();
+    $("gf-title").textContent = n || (editingNow ? S["form.title.edit"] : S["form.title.create"]);
+  }
   function refresh() {
     var v = read(), errs = validate(v);
+    paintTitle();
     ORDER.forEach(function (k) { setFieldError(form, IDS[k], errs[k] && (attempted || touched[k]) ? errs[k] : ""); });
     var core = !errs.target && !errs.initial && !errs.monthly && !errs.ret && !errs.fee && !errs.start;
     var net = core || (!errs.ret && !errs.fee) ? netReturnPct(v.ret, v.fee) : "";
@@ -143,12 +148,11 @@ export function createGoalForm(o) {
   return {
     open: function (goal, openerEl, presetMode) {
       attempted = false; touched = {};
-      var editing = !!goal;
+      var editing = !!goal; editingNow = editing;
       state = JSON.parse(JSON.stringify(goal || {
         id: uid(), name: "", emoji: EMOJI_SUGGESTED[0], image: PRESET_ICONS[0].src, targetAmount: "", initialAmount: "", monthlyDeposit: "",
         trackId: "sp500", annualReturnPct: trackById("sp500").defaultReturnPct, managementFeePct: trackById("sp500").defaultFeePct, startDate: toISODate(todayDate()), createdAt: new Date().toISOString()
       }));
-      $("gf-title").textContent = editing ? S["form.title.edit"] : S["form.title.create"];
       $(IDS.name).value = state.name;
       $(IDS.target).value = fmtAmountInput(state.targetAmount);
       $(IDS.initial).value = state.initialAmount === 0 ? "" : fmtAmountInput(state.initialAmount);

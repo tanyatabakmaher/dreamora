@@ -3,7 +3,7 @@ import { money } from "../lib/format.js";
 import { S } from "../strings.js";
 
 /* Top of the "new goal" dialogs: the goal's chosen picture fades into the sheet behind the title row, and a panel shows how much of the free budget this goal uses.
-   Outer ring = starting amount (blue), inner ring = monthly deposit (mint); grey = already taken by other goals, red = over what is free.
+   Outer ring = starting amount (blue), inner ring = monthly deposit (mint); each shows what is still free, starting full; over what is free the ring is empty and marked "!" in red.
    createBudgetHero() -> { el, top (slot for the title row), setImage(image), update(avail, initial, monthly) }
    avail = { pool, usedInitial, saving, usedMonthly } (money the user has / saving per month, and what the other goals already use), or null when there is no budget (panel hidden). */
 function bannerSrc(src) { return String(src).replace(/^pics\/icons\/(goal-\d+\.webp)$/, "pics/cards/$1"); }
@@ -12,7 +12,7 @@ var FALLBACK = "pics/budget-bg.jpg";
 function pct(v, total) { return total > 0 ? Math.max(0, Math.min(100, v / total * 100)) : 0; }
 
 function rings(size, outer, inner, over) {
-  var sw = 10, h = size / 2, r1 = (size - sw) / 2, r2 = r1 - sw - 3;
+  var sw = 8, h = size / 2, r1 = (size - sw) / 2, r2 = r1 - sw - 3;
   function arc(r, parts) {
     var c = 2 * Math.PI * r, off = 0, out = '<circle cx="' + h + '" cy="' + h + '" r="' + r + '" fill="none" class="bh-track" stroke-width="' + sw + '"/>';
     parts.forEach(function (p) {
@@ -42,17 +42,15 @@ export function createBudgetHero() {
   function update(avail, initial, monthly) {
     if (!avail) { panel.hidden = true; return; }
     var P = Math.max(0, Number(initial) || 0), D = Math.max(0, Number(monthly) || 0);
-    var leftI = avail.pool - avail.usedInitial - P, leftM = avail.saving - avail.usedMonthly - D;
+    /* The rings show what is still free for this goal: full when nothing is typed yet, emptying as the goal uses it (free = what the other goals have not taken). */
+    var freeI = Math.max(0, avail.pool - avail.usedInitial), freeM = Math.max(0, avail.saving - avail.usedMonthly);
+    var leftI = freeI - P, leftM = freeM - D;
     var overI = leftI < 0 ? -leftI : 0, overM = leftM < 0 ? -leftM : 0;
-    var mineI = pct(P, avail.pool), othersI = pct(avail.usedInitial, avail.pool);
-    var mineM = pct(D, avail.saving), othersM = pct(avail.usedMonthly, avail.saving);
-    if (othersI + mineI > 100) mineI = Math.max(0, 100 - othersI);
-    if (othersM + mineM > 100) mineM = Math.max(0, 100 - othersM);
     var over = overI > 0 || overM > 0;
     panel.hidden = false;
-    panel.innerHTML = '<div class="bh-ring">' + rings(92,
-        [{ p: othersI, cls: "bh-o" }, { p: mineI, cls: overI > 0 ? "bh-x" : "bh-i" }],
-        [{ p: othersM, cls: "bh-o" }, { p: mineM, cls: overM > 0 ? "bh-x" : "bh-m" }], over) + "</div>" +
+    panel.innerHTML = '<div class="bh-ring">' + rings(78,
+        [{ p: pct(Math.max(0, leftI), freeI), cls: "bh-i" }],
+        [{ p: pct(Math.max(0, leftM), freeM), cls: "bh-m" }], over) + "</div>" +
       '<div class="bh-lines">' + line("i", S["bh.initial"], leftI, "bh.left.initial", overI) + line("m", S["bh.monthly"], leftM, "bh.left.month", overM) + "</div>";
   }
   setImage(null);

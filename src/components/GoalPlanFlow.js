@@ -54,6 +54,9 @@ export function createGoalPlanFlow(o) {
   /* Picture behind the top bar plus how much of the free budget this goal uses (o.avail() -> numbers, or null without a budget). */
   var hero = createBudgetHero();
   hero.top.appendChild($(".pln-top"));
+  var heroTitle = fromHTML('<h2 class="bh-title" id="pln-herotitle"></h2>');
+  hero.top.appendChild(heroTitle);
+  function paintTitle() { heroTitle.textContent = $("#pln-name").value.trim() || S["form.title.create"]; }
   root.insertBefore(hero.el, root.firstChild);
   var picker = wireIconPicker(root, EMOJI_SUGGESTED, function () { dirty = true; hero.setImage(picker.get().image); }, "plnp");
   var leave = createConfirm({ title: S["plan.leave.title"], body: S["plan.leave.body"], yes: S["plan.leave.yes"], no: S["plan.leave.no"] });
@@ -69,6 +72,7 @@ export function createGoalPlanFlow(o) {
   };
 
   function paintHero() {
+    paintTitle();
     var cur = step >= 2 ? rows.find(function (r) { return r.id === st.trackId; }) : null;
     hero.update(o.avail ? o.avail() : null, step >= 2 ? st.P : 0, cur && cur.deposit !== null ? cur.deposit : 0);
   }
