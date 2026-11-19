@@ -110,12 +110,12 @@
 .bs-ringbox { position: relative; flex: none; }
 .bs-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1.2; }
 .bs-center { font-size: 24px; font-weight: 800; color: var(--accent-mint-strong); }
-.bs-center.bad { color: var(--accent-gold); }
+.bs-center.bad { color: var(--danger); }
 .bs-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; display: inline-block; }
 .bs-dot.i { background: var(--aurora-2); }
 .bs-dot.m { background: var(--accent-gold); }
 .bs-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
-.bs-pill.gap { background: var(--accent-gold); color: var(--bg-app); }
+.bs-pill.gap { background: var(--danger); color: var(--bg-app); }
 .bs-pill.ok { background: rgba(120, 206, 178, 0.2); color: var(--accent-mint-strong); }
 /* wide: ring + two rows */
 .bs-wide { display: flex; align-items: center; gap: 28px; }
@@ -132,13 +132,13 @@
   .bs-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
   .bs-topt { flex: 1; min-width: 0; }
   .bs-headline { font-size: 17px; font-weight: 800; color: var(--accent-mint); }
-  .bs-headline.bad { color: var(--accent-gold); }
+  .bs-headline.bad { color: var(--danger); }
   .bs-nrows { border-top: 1px solid rgba(56, 80, 97, 0.8); }
   .bs-nrow { padding: 8px 0; border-bottom: 1px solid rgba(56, 80, 97, 0.8); }
   .bs-nrow:last-child { border-bottom: 0; padding-bottom: 0; }
   .bs-nrow-top { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
   .bs-nrow-top > span:nth-of-type(1) { flex: 1; }
-  .bs-gap { font-size: 15px; color: var(--accent-gold); direction: ltr; unicode-bidi: isolate; }
+  .bs-gap { font-size: 15px; color: var(--danger); direction: ltr; unicode-bidi: isolate; }
   .bs-bar { height: 7px; margin: 6px 0 4px; border-radius: 99px; background: rgba(51, 75, 99, 0.85); overflow: hidden; }
   .bs-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(270deg, var(--aurora-1), var(--aurora-2), var(--aurora-3)); }
   .bs-bar.m i { background: linear-gradient(270deg, var(--accent-gold), #F2DEAB); }
