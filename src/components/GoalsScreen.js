@@ -11,6 +11,7 @@ import { createBudgetSummary } from "./BudgetSummary.js";
 import { createAppHeader } from "./AppHeader.js";
 import { createProfileDialog } from "./ProfileDialog.js";
 import { PlusIcon } from "./ui/Icons.js";
+import { makeDraggable } from "./ui/Draggable.js";
 import { createNotificationsScreen } from "./NotificationsScreen.js";
 import { computeGoal, currentMilestone } from "../lib/calc.js";
 import { todayDate } from "../lib/format.js";
@@ -140,7 +141,11 @@ export function createGoalsScreen(o) {
     onKnownDate: function (opener) { planFlow.open(opener); }
   });
   el.querySelector("#gs-add").addEventListener("click", function () { chooser.open(this, null); });
-  el.querySelector("#gs-fab").addEventListener("click", function () { chooser.open(this, null); });
+  var fab = el.querySelector("#gs-fab");
+  var dragged = false;
+  fab.addEventListener("click", function () { if (dragged) { dragged = false; return; } chooser.open(this, null); });
+  fab.addEventListener("pointerup", function () { setTimeout(function () { dragged = false; }, 60); }); /* a drag that produced no click must not swallow the next tap */
+  makeDraggable(fab, "keepi_fab_pos", function () { dragged = true; });
   /* Invitations sent to this email before there was an account become notifications first, then everything loads. */
   (o.sharing ? o.sharing.syncRequests().catch(function () {}) : Promise.resolve()).then(function () { return Promise.all([
     o.repo.load().catch(function () { showToast(S["load.failed"]); return []; }),

@@ -267,6 +267,7 @@
   .fab-plus { position: absolute; right: 0; bottom: 0; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-gold); color: var(--bg-app); border: 3px solid var(--bg-app); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5); box-sizing: border-box; }
   .fab-plus svg { width: 14px; height: 14px; stroke-width: 3.2; }
   .fab:active { transform: scale(0.96); }
+  .fab.dragging { transform: scale(1.06); cursor: grabbing; filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.5)); }
 }
 
 /* Cream strip under the picture: start date and the delete button */
