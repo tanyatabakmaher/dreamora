@@ -180,7 +180,7 @@ export const S = {
   "bs.goals.one": "מטרה אחת",
   "bs.head.month": "חסרים {gap} בחודש",
   "bs.head.initial": "חסרים {gap} בסכום ההתחלתי",
-  "bs.head.ok": "התקציב מתכנס עם המטרות",
+  "bs.head.ok": "התקציב מתכנס",
   "bd.donut.negative": "ההוצאות גבוהות מההכנסה",
   "bd.save": "שמירה",
   "bd.saved": "התקציב נשמר",
