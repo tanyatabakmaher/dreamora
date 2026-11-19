@@ -8,7 +8,7 @@ import { PencilIcon } from "./ui/Icons.js";
    Outer ring = the starting amounts (money you have vs. what the goals start with), inner ring = the monthly deposits (saving vs. deposits).
    Wide screens show two short rows; narrow screens show a headline and two rows with a bar each. o.budgetRepo, o.onOpen(openerEl). update(goals) re-renders. */
 function fill(t, vars) { return Object.keys(vars).reduce(function (s, k) { return s.split("{" + k + "}").join(vars[k]); }, t); }
-function pct(have, need) { return need > 0 ? Math.max(0, Math.min(100, have / need * 100)) : 100; }
+function pct(used, avail) { return avail > 0 ? Math.max(0, Math.min(100, used / avail * 100)) : (used > 0 ? 100 : 0); }
 
 function rings(pi, pm, size, sw, gid) {
   var h = size / 2, r1 = (size - sw) / 2, r2 = r1 - sw - 4;
@@ -44,7 +44,7 @@ export function createBudgetSummary(o) {
     var iniPill = iniGap > 0 ? pill(false, fill(S["bs.lack"], { gap: money(iniGap) })) : pill(true, S["bs.covered"]);
     var depPill = depGap > 0 ? pill(false, fill(S["bs.lack"], { gap: money(depGap) })) : pill(true, S["bs.covered"]);
     var ring = function (size, sw, id) {
-      return '<div class="bs-ringbox">' + rings(pct(budget.pool, s.allocated), pct(s.saving, s.required), size, sw, id) +
+      return '<div class="bs-ringbox">' + rings(pct(s.allocated, budget.pool), pct(s.required, s.saving), size, sw, id) +
         '<div class="bs-center' + (bad ? " bad" : "") + '" aria-hidden="true">' + (bad ? "!" : "✓") + "</div></div>";
     };
     var edit = '<button type="button" class="bs-edit" aria-label="' + esc(S["bs.editAria"]) + '">' + PencilIcon() + "</button>";
@@ -55,16 +55,16 @@ export function createBudgetSummary(o) {
     var rowNarrow = function (cls, label, have, need, leftKey) {
       var gap = need - have, ok = gap <= 0;
       var top = ok ? pill(true, S["bs.covered"]).replace("bs-pill ok", "bs-pill ok " + cls) : '<b class="bs-gap">-' + esc(money(gap)) + "</b>";
-      var line = ok ? esc(fill(S["bs.need"], { need: money(need) })) : '<span class="num">' + esc(money(have)) + " / " + esc(money(need)) + "</span>";
+      var line = esc(fill(S["bs.have"], { have: money(have), need: money(need) }));
       var left = ok && have > need ? '<div class="bs-left ' + cls + '">' + esc(fill(S[leftKey], { amount: money(have - need) })) + "</div>" : "";
-      return '<div class="bs-nrow"><div class="bs-nrow-top">' + dot(cls) + "<span>" + esc(label) + "</span>" + top + '</div><div class="bs-bar ' + cls + '"><i style="width:' + pct(have, need).toFixed(0) + '%"></i></div><div class="bs-nline">' + line + "</div>" + left + "</div>";
+      return '<div class="bs-nrow"><div class="bs-nrow-top">' + dot(cls) + "<span>" + esc(label) + "</span>" + top + '</div><div class="bs-bar ' + cls + '"><i style="width:' + pct(need, have).toFixed(0) + '%"></i></div><div class="bs-nline">' + line + "</div>" + left + "</div>";
     };
     el.innerHTML = '<div class="bs-card"><div class="bs-panel">' +
       /* wide screens */
       '<div class="bs-wide">' + ring(128, 10, "bsw") + '<div class="bs-body"><div class="bs-head"><b>' + esc(S["bs.title"]) + "</b>" + edit + "</div>" +
         rowWide("i", S["bs.initial"], iniPill, budget.pool, s.allocated) + '<div class="bs-sep"></div>' + rowWide("m", S["bs.monthly"], depPill, s.saving, s.required) + "</div></div>" +
       /* narrow screens */
-      '<div class="bs-narrow"><div class="bs-top">' + ring(84, 8, "bsn") + '<div class="bs-topt"><div class="bs-head"><b>' + esc(S["bs.title"]) + '</b>' + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + "</div></div></div>" +
+      '<div class="bs-narrow"><div class="bs-top">' + ring(84, 8, "bsn") + '<div class="bs-topt"><div class="bs-head"><b>' + esc(S["bs.title"]) + '</b>' + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + '</div><div class="bs-totals">' + dot("i") + '<span class="num">' + esc(money(budget.pool)) + "</span>" + dot("m") + '<span class="num">' + esc(fill(S["bs.totals"], { monthly: money(s.saving) })) + "</span></div></div></div>" +
         '<div class="bs-nrows">' + rowNarrow("i", S["bs.initial"], budget.pool, s.allocated, "bs.left.initial") + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + "</div></div>" +
       "</div></div>";
     Array.prototype.forEach.call(el.querySelectorAll(".bs-edit"), function (b) { b.addEventListener("click", function () { o.onOpen(this); }); });

@@ -181,3 +181,6 @@
 .bh-dot { width: 9px; height: 9px; border-radius: 50%; }
 .bh-dot.i { background: var(--aurora-4); }
 .bh-dot.m { background: var(--accent-mint-strong); }
+.bs-totals { margin-top: 4px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; font-size: 11.5px; color: var(--color-text-secondary); }
+.bs-totals .bs-dot { width: 8px; height: 8px; }
+.bs-totals .num { direction: ltr; unicode-bidi: isolate; margin-inline-end: 6px; }
