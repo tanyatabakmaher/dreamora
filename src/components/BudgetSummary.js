@@ -35,7 +35,7 @@ function pins(goals) {
     return '<span class="bs-pol" style="--t:' + tilt[i] + "deg;z-index:" + (6 - i) + '">' + pic + "</span>";
   }).join("") + (more > 0 ? '<span class="bs-edge" aria-hidden="true"></span>' : "");
   var n = goals.length, label = fill(S[n === 1 ? "bs.goals.one" : "bs.goals"], { n: n });
-  return '<div class="bs-goals" role="img" aria-label="' + esc(label) + '"><div class="bs-fan">' + pol + '</div><div class="bs-gcount">' + esc(label) + (more > 0 ? ' <span class="bs-gmore">· +' + more + "</span>" : "") + "</div></div>";
+  return '<div class="bs-goals" role="img" aria-label="' + esc(label) + '"><div class="bs-fan">' + pol + '</div><div class="bs-gcount">' + esc(label) + (more > 0 ? ' <span class="bs-gmore">+' + more + "</span>" : "") + "</div></div>";
 }
 var dot = function (cls) { return '<i class="bs-dot ' + cls + '"></i>'; };
 function pill(ok, text) { return '<span class="bs-pill ' + (ok ? "ok" : "gap") + '">' + esc(text) + "</span>"; }
@@ -59,16 +59,11 @@ export function createBudgetSummary(o) {
     var bad0 = depGap > 0 || iniGap > 0;
     var headline = depGap > 0 ? fill(S["bs.head.month"], { gap: money(depGap) }) : iniGap > 0 ? fill(S["bs.head.initial"], { gap: money(iniGap) }) : S["bs.head.ok"];
     var bad = depGap > 0 || iniGap > 0;
-    var iniPill = iniGap > 0 ? pill(false, fill(S["bs.lack"], { gap: money(iniGap) })) : pill(true, S["bs.covered"]);
-    var depPill = depGap > 0 ? pill(false, fill(S["bs.lack"], { gap: money(depGap) })) : pill(true, S["bs.covered"]);
     var ring = function (size, sw, id) {
       return '<div class="bs-ringbox">' + rings(left(budget.pool, s.allocated), left(s.saving, s.required), size, sw, id) +
         '<div class="bs-center' + (bad ? " bad" : "") + '" aria-hidden="true">' + (bad ? "!" : "✓") + "</div></div>";
     };
     var edit = '<button type="button" class="bs-edit" aria-label="' + esc(S["bs.editAria"]) + '">' + PencilIcon() + "</button>";
-    var rowWide = function (cls, label, p, have, need) {
-      return '<div class="bs-row"><div class="bs-row-top">' + dot(cls) + "<span>" + esc(label) + "</span>" + p + '</div><div class="bs-sub">' + esc(leftLine(have, need)) + "</div></div>";
-    };
     /* narrow: the gap leads (or "covered"), a bar shows how much of the need is there, and the exact amounts are one small line */
     var rowNarrow = function (cls, label, have, need, leftKey) {
       var gap = need - have, ok = gap <= 0;
@@ -79,8 +74,9 @@ export function createBudgetSummary(o) {
     };
     el.innerHTML = '<div class="bs-card"><div class="bs-panel">' +
       /* wide screens */
-      '<div class="bs-wide">' + ring(128, 10, "bsw") + '<div class="bs-body"><div class="bs-head"><b>' + esc(S["bs.title"]) + "</b>" + edit + "</div>" + pins(goals) +
-        rowWide("i", S["bs.initial"], iniPill, budget.pool, s.allocated) + '<div class="bs-sep"></div>' + rowWide("m", S["bs.monthly"], depPill, s.saving, s.required) + "</div></div>" +
+      '<div class="bs-wide">' + ring(104, 9, "bsw") + '<div class="bs-wtitle"><div class="bs-head"><b>' + esc(S["bs.title"]) + "</b>" + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + "</div></div>" +
+        '<div class="bs-wsep"></div><div class="bs-wm">' + rowNarrow("i", S["bs.initial"], budget.pool, s.allocated, "bs.left.initial") + '</div><div class="bs-wm">' + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + "</div>" +
+        (goals.length ? '<div class="bs-wsep"></div><div class="bs-wgoals">' + pins(goals) + "</div>" : "") + "</div>" +
       /* narrow screens */
       '<div class="bs-narrow"><div class="bs-top">' + ring(84, 8, "bsn") + '<div class="bs-topt"><div class="bs-head"><b>' + esc(S["bs.title"]) + '</b>' + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + '</div>' + pins(goals) + "</div></div>" +
         '<div class="bs-nrows">' + rowNarrow("i", S["bs.initial"], budget.pool, s.allocated, "bs.left.initial") + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + "</div></div>" +
