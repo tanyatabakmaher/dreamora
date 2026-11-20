@@ -31,8 +31,7 @@
 .ac-card { position: absolute; display: block; width: calc(124 * var(--u)); aspect-ratio: 1; object-fit: cover; border: 3px solid #f4efe6; border-bottom-width: 11px; border-radius: 3px; background: #2a3646; }
 .ac-card.ac-center { left: calc(88 * var(--u)); top: calc(56 * var(--u)); border-width: 5px; border-bottom-width: 16px; transform: rotate(-2deg); z-index: 9; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
 .auth-hero::after { content: ""; position: absolute; inset: 0; z-index: 1; background: color-mix(in srgb, var(--bg-app) 30%, transparent); }
-.auth-hero > .auth-back { position: relative; z-index: 2; }
-.auth-hero .auth-back { align-self: flex-end; color: var(--text-primary); background: color-mix(in srgb, var(--bg-app) 70%, transparent); border-color: color-mix(in srgb, var(--text-primary) 40%, transparent); }
+.auth-sheet > .auth-back { position: absolute; z-index: 2; top: var(--space-16); inset-inline-end: var(--space-16); }
 .auth-hero > .auth-hero-logo { --u: min(0.3333cqw, 1.15px); position: absolute; z-index: 2; left: 50%; top: calc(118 * var(--u)); transform: translate(-50%, -50%); display: block; width: calc(104 * var(--u)); height: auto; margin: 0; }
 .auth-sheet { position: relative; flex: 1; margin-top: calc(var(--space-32) * -1); padding: var(--space-24) var(--space-24) var(--space-32); background: var(--color-canvas); border-top: 1px solid var(--color-border); border-radius: calc(var(--radius-card) + 10px) calc(var(--radius-card) + 10px) 0 0; display: flex; flex-direction: column; }
 .auth-handle { width: 48px; height: 4px; border-radius: var(--radius-pill); background: var(--color-primary); align-self: center; }

@@ -17,6 +17,7 @@ function Choice(o) {
 
 export function createGoalStartChooser(o) {
   var sheet = fromHTML('<div class="sheet chooser" role="dialog" aria-modal="true" aria-labelledby="gc-title">' +
+    '<div class="chooser-handle" aria-hidden="true"></div>' +
     '<div class="sheet-head"><h2 id="gc-title">' + esc(S["chooser.title"]) + "</h2>" + IconButton({ id: "gc-close", label: S["form.close"], glyph: "✕" }) + "</div>" +
     '<p class="chooser-sub">' + esc(S["chooser.subtitle"]) + "</p>" +
     Choice({ id: "gc-known-deposit", tilt: "tilt-a", src: PICTURES.date, tone: "tone-mint", title: S["chooser.deposit.title"], sub: S["chooser.deposit.sub"], exA: S["chooser.deposit.exA"], exB: S["chooser.deposit.exB"] }) +

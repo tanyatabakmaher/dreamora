@@ -24,9 +24,9 @@ function collageHTML() {
 export function createAuthForm(o) {
   /* Layout: a collage header of the three goal pictures (back button + Keepi logo over it) with the form sheet rising over its bottom edge. */
   var el = fromHTML('<section class="auth-view auth-form-view"><div class="auth-hero"><div class="auth-collage" aria-hidden="true"><div class="ac-stage">' + collageHTML() + '</div></div>' +
-    IconButton({ id: "af-back", label: S["auth.back.aria"], glyph: "✕" }).replace('class="icon-btn"', 'class="icon-btn auth-back"') +
     '<img class="auth-hero-logo" src="pics/welcome/keepi-logo-dark.webp" alt="' + BRAND_NAME + '" width="720" height="241"></div>' +
     '<div class="auth-sheet"><div class="auth-handle" aria-hidden="true"></div>' +
+    IconButton({ id: "af-back", label: S["auth.back.aria"], glyph: "✕" }).replace('class="icon-btn"', 'class="icon-btn auth-back"') +
     '<form class="auth-form" novalidate><h2 id="af-title" tabindex="-1"></h2><p class="auth-sub" id="af-sub"></p>' +
     Message({ kind: "info", id: "af-demo", hidden: !o.demo }) +
     Field({ id: "af-name", label: S["auth.name"], attrs: 'autocomplete="name" maxlength="40" placeholder="' + S["auth.name.placeholder"] + '"' }) +
