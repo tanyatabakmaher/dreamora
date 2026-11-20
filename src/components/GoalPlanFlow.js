@@ -11,44 +11,36 @@ import { createConfirm } from "./ConfirmDialog.js";
 import { IconPicker, wireIconPicker } from "./IconPicker.js";
 import { heat, mmYYYY } from "../lib/heat.js";
 import { createBudgetHero } from "./BudgetHero.js";
+import { createSharingSection } from "./SharingSection.js";
+import { diffMembers, hasChanges } from "../lib/share.js";
 
-/* "How much to deposit?" flow: a fixed target date, then the monthly deposit each track needs to reach it.
-   Step 1: name, picture, target amount, target date. Step 2: starting amount + one track (rows show the deposit and a bar relative to the other tracks; the open row edits return and fee for this goal only).
-   Step 3: summary and save. onSave(goal, null) is the same save the regular goal form uses. open(openerEl). */
+/* "How much to deposit?" form: one screen with the same structure as the regular goal form. Name, picture, target amount, fixed target date and an optional starting amount;
+   below them every track shows the monthly deposit it needs to reach the date (the open row edits return and fee for this goal only), then a summary of the chosen track,
+   the privacy settings and a fixed save bar. onSave(goal, sharingDiff|null) is the same save the regular goal form uses. open(openerEl). */
 var MAX_MONTHS = 600;
 function numOrNaN(v) { return v === "" || v === null || v === undefined ? NaN : Number(parseAmount(v)); }
 function fill(t, m) { return Object.keys(m).reduce(function (s, k) { return s.replace("{" + k + "}", m[k]); }, t); }
 
 export function createGoalPlanFlow(o) {
-  var root = fromHTML('<div class="sheet planflow" role="dialog" aria-modal="true" aria-labelledby="pln-title">' +
-    '<div class="pln-top"><button type="button" class="pln-icon" id="pln-back" aria-label="' + esc(S["plan.back"]) + '">→</button>' +
-    '<div class="pln-bars" role="group" aria-label="' + esc(S["plan.step1"] + " / " + S["plan.step2"] + " / " + S["plan.step3"]) + '">' +
-    [1, 2, 3].map(function (n) { return '<button type="button" class="pln-bar" data-step="' + n + '" aria-label="' + esc(S["plan.step" + n]) + '"></button>'; }).join("") + "</div>" +
-    '<button type="button" class="pln-icon" id="pln-close" aria-label="' + esc(S["form.close"]) + '">✕</button></div>' +
-    '<section class="pln-step" data-step="1"><h2 class="pln-title" id="pln-title">' + esc(S["plan.s1.title"]) + "</h2>" +
+  var root = fromHTML('<div class="sheet planflow" role="dialog" aria-modal="true" aria-labelledby="pln-herotitle">' +
+    '<div class="pln-top"><button type="button" class="pln-icon" id="pln-close" aria-label="' + esc(S["form.close"]) + '">\u2715</button></div>' +
     Field({ id: "pln-name", label: S["form.name"], attrs: 'maxlength="40" autocomplete="off" placeholder="' + esc(S["form.name.placeholder"]) + '"' }) +
     IconPicker("plnp") +
     Field({ id: "pln-target", label: S["form.target"], type: "text", num: true, attrs: 'inputmode="decimal" autocomplete="off"' }) +
     Field({ id: "pln-date", label: S["plan.date"], type: "date", num: true, hint: S["plan.date.hint"] }) +
-    '<div class="actions">' + Button({ id: "pln-next1", label: S["plan.next"], grow: true }) + "</div></section>" +
-    '<section class="pln-step" data-step="2" hidden>' +
-    '<div class="pln-hdr"><div class="pln-hd-top"><span class="pln-pola" id="pln-pola"></span><span class="pln-hd-text"><span class="pln-goalname" id="pln-goalname"></span><span class="pln-tag" id="pln-tracktag"></span>' +
-    '<span class="pln-hd-date"><span class="pln-hd-lbl">' + esc(S["plan.goal.until"]) + '</span><span class="pln-tk-date" id="pln-goaldate"></span></span><span class="pln-tgtchip" id="pln-tgtchip"><span class="pln-flagico" aria-hidden="true">\u2691</span><bdi id="pln-tgtchiptxt"></bdi></span></span></div>' +
-    '<div class="pln-hint" id="pln-hdhint"><span aria-hidden="true">\u2193</span> ' + esc(S["plan.hdr.hint"]) + '</div>' +
-    '<div class="pln-cv" id="pln-cv"><div class="pln-cv-top"><span class="pln-cv-start" id="pln-cvstart"></span><span class="pln-flag"><span class="pln-flagico" aria-hidden="true">\u2691</span><bdi id="pln-cvtarget"></bdi></span></div>' +
-    '<div class="pln-cv-bar"><i id="pln-cvfill"></i></div>' +
-    '<div class="pln-cv-bot"><span id="pln-cvdep"></span><span id="pln-cvret"></span></div></div></div>' +
-    '<h2 class="pln-title">' + esc(S["plan.s2.title"]) + '</h2><p class="pln-sub">' + esc(S["plan.s2.sub"]) + "</p>" +
     Field({ id: "pln-initial", label: S["plan.initial"], type: "text", num: true, attrs: 'inputmode="decimal" autocomplete="off"' }) +
     '<div class="pln-chip" id="pln-initialchip" hidden></div>' +
+    '<h3 class="pln-title">' + esc(S["plan.s2.title"]) + '</h3><p class="pln-sub" id="pln-trackssub">' + esc(S["plan.s2.sub"]) + "</p>" +
+    '<p class="pln-wait" id="pln-wait">' + esc(S["plan.wait"]) + "</p>" +
     '<div class="pln-tracks" id="pln-tracks" role="radiogroup" aria-label="' + esc(S["form.track"]) + '"></div>' +
-    '<div class="actions">' + Button({ id: "pln-next2", label: S["plan.next"], grow: true }) + "</div></section>" +
-    '<section class="pln-step" data-step="3" hidden><h2 class="pln-title">' + esc(S["plan.s3.title"]) + "</h2>" +
+    '<div class="err" id="pln-track-err" role="alert"></div>' +
+    '<div class="pln-summary" id="pln-summary" hidden>' +
     '<div class="pln-hero"><div class="pln-herolabel">' + esc(S["plan.s3.deposit"]) + '</div><div class="pln-heroamt" id="pln-heroamt"></div><div class="pln-herosub" id="pln-herosub"></div></div>' +
     '<div class="pln-timeline"><div class="pln-line"><i></i></div><div class="pln-ends"><span id="pln-startlbl"></span><span id="pln-endlbl"></span></div><div class="pln-dur" id="pln-dur"></div></div>' +
     '<div class="pln-comp" id="pln-comp"></div><div class="pln-legend" id="pln-legend"></div>' +
-    '<p class="pln-disc">' + esc(S["plan.disclaimer"]) + "</p>" +
-    '<div class="actions">' + Button({ id: "pln-save", label: S["plan.s3.save"], grow: true }) + "</div></section></div>");
+    '<p class="pln-disc">' + esc(S["plan.disclaimer"]) + "</p></div>" +
+    '<div id="pln-sharing-slot"></div>' +
+    '<div class="actions pln-actions">' + Button({ id: "pln-save", label: S["plan.s3.save"], grow: true }) + Button({ id: "pln-cancel", variant: "ghost", label: S["form.cancel"] }) + "</div></div>");
   var $ = function (sel) { return root.querySelector(sel); };
   var modal = createModal({ sheet: root });
   /* Picture behind the top bar plus how much of the free budget this goal uses (o.avail() -> numbers, or null without a budget). */
@@ -60,8 +52,10 @@ export function createGoalPlanFlow(o) {
   root.insertBefore(hero.el, root.firstChild);
   var picker = wireIconPicker(root, EMOJI_SUGGESTED, function () { dirty = true; hero.setImage(picker.get().image); }, "plnp");
   var leave = createConfirm({ title: S["plan.leave.title"], body: S["plan.leave.body"], yes: S["plan.leave.yes"], no: S["plan.leave.no"] });
-  var step = 1, dirty = false, saved = false, today = todayDate();
-  var st = { T: NaN, months: 0, dateISO: "", P: 0, trackId: null, openId: null, edits: {} }, rows = [], tracksBuilt = false;
+  var dirty = false, saved = false, today = todayDate();
+  var st = { T: NaN, months: 0, dateISO: "", P: 0, trackId: null, openId: null, edits: {} }, rows = [], tracksBuilt = false, ready = false, plan = null;
+  var sharing = o.sharing ? createSharingSection({ ownEmail: function () { return o.ownEmail ? o.ownEmail() : ""; } }) : null;
+  if (sharing) $("#pln-sharing-slot").appendChild(sharing.el);
 
   /* Closing with unsaved input asks first; Escape and the backdrop both go through modal.close. */
   var realClose = modal.close;
@@ -73,32 +67,20 @@ export function createGoalPlanFlow(o) {
 
   function paintHero() {
     paintTitle();
-    var cur = step >= 2 ? rows.find(function (r) { return r.id === st.trackId; }) : null;
-    hero.update(o.avail ? o.avail() : null, step >= 2 ? st.P : 0, cur && cur.deposit !== null ? cur.deposit : 0);
+    var cur = ready ? rows.find(function (r) { return r.id === st.trackId; }) : null;
+    hero.update(o.avail ? o.avail() : null, ready ? st.P : 0, cur && cur.deposit !== null ? cur.deposit : 0);
   }
   root.addEventListener("input", function () { setTimeout(paintHero, 0); });
   root.addEventListener("click", function () { setTimeout(paintHero, 0); });
-  function show(n) {
-    step = n;
-    Array.prototype.forEach.call(root.querySelectorAll(".pln-step"), function (s) { s.hidden = Number(s.dataset.step) !== n; });
-    Array.prototype.forEach.call(root.querySelectorAll(".pln-bar"), function (b) {
-      var k = Number(b.dataset.step);
-      b.classList.toggle("on", k === n); b.classList.toggle("done", k < n); b.disabled = k >= n;
-      if (k === n) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
-    });
-    $("#pln-back").hidden = n === 1;
-    root.scrollTop = 0;
-    paintHero();
-  }
 
-  /* ---- step 1 ---- */
+  /* ---- the goal details ---- */
   function fmtInput(el) {
     var pos = el.selectionStart, before = el.value, digits = before.slice(0, pos).replace(/[^\d.]/g, "").length, f = fmtAmountInput(before), n = 0, np = f.length;
     for (var j = 0; j < f.length; j++) { if (n === digits) { np = j; break; } if (/[\d.]/.test(f[j])) n++; }
     if (n === digits && np === f.length && digits === 0) np = 0;
     el.value = f; try { el.setSelectionRange(np, np); } catch (e) {}
   }
-  function readStep1() {
+  function readDetails() {
     var name = $("#pln-name").value.trim(), T = numOrNaN($("#pln-target").value), dv = $("#pln-date").value, errs = {};
     if (!name) errs.name = S["error.required"];
     if ($("#pln-target").value === "") errs.target = S["error.required"];
@@ -108,23 +90,27 @@ export function createGoalPlanFlow(o) {
     else { months = monthsUntil(today, parseISODate(dv)); if (months < 1) errs.date = S["plan.error.dateMin"]; else if (months > MAX_MONTHS) errs.date = S["plan.error.date"]; }
     return { name: name, T: T, dv: dv, months: months, errs: errs };
   }
-  function showStep1Errors(r) { setFieldError(root, "pln-name", r.errs.name || ""); setFieldError(root, "pln-target", r.errs.target || ""); setFieldError(root, "pln-date", r.errs.date || ""); }
-  $("#pln-next1").addEventListener("click", function () {
-    var r = readStep1(); showStep1Errors(r);
-    var first = ["name", "target", "date"].find(function (k) { return r.errs[k]; });
-    if (first) { $("#pln-" + first).focus(); return; }
-    st.T = r.T; st.months = r.months; st.dateISO = r.dv;
-    enterStep2(); show(2);
-  });
+  function showDetailErrors(r) { setFieldError(root, "pln-name", r.errs.name || ""); setFieldError(root, "pln-target", r.errs.target || ""); setFieldError(root, "pln-date", r.errs.date || ""); }
+  /* Target and date are all the tracks need: once both are valid the list appears and follows every change. */
+  function syncReady() {
+    var r = readDetails(), ok = !r.errs.target && !r.errs.date;
+    if (ok) { st.T = r.T; st.months = r.months; st.dateISO = r.dv; }
+    ready = ok;
+    $("#pln-wait").hidden = ok; $("#pln-tracks").hidden = !ok; $("#pln-trackssub").hidden = !ok;
+    if (ok) { if (!tracksBuilt) buildTracks(); paintTracks(); } else { $("#pln-summary").hidden = true; $("#pln-initialchip").hidden = true; plan = null; }
+    paintHero();
+  }
   ["pln-name", "pln-target", "pln-date"].forEach(function (id) {
     $("#" + id).addEventListener("input", function () {
       dirty = true;
       if (id === "pln-target") fmtInput(this);
-      if ($("#" + id + "-field").classList.contains("invalid")) showStep1Errors(readStep1());
+      var r = readDetails();
+      if ($("#" + id + "-field").classList.contains("invalid") || (id === "pln-date" && this.value)) showDetailErrors(r);
+      syncReady();
     });
   });
 
-  /* ---- step 2 ---- */
+  /* ---- tracks ---- */
   function trackRowHtml(t) {
     return '<div class="pln-track" data-id="' + t.id + '"><button type="button" class="pln-trackhead" role="radio" aria-checked="false" aria-expanded="false">' +
       '<span class="pln-radio" aria-hidden="true"></span><span class="pln-namecol"><span class="pln-trackname">' + esc(t.labelHe.length <= 8 ? t.labelHe.replace(/ /g, "\u00a0") : t.labelHe) + "</span>" +
@@ -186,45 +172,38 @@ export function createGoalPlanFlow(o) {
       setFieldError(root, "pln-ret-" + r.id, "" ); setFieldError(root, "pln-fee-" + r.id, "");
     });
     var cur = rows.find(function (r) { return r.id === st.trackId; });
-    $("#pln-next2").disabled = !cur || cur.deposit === null;
     /* How much the starting amount saves per month, shown for the selected track. */
     var chip = $("#pln-initialchip");
     if (st.P > 0 && cur && cur.net !== null) {
       var zero = requiredDeposit(st.T, 0, cur.net, st.months), now = requiredDeposit(st.T, st.P, cur.net, st.months), save = zero.deposit - now.deposit;
       chip.hidden = !(save > 0); chip.textContent = save > 0 ? fill(S["plan.initial.saves"], { amt: money(save) }) : "";
     } else chip.hidden = true;
-    paintHeader(cur);
+    paintSummary(cur);
   }
-  /* Header: the chosen track with its net return, and how much of the target the deposits cover (the rest is return). */
-  function paintHeader(cur) {
-    var tag = $("#pln-tracktag"), ok = cur && cur.deposit !== null && cur.net !== null;
-    var tr = ok ? TRACKS.find(function (t) { return t.id === cur.id; }) : null;
-    /* No track yet: just the target chip and a hint. With a track: the tag and the coverage bar. */
-    tag.hidden = !ok; $("#pln-cv").hidden = !ok; $("#pln-tgtchip").hidden = ok; $("#pln-hdhint").hidden = ok;
-    if (ok) tag.innerHTML = esc(tr.labelHe) + ' <span class="pln-dot" aria-hidden="true">\u00b7</span> <bdi>' + esc(fill(S["plan.netTag"], { pct: String(cur.net) })) + "</bdi>";
-    var P = st.P > 0 ? st.P : 0, dep = ok ? P + cur.deposit * st.months : P;
-    var cover = Math.max(0, Math.min(100, st.T > 0 ? dep / st.T * 100 : 0));
-    $("#pln-cvfill").style.width = cover + "%";
-    $("#pln-cvstart").textContent = fill(S["plan.hdr.start"], { amt: money(P) });
-    $("#pln-cvdep").textContent = ok ? fill(S["plan.hdr.deposits"], { amt: money(Math.min(dep, st.T)) }) : "";
-    $("#pln-cvret").textContent = ok ? fill(S["plan.hdr.returns"], { amt: money(Math.max(0, st.T - dep)) }) : "";
+  /* Summary of the chosen track: the monthly deposit, how long it takes and what the money is made of. */
+  function paintSummary(cur) {
+    var box = $("#pln-summary");
+    if (!cur || cur.deposit === null || cur.net === null) { box.hidden = true; plan = null; return; }
+    plan = cur; box.hidden = false;
+    $("#pln-track-err").textContent = "";
+    var t = TRACKS.find(function (x) { return x.id === cur.id; });
+    var dep = cur.deposit, end = parseISODate(st.dateISO);
+    $("#pln-heroamt").textContent = money(dep);
+    $("#pln-herosub").textContent = cur.status === "achieved" ? S["plan.s3.achieved"] : t.labelHe + " \u00b7 " + fill(S["plan.track.net"], { pct: String(cur.net) });
+    $("#pln-startlbl").textContent = mmYYYY(today); $("#pln-endlbl").textContent = fill(S["plan.s3.until"], { date: mmYYYY(end) });
+    $("#pln-dur").textContent = fill(S["plan.s3.months"], { dur: durText(st.months) });
+    var fin = Math.max(st.T, balanceAfter(st.P, dep, cur.net, st.months)), dsum = dep * st.months, ret = Math.max(0, fin - st.P - dsum);
+    var parts = [["initial", st.P, S["plan.s3.initial"]], ["deposits", dsum, S["plan.s3.deposits"]], ["returns", ret, S["plan.s3.returns"]]].filter(function (p) { return p[1] > 0; });
+    $("#pln-comp").innerHTML = parts.map(function (p) { return '<i class="c-' + p[0] + '" style="width:' + (p[1] / fin * 100).toFixed(2) + '%"></i>'; }).join("");
+    $("#pln-legend").innerHTML = parts.map(function (p) { return '<span><b class="c-' + p[0] + '"></b>' + esc(p[2]) + " <bdi>" + esc(money(p[1])) + "</bdi></span>"; }).join("");
   }
-  function enterStep2() {
-    if (!tracksBuilt) buildTracks();
-    var pic = picker.get();
-    $("#pln-pola").innerHTML = pic.image ? '<img src="' + esc(pic.image) + '" alt="" width="56" height="56">' : '<span class="pln-emoji">' + esc(pic.emoji) + "</span>";
-    $("#pln-goalname").textContent = readStep1().name;
-    $("#pln-goaldate").textContent = mmYYYY(parseISODate(st.dateISO));
-    $("#pln-cvtarget").textContent = money(st.T);
-    $("#pln-tgtchiptxt").textContent = fill(S["plan.hdr.tgtchip"], { amt: money(st.T) });
-    paintTracks();
-  }
+
   $("#pln-initial").addEventListener("input", function () {
     dirty = true; fmtInput(this);
     var v = this.value === "" ? 0 : numOrNaN(this.value);
     st.P = v >= 0 && Number.isFinite(v) ? v : 0;
     setFieldError(root, "pln-initial", v >= 0 && Number.isFinite(v) ? "" : S["error.positiveNumber"]);
-    paintTracks();
+    if (ready) paintTracks();
   });
   $("#pln-tracks").addEventListener("click", function (ev) {
     var reset = ev.target.closest(".pln-reset"), row = ev.target.closest(".pln-track");
@@ -257,54 +236,47 @@ export function createGoalPlanFlow(o) {
     var r = rows.find(function (x) { return x.id === id; });
     if (r && r.net === null && val !== "") setFieldError(root, "pln-" + m[1] + "-" + id, m[1] === "ret" ? S["error.returnRange"] : S["error.feeRange"]);
   });
-  $("#pln-next2").addEventListener("click", function () { enterStep3(); show(3); });
 
-  /* ---- step 3 ---- */
-  var plan = null;
-  function enterStep3() {
-    var r = recompute().find(function (x) { return x.id === st.trackId; });
-    plan = r;
-    var t = TRACKS.find(function (x) { return x.id === r.id; });
-    var dep = r.deposit, end = parseISODate(st.dateISO);
-    $("#pln-heroamt").textContent = money(dep);
-    $("#pln-herosub").textContent = r.status === "achieved" ? S["plan.s3.achieved"] : t.labelHe + " · " + fill(S["plan.track.net"], { pct: String(r.net) });
-    $("#pln-startlbl").textContent = mmYYYY(today); $("#pln-endlbl").textContent = fill(S["plan.s3.until"], { date: mmYYYY(end) });
-    $("#pln-dur").textContent = fill(S["plan.s3.months"], { dur: durText(st.months) });
-    var fin = Math.max(st.T, balanceAfter(st.P, dep, r.net, st.months)), dsum = dep * st.months, ret = Math.max(0, fin - st.P - dsum);
-    var parts = [["initial", st.P, S["plan.s3.initial"]], ["deposits", dsum, S["plan.s3.deposits"]], ["returns", ret, S["plan.s3.returns"]]].filter(function (p) { return p[1] > 0; });
-    $("#pln-comp").innerHTML = parts.map(function (p) { return '<i class="c-' + p[0] + '" style="width:' + (p[1] / fin * 100).toFixed(2) + '%"></i>'; }).join("");
-    $("#pln-legend").innerHTML = parts.map(function (p) { return '<span><b class="c-' + p[0] + '"></b>' + esc(p[2]) + " <bdi>" + esc(money(p[1])) + "</bdi></span>"; }).join("");
-  }
+  /* ---- save ---- */
   $("#pln-save").addEventListener("click", function () {
-    if (!plan || plan.deposit === null || saved) return;
-    saved = true; $("#pln-save").disabled = true;
-    var icon = picker.get(), r = readStep1();
-    o.onSave({
+    if (saved) return;
+    var r = readDetails(); showDetailErrors(r);
+    var first = ["name", "target", "date"].find(function (k) { return r.errs[k]; });
+    if (first) { $("#pln-" + first).focus(); return; }
+    if (!plan || plan.deposit === null) {
+      $("#pln-track-err").textContent = S["plan.err.track"];
+      $("#pln-tracks").scrollIntoView({ block: "center" });
+      return;
+    }
+    var icon = picker.get(), diff = sharing ? diffMembers(sharing.getSaved(), sharing.getDraft()) : null;
+    var res = o.onSave({
       id: uid(), name: r.name, emoji: icon.emoji, image: icon.image, targetAmount: st.T, initialAmount: st.P, monthlyDeposit: plan.deposit,
-      isPublic: false, trackId: plan.id, annualReturnPct: plan.gross, managementFeePct: plan.fee, startDate: toISODate(today), createdAt: new Date().toISOString()
-    }, null);
-    realClose();
+      isPublic: sharing ? sharing.isPublic() : false, trackId: plan.id, annualReturnPct: plan.gross, managementFeePct: plan.fee, startDate: toISODate(today), createdAt: new Date().toISOString()
+    }, diff && hasChanges(diff) ? diff : null);
+    if (res && typeof res.then === "function") {
+      var btn = $("#pln-save"); btn.disabled = true; sharing.setError("");
+      res.then(function () { saved = true; realClose(); }, function () { btn.disabled = false; sharing.setError(S["share.error.saveFailed"]); });
+      return;
+    }
+    saved = true; realClose();
   });
 
   /* ---- navigation ---- */
-  $("#pln-back").addEventListener("click", function () { show(step - 1); });
   $("#pln-close").addEventListener("click", function () { modal.close(); });
-  root.querySelector(".pln-bars").addEventListener("click", function (ev) {
-    var b = ev.target.closest(".pln-bar"); if (!b || b.disabled) return;
-    var n = Number(b.dataset.step); if (n < step) show(n);
-  });
-  root.addEventListener("keydown", function (ev) { if (ev.key === "Enter" && ev.target.tagName === "INPUT") { ev.preventDefault(); var b = $('.pln-step:not([hidden]) .actions button'); if (b && !b.disabled) b.click(); } });
+  $("#pln-cancel").addEventListener("click", function () { modal.close(); });
+  root.addEventListener("keydown", function (ev) { if (ev.key === "Enter" && ev.target.tagName === "INPUT" && !ev.target.closest(".sharing")) ev.preventDefault(); });
 
   function reset() {
-    step = 1; dirty = false; saved = false; today = todayDate();
-    st = { T: NaN, months: 0, dateISO: "", P: 0, trackId: null, openId: null, edits: {} }; plan = null;
-    ["#pln-name", "#pln-target", "#pln-date", "#pln-initial"].forEach(function (s) { $(s).value = ""; });
+    dirty = false; saved = false; today = todayDate();
+    st = { T: NaN, months: 0, dateISO: "", P: 0, trackId: null, openId: null, edits: {} }; plan = null; ready = false;
+    ["#pln-name", "#pln-target", "#pln-date", "#pln-initial"].forEach(function (x) { $(x).value = ""; });
     $("#pln-date").min = toISODate(addMonths(today, 1)); $("#pln-date").max = toISODate(addMonths(today, MAX_MONTHS));
     picker.set({}); hero.setImage(picker.get().image);
-    showStep1Errors({ errs: {} }); setFieldError(root, "pln-initial", "");
-    $("#pln-next1").disabled = false; $("#pln-save").disabled = false;
+    showDetailErrors({ errs: {} }); setFieldError(root, "pln-initial", ""); $("#pln-track-err").textContent = "";
+    $("#pln-save").disabled = false;
     tracksBuilt = false; $("#pln-tracks").innerHTML = "";
-    show(1);
+    if (sharing) { sharing.set([], true, false, null); sharing.setError(""); }
+    syncReady();
   }
   return {
     open: function (openerEl) { reset(); modal.open(openerEl, "#pln-name"); },

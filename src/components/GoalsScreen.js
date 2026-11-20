@@ -146,7 +146,7 @@ export function createGoalsScreen(o) {
     onDelete: function (g, openerEl, closeForm) { removeGoal(g, openerEl, closeForm); }
   });
   /* Adding a goal starts with a choice: "know the deposit" continues to the existing form, "know the date" to the plan flow (which saves through the same saveGoal). */
-  var planFlow = createGoalPlanFlow({ onSave: saveGoal, avail: avail });
+  var planFlow = createGoalPlanFlow({ onSave: saveGoal, avail: avail, sharing: !!o.sharing, ownEmail: function () { return profile.email; } });
   var chooser = createGoalStartChooser({
     onKnownDeposit: function (opener, mode) { loadBudget(); form.open(null, opener, mode); },
     onKnownDate: function (opener) { loadBudget(); planFlow.open(opener); }
