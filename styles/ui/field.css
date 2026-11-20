@@ -1,5 +1,6 @@
-.field { display: flex; flex-direction: column; gap: var(--space-8); margin-bottom: var(--space-16); }
-.field > label, .field > .lbl { font-weight: 500; font-size: 14px; line-height: 1.5; }
+/* one rhythm for every popup: label close to its field, a calm step to the next field (same as the sign-in sheet) */
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: var(--space-12); }
+.field > label, .field > .lbl { font-weight: 500; font-size: 13px; line-height: 1.4; }
 .input { width: 100%; min-height: 44px; padding: var(--space-8) var(--space-16); border: 1px solid var(--color-input-border); border-radius: var(--radius-control); background: var(--color-input-bg); }
 .input:focus { border-color: var(--color-focus); }
 .field.invalid .input { border-color: var(--color-error); }
