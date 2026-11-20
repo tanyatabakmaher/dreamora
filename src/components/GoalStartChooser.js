@@ -1,6 +1,6 @@
 import { fromHTML, esc } from "../lib/dom.js";
 import { S } from "../strings.js";
-import { Button } from "./ui/Button.js";
+import { IconButton } from "./ui/Button.js";
 import { createModal } from "./ui/Modal.js";
 
 /* The first step of "add goal": a bottom sheet (a centered dialog on wide screens) with two ways to start.
@@ -17,12 +17,11 @@ function Choice(o) {
 
 export function createGoalStartChooser(o) {
   var sheet = fromHTML('<div class="sheet chooser" role="dialog" aria-modal="true" aria-labelledby="gc-title">' +
-    '<div class="chooser-handle" aria-hidden="true"></div>' +
-    '<h2 id="gc-title">' + esc(S["chooser.title"]) + "</h2>" +
+    '<div class="sheet-head"><h2 id="gc-title">' + esc(S["chooser.title"]) + "</h2>" + IconButton({ id: "gc-close", label: S["form.close"], glyph: "✕" }) + "</div>" +
     '<p class="chooser-sub">' + esc(S["chooser.subtitle"]) + "</p>" +
     Choice({ id: "gc-known-deposit", tilt: "tilt-a", src: PICTURES.date, tone: "tone-mint", title: S["chooser.deposit.title"], sub: S["chooser.deposit.sub"], exA: S["chooser.deposit.exA"], exB: S["chooser.deposit.exB"] }) +
     Choice({ id: "gc-known-date", tilt: "tilt-b", src: PICTURES.deposit, tone: "tone-gold", title: S["chooser.date.title"], sub: S["chooser.date.sub"], exA: S["chooser.date.exA"], exB: S["chooser.date.exB"] }) +
-    '<div class="chooser-cancel">' + Button({ id: "gc-cancel", variant: "ghost", label: S["form.cancel"], block: true }) + "</div></div>");
+    "</div>");
   var modal = createModal({ sheet: sheet });
   var opener = null, mode = null;
   sheet.querySelector("#gc-known-deposit").addEventListener("click", function () {
@@ -35,7 +34,7 @@ export function createGoalStartChooser(o) {
     modal.close();
     o.onKnownDate(from);
   });
-  sheet.querySelector("#gc-cancel").addEventListener("click", function () { modal.close(); });
+  sheet.querySelector("#gc-close").addEventListener("click", function () { modal.close(); });
   return {
     open: function (openerEl, presetMode) { opener = openerEl || null; mode = presetMode || null; modal.open(openerEl, "#gc-known-deposit"); },
     isOpen: function () { return modal.isOpen(); },
