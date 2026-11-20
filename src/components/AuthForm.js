@@ -42,6 +42,7 @@ export function createAuthForm(o) {
     '<div class="actions-stack" id="af-actions">' + Button({ id: "af-google", variant: "ghost", label: S["auth.google"], block: true }) + "</div>" +
     '<p class="fine" id="af-fine">' + S["auth.fine"] + "</p>" +
     '<p class="swap" id="af-swap-row"><span id="af-swap-text"></span>' + Button({ id: "af-swap", variant: "link", label: "" }) + "</p>" +
+    '<p class="swap auth-sent-signup" id="af-sent-change" hidden>' + S["auth.sent.wrong"] + " " + Button({ id: "af-sent-ch", variant: "link", label: S["auth.sent.change"] }) + '</p>' +
     '<p class="swap auth-sent-signup" id="af-sent-signup" hidden>' + S["auth.sent.nohave"] + " " + Button({ id: "af-sent-su", variant: "link", label: S["auth.sent.signup"] }) + "</p></form></div></section>");
   var $ = function (id) { return el.querySelector("#" + id); };
   var mode = "login";
@@ -65,7 +66,7 @@ export function createAuthForm(o) {
     $("af-submit").textContent = su ? S["auth.signup"] : rs ? S["auth.reset.send"] : st ? S["auth.backToLogin"].replace("→ ", "") : np ? S["auth.newpw.save"] : S["auth.login"];
     $("af-sub").textContent = su ? S["auth.sub.signup"] : rs ? S["auth.sub.reset"] : np ? S["auth.sub.newpw"] : S["auth.sub.login"];
     $("af-sub").hidden = st;
-    $("af-sent-signup").hidden = !st;
+    $("af-sent-signup").hidden = !st; $("af-sent-change").hidden = !st;
     $("af-sent-ic").hidden = !st; $("af-sent-text").hidden = !st;
     if (st) $("af-sent-text").textContent = S["auth.sent.text"].replace("{email}", sentEmail);
     $("af-name-field").hidden = !su; $("af-pw-hint").hidden = !(su || np);
@@ -104,6 +105,7 @@ export function createAuthForm(o) {
     if (mode === "sent") { sendReset(true); return; }
     setMode(mode === "login" ? "signup" : mode === "signup" ? "login" : "login"); $("af-title").focus();
   });
+  $("af-sent-ch").addEventListener("click", function () { setMode("reset"); $("af-email").focus(); });
   $("af-sent-su").addEventListener("click", function () { setMode("signup"); $("af-title").focus(); });
   $("af-forgot").addEventListener("click", function () {
     /* the email is already typed in the sign-in form: send the link right away; otherwise ask for it */

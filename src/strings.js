@@ -306,6 +306,8 @@ export const S = {
   "auth.backToLogin": "→ חזרה להתחברות",
   "auth.title.sent": "בדקו את המייל",
   "auth.sent.text": "אם קיים חשבון עם {email}, שלחנו אליו קישור לאיפוס. אם הוא לא הגיע, כדאי לבדוק גם בספאם.",
+  "auth.sent.wrong": "לא המייל שלך?",
+  "auth.sent.change": "שינוי",
   "auth.sent.nohave": "אין לך חשבון עדיין?",
   "auth.sent.signup": "הרשמה",
   "auth.sent.resend": "שליחה מחדש",
