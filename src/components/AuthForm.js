@@ -56,6 +56,7 @@ export function createAuthForm(o) {
     $("af-sub").textContent = su ? S["auth.sub.signup"] : S["auth.sub.login"];
     $("af-name-field").hidden = !su; $("af-pw-hint").hidden = !su; $("af-pw2-field").hidden = !su;
     $("af-pw").setAttribute("autocomplete", su ? "new-password" : "current-password");
+    $("af-pw").placeholder = su ? S["auth.password.hint"] : ""; /* phones hide the hint line below the field, the placeholder says the same */
     $("af-swap-text").textContent = su ? S["auth.haveAccount"] : S["auth.noAccount"];
     $("af-swap").textContent = su ? S["auth.login"] : S["auth.welcome.signup"];
   }
