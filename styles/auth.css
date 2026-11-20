@@ -66,3 +66,4 @@
 .auth-sent-text { overflow-wrap: anywhere; }
 .auth-form-view[data-mode="reset"] .auth-sub, .auth-form-view[data-mode="newpw"] .auth-sub { display: block; }
 .auth-form-view[data-mode="sent"] .auth-form, .auth-form-view[data-mode="reset"] .auth-form { justify-content: flex-start; }
+.auth-sent-signup[hidden] { display: none; }
