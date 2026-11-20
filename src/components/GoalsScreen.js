@@ -12,7 +12,6 @@ import { summarize } from "../lib/budget.js";
 import { createAppHeader } from "./AppHeader.js";
 import { createProfileDialog } from "./ProfileDialog.js";
 import { PlusIcon } from "./ui/Icons.js";
-import { makeDraggable } from "./ui/Draggable.js";
 import { createNotificationsScreen } from "./NotificationsScreen.js";
 import { computeGoal, currentMilestone } from "../lib/calc.js";
 import { todayDate } from "../lib/format.js";
@@ -23,8 +22,9 @@ import { migrateGoals, syncNotifications, unreadCount, markRead, markAllRead, re
 export function createGoalsScreen(o) {
   var el = fromHTML('<div><div class="wrap"><div class="titlebar"><h1>' + S["home.title"] + "</h1>" +
     Button({ id: "gs-add", label: S["home.addGoal"], icon: PlusIcon(), extraClass: "add-btn" }) +
-    '</div></div><button type="button" class="fab" id="gs-fab" aria-label="' + S["home.addGoal"] + '"><span class="fab-pol fab-pol-back" aria-hidden="true"><img src="pics/icons/goal-5.webp" alt="" draggable="false"></span>' +
+    '<button type="button" class="fab" id="gs-fab" aria-label="' + S["home.addGoal"] + '"><span class="fab-pol fab-pol-back" aria-hidden="true"><img src="pics/icons/goal-5.webp" alt="" draggable="false"></span>' +
     '<span class="fab-pol fab-pol-front" aria-hidden="true"><img src="pics/icons/goal-1.webp" alt="" draggable="false"></span><span class="fab-plus" aria-hidden="true">' + PlusIcon() + "</span></button>" +
+    '</div></div>' +
     '<footer class="foot">' + S["disclaimer"] + "</footer></div>");
   var profile = { name: "", email: "", photo: null, phone: "" };
   var profileDialog = createProfileDialog({
@@ -153,10 +153,7 @@ export function createGoalsScreen(o) {
   });
   el.querySelector("#gs-add").addEventListener("click", function () { chooser.open(this, null); });
   var fab = el.querySelector("#gs-fab");
-  var dragged = false;
-  fab.addEventListener("click", function () { if (dragged) { dragged = false; return; } chooser.open(this, null); });
-  fab.addEventListener("pointerup", function () { setTimeout(function () { dragged = false; }, 60); }); /* a drag that produced no click must not swallow the next tap */
-  makeDraggable(fab, "keepi_fab_pos", function () { dragged = true; });
+  fab.addEventListener("click", function () { chooser.open(this, null); });
   /* Invitations sent to this email before there was an account become notifications first, then everything loads. */
   (o.sharing ? o.sharing.syncRequests().catch(function () {}) : Promise.resolve()).then(function () { return Promise.all([
     o.repo.load().catch(function () { showToast(S["load.failed"]); return []; }),
