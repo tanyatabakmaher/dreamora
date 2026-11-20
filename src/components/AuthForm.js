@@ -102,7 +102,11 @@ export function createAuthForm(o) {
     if (mode === "sent") { sendReset(true); return; }
     setMode(mode === "login" ? "signup" : mode === "signup" ? "login" : "login"); $("af-title").focus();
   });
-  $("af-forgot").addEventListener("click", function () { setMode("reset"); $("af-title").focus(); });
+  $("af-forgot").addEventListener("click", function () {
+    /* the email is already typed in the sign-in form: send the link right away; otherwise ask for it */
+    if (EMAIL_RE.test($("af-email").value.trim())) { sendReset(false); return; }
+    setMode("reset"); $("af-title").focus();
+  });
   function sendReset(again) {
     var email = again ? sentEmail : $("af-email").value.trim();
     if (!EMAIL_RE.test(email)) { setFieldError(el, "af-email", S["auth.err.email"]); return; }
