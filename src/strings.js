@@ -300,6 +300,7 @@ export const S = {
   "auth.signup": "יצירת חשבון",
   "auth.login": "התחברות",
   "auth.back": "→ חזרה",
+  "auth.back.aria": "חזרה",
   "auth.title.login": "ברוך הבא בחזרה",
   "auth.title.signup": "בואו נתחיל",
   "auth.demoNote": "מצב הדגמה: ההתחברות עדיין לא מחוברת לשרת, והנתונים נשמרים רק בדפדפן הזה.",

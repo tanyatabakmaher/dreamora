@@ -2,7 +2,7 @@ import { fromHTML } from "../lib/dom.js";
 import { S } from "../strings.js";
 import { Field, setFieldError } from "./ui/Field.js";
 import { PasswordField, wirePasswordToggle } from "./ui/PasswordField.js";
-import { Button } from "./ui/Button.js";
+import { Button, IconButton } from "./ui/Button.js";
 import { Message, showMessage, hideMessage } from "./ui/Message.js";
 import { BRAND_NAME } from "../brand.js";
 
@@ -24,7 +24,7 @@ function collageHTML() {
 export function createAuthForm(o) {
   /* Layout: a collage header of the three goal pictures (back button + Keepi logo over it) with the form sheet rising over its bottom edge. */
   var el = fromHTML('<section class="auth-view auth-form-view"><div class="auth-hero"><div class="auth-collage" aria-hidden="true"><div class="ac-stage">' + collageHTML() + '</div></div>' +
-    Button({ id: "af-back", variant: "ghost", label: S["auth.back"], extraClass: "auth-back", attrs: 'aria-label="חזרה"' }) +
+    IconButton({ id: "af-back", label: S["auth.back.aria"], glyph: "✕" }).replace('class="icon-btn"', 'class="icon-btn auth-back"') +
     '<img class="auth-hero-logo" src="pics/welcome/keepi-logo-dark.webp" alt="' + BRAND_NAME + '" width="720" height="241"></div>' +
     '<div class="auth-sheet"><div class="auth-handle" aria-hidden="true"></div>' +
     '<form class="auth-form" novalidate><h2 id="af-title" tabindex="-1"></h2><p class="auth-sub" id="af-sub"></p>' +
