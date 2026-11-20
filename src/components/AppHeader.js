@@ -33,9 +33,13 @@ export function createAppHeader(o) {
     bell.setAttribute("aria-label", count > 0 ? S["header.notificationsAriaCount"].replace("{count}", String(count)) : S["header.notificationsAria"]);
   }
   setUnread(0);
+  /* The page title sticks right under this bar on phones (where the bar itself is fixed): it needs the bar's height. */
+  function measure() { if (el.offsetHeight) document.documentElement.style.setProperty("--appbar-h", el.offsetHeight + "px"); }
+  var ro = typeof ResizeObserver === "function" ? new ResizeObserver(measure) : null;
+  if (ro) ro.observe(el); else window.addEventListener("resize", measure);
   function setProfile(p) {
     profileBtn.innerHTML = '<span class="appbar-name">' + esc(p.name || "") + "</span>" + Avatar({ name: p.name || p.email, photo: p.photo });
   }
   setProfile({ name: "", photo: null });
-  return { el: el, setProfile: setProfile, setUnread: setUnread, destroy: function () { menu.destroy(); el.remove(); } };
+  return { el: el, setProfile: setProfile, setUnread: setUnread, destroy: function () { if (ro) ro.disconnect(); else window.removeEventListener("resize", measure); menu.destroy(); el.remove(); } };
 }
