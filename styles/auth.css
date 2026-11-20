@@ -39,9 +39,10 @@
 
 /* Phones: a tighter login / sign-up sheet so the whole form fits one screen without scrolling (short hero, smaller title, no sub line, lower fields). */
 @media (max-width: 519px) {
-  .auth-form-view .auth-hero { min-height: 118px; }
-  .auth-form-view .auth-hero > .auth-hero-logo { top: 50%; width: 92px; }
-  .auth-form-view .auth-sheet { padding: 16px 22px 10px; margin-top: -22px; }
+  /* the picture banner takes whatever height the form leaves, so the sheet always ends at the bottom edge: no dead space on tall phones */
+  .auth-form-view .auth-hero { flex: 1 0 118px; min-height: 118px; }
+  .auth-form-view .auth-hero > .auth-hero-logo { top: min(50%, calc(118 * var(--u))); width: 92px; }
+  .auth-form-view .auth-sheet { flex: none; padding: 16px 22px 18px; margin-top: -22px; }
   .auth-form-view .auth-form { gap: 8px; margin-top: 6px; }
   .auth-form-view .auth-form .btn { min-height: 44px; }
   .auth-form-view .auth-form h2 { font-size: 22px; }

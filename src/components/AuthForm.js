@@ -19,6 +19,8 @@ function collageHTML() {
     n++;
   }
   [0, 1, 2, 3, -1, 4].forEach(function (c) { for (var r = 0; r < 3; r++) card(COLLAGE[(n * 4 + r) % COLLAGE.length], c, r); });
+  /* two more rows below, only seen when the banner is tall (tall phones): the banner takes the height the form leaves */
+  [0, 1, 2, 3, -1, 4].forEach(function (c) { for (var r = 3; r < 5; r++) card(COLLAGE[(n * 4 + r) % COLLAGE.length], c, r); });
   return h + '<img class="ac-card ac-center" src="pics/welcome/collage/travel.webp" alt="">';
 }
 export function createAuthForm(o) {
