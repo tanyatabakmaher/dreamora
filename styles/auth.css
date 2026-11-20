@@ -55,3 +55,14 @@
   .auth-form-view .fine { font-size: 11px; margin: 0; }
   .auth-form-view .swap { margin: 0; }
 }
+
+/* Forgot password: link under the password field, reset / check-email / new-password views */
+.auth-form .auth-forgot { align-self: flex-end; width: auto; margin-top: calc(var(--space-8) * -1); font-size: 13px; color: var(--accent-mint-strong); text-decoration: none; font-weight: 500; }
+.auth-form .auth-forgot[hidden] { display: none; }
+.auth-sent-ic { align-self: center; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; color: var(--accent-mint-strong); background: color-mix(in srgb, var(--accent-mint-strong) 14%, transparent); }
+.auth-sent-ic[hidden], .auth-sent-text[hidden] { display: none; }
+.auth-sent-ic svg { width: 26px; height: 26px; }
+.auth-sent-text { margin: 0; text-align: center; color: var(--color-text-muted); line-height: 1.5; }
+.auth-sent-text { overflow-wrap: anywhere; }
+.auth-form-view[data-mode="reset"] .auth-sub, .auth-form-view[data-mode="newpw"] .auth-sub { display: block; }
+.auth-form-view[data-mode="sent"] .auth-form, .auth-form-view[data-mode="reset"] .auth-form { justify-content: flex-start; }

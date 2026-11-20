@@ -21,8 +21,8 @@ function mount(screen) {
   root.appendChild(screen.el);
   window.scrollTo(0, 0);
 }
-function showAuth(initialError) {
-  mount(createAuthScreen({ auth: auth, demo: CONFIG.mode !== "supabase", initialError: initialError, onAuthed: enter }));
+function showAuth(initialError, initialMode) {
+  mount(createAuthScreen({ auth: auth, demo: CONFIG.mode !== "supabase", initialError: initialError, initialMode: initialMode, onAuthed: enter }));
 }
 function logout() {
   try { window.sessionStorage.removeItem("budget_prompted"); } catch (e) {}
@@ -64,5 +64,10 @@ if (/error_code=otp_expired|error=access_denied/.test(window.location.hash)) {
   try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
 }
 
+var recovery = /type=recovery/.test(window.location.hash); /* read before the client clears the address */
 if (linkError) showAuth(linkError);
+else if (recovery) auth.getSession().then(function (s) {
+  try { history.replaceState(null, "", window.location.pathname); } catch (e) {}
+  if (s) showAuth(null, "newpw"); else showAuth(S["auth.err.linkUsed"]);
+}).catch(function () { showAuth(); });
 else auth.getSession().then(function (s) { if (s) enter(); else showAuth(); }).catch(function () { showAuth(); });

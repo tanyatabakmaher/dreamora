@@ -1,5 +1,6 @@
 /* Auth service. Same interface for both backends:
-   getSession() -> {email}|null, signUp(name,email,pw), signIn(email,pw), signOut(), oauth(provider), magic(email)
+   getSession() -> {email}|null, signUp(name,email,pw), signIn(email,pw), signOut(), oauth(provider), magic(email),
+   resetPassword(email) (sends the link), updatePassword(pw) (after the recovery link)
    getProfile() -> {name,email,photo,phone}, updateProfile({name,photo,phone}) -> the saved profile.
    signUp/signIn resolve {session:boolean}. oauth/magic reject {demo:true} in demo mode. */
 import { getClient } from "./supabaseClient.js";
@@ -36,7 +37,9 @@ function createDemoAuth() {
       return api.getProfile();
     },
     oauth: function () { return Promise.reject({ demo: true }); },
-    magic: function () { return Promise.reject({ demo: true }); }
+    magic: function () { return Promise.reject({ demo: true }); },
+    resetPassword: function () { return Promise.resolve(); }, /* demo: pretend the link was sent */
+    updatePassword: function () { return Promise.reject({ demo: true }); }
   };
   return api;
 }
@@ -102,6 +105,12 @@ function createSupabaseAuth(config) {
     },
     magic: function (email) {
       return client().then(function (c) { return c.auth.signInWithOtp({ email: email, options: { emailRedirectTo: back() } }); }).then(ok);
+    },
+    resetPassword: function (email) {
+      return client().then(function (c) { return c.auth.resetPasswordForEmail(email, { redirectTo: back() }); }).then(ok);
+    },
+    updatePassword: function (pw) {
+      return client().then(function (c) { return c.auth.updateUser({ password: pw }); }).then(ok);
     }
   };
 }

@@ -14,6 +14,7 @@ export function createAuthScreen(o) {
   }
   function open(mode) { form.setMode(mode); show("form"); }
   show("welcome");
-  if (o.initialError) { form.setMode("login"); welcome.el.hidden = true; form.el.hidden = false; form.showError(o.initialError); }
+  if (o.initialMode === "newpw") { form.setMode("newpw"); welcome.el.hidden = true; form.el.hidden = false; }
+  else if (o.initialError) { form.setMode("login"); welcome.el.hidden = true; form.el.hidden = false; form.showError(o.initialError); }
   return { el: el, reset: function () { form.reset(); show("welcome"); }, destroy: function () { el.remove(); } };
 }

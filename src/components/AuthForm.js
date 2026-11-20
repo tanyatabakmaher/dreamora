@@ -29,18 +29,19 @@ export function createAuthForm(o) {
     '<img class="auth-hero-logo" src="pics/welcome/keepi-logo-dark.webp" alt="' + BRAND_NAME + '" width="720" height="241"></div>' +
     '<div class="auth-sheet"><div class="auth-handle" aria-hidden="true"></div>' +
     IconButton({ id: "af-back", label: S["auth.back.aria"], glyph: "✕" }).replace('class="icon-btn"', 'class="icon-btn auth-back"') +
-    '<form class="auth-form" novalidate><h2 id="af-title" tabindex="-1"></h2><p class="auth-sub" id="af-sub"></p>' +
+    '<form class="auth-form" novalidate><div class="auth-sent-ic" id="af-sent-ic" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></div><h2 id="af-title" tabindex="-1"></h2><p class="auth-sub" id="af-sub"></p><p class="auth-sent-text" id="af-sent-text" hidden></p>' +
     Message({ kind: "info", id: "af-demo", hidden: !o.demo }) +
     Field({ id: "af-name", label: S["auth.name"], attrs: 'autocomplete="name" maxlength="40" placeholder="' + S["auth.name.placeholder"] + '"' }) +
     Field({ id: "af-email", label: S["auth.email"], type: "email", attrs: 'autocomplete="email" dir="ltr" placeholder="name@example.com"' }) +
     PasswordField({ id: "af-pw", label: S["auth.password"], hint: S["auth.password.hint"] }) +
+    Button({ id: "af-forgot", variant: "link", label: S["auth.forgot"], extraClass: "auth-forgot" }) +
     PasswordField({ id: "af-pw2", label: S["auth.password2"], autocomplete: "new-password" }) +
     Message({ kind: "error", id: "af-err" }) + Message({ kind: "info", id: "af-info" }) +
     Button({ id: "af-submit", type: "submit", label: "", block: true }) +
-    '<div class="divider-or" aria-hidden="true">' + S["auth.or"] + "</div>" +
-    '<div class="actions-stack">' + Button({ id: "af-google", variant: "ghost", label: S["auth.google"], block: true }) + "</div>" +
+    '<div class="divider-or" id="af-or" aria-hidden="true">' + S["auth.or"] + "</div>" +
+    '<div class="actions-stack" id="af-actions">' + Button({ id: "af-google", variant: "ghost", label: S["auth.google"], block: true }) + "</div>" +
     '<p class="fine" id="af-fine">' + S["auth.fine"] + "</p>" +
-    '<p class="swap"><span id="af-swap-text"></span>' + Button({ id: "af-swap", variant: "link", label: "" }) + "</p></form></div></section>");
+    '<p class="swap" id="af-swap-row"><span id="af-swap-text"></span>' + Button({ id: "af-swap", variant: "link", label: "" }) + "</p></form></div></section>");
   var $ = function (id) { return el.querySelector("#" + id); };
   var mode = "login";
   wirePasswordToggle(el, "af-pw"); wirePasswordToggle(el, "af-pw2");
@@ -50,17 +51,39 @@ export function createAuthForm(o) {
     setFieldError(el, "af-email", ""); setFieldError(el, "af-pw", ""); setFieldError(el, "af-pw2", "");
     hideMessage($("af-err")); hideMessage($("af-info"));
   }
+  var sheet = el.querySelector(".auth-sheet"), sentEmail = "";
   function setMode(m) {
+    var wasLogin = mode === "login" || mode === "signup", special = m === "reset" || m === "sent" || m === "newpw";
+    /* reset / check-email keep the height the sheet had when it opened, so the popup does not shrink */
+    if (special && wasLogin && sheet.offsetHeight) sheet.style.minHeight = sheet.offsetHeight + "px";
+    if (!special) sheet.style.minHeight = "";
     mode = m; clear();
-    var su = m === "signup";
-    $("af-title").textContent = su ? S["auth.title.signup"] : S["auth.title.login"];
-    $("af-submit").textContent = su ? S["auth.signup"] : S["auth.login"];
-    $("af-sub").textContent = su ? S["auth.sub.signup"] : S["auth.sub.login"];
-    $("af-name-field").hidden = !su; $("af-pw-hint").hidden = !su; $("af-pw2-field").hidden = !su;
-    $("af-pw").setAttribute("autocomplete", su ? "new-password" : "current-password");
-    $("af-pw").placeholder = su ? S["auth.password.hint"] : ""; /* phones hide the hint line below the field, the placeholder says the same */
-    $("af-swap-text").textContent = su ? S["auth.haveAccount"] : S["auth.noAccount"];
-    $("af-swap").textContent = su ? S["auth.login"] : S["auth.welcome.signup"];
+    el.dataset.mode = m;
+    var su = m === "signup", rs = m === "reset", st = m === "sent", np = m === "newpw", cred = m === "login" || su;
+    $("af-title").textContent = su ? S["auth.title.signup"] : rs ? S["auth.title.reset"] : st ? S["auth.title.sent"] : np ? S["auth.title.newpw"] : S["auth.title.login"];
+    $("af-submit").textContent = su ? S["auth.signup"] : rs ? S["auth.reset.send"] : st ? S["auth.backToLogin"].replace("→ ", "") : np ? S["auth.newpw.save"] : S["auth.login"];
+    $("af-sub").textContent = su ? S["auth.sub.signup"] : rs ? S["auth.sub.reset"] : np ? S["auth.sub.newpw"] : S["auth.sub.login"];
+    $("af-sub").hidden = st;
+    $("af-sent-ic").hidden = !st; $("af-sent-text").hidden = !st;
+    if (st) $("af-sent-text").textContent = S["auth.sent.text"].replace("{email}", sentEmail);
+    $("af-name-field").hidden = !su; $("af-pw-hint").hidden = !(su || np);
+    $("af-email-field").hidden = !(cred || rs);
+    $("af-pw-field").hidden = !(cred || np);
+    $("af-pw2-field").hidden = !(su || np);
+    $("af-forgot").hidden = m !== "login";
+    $("af-or").hidden = !cred; $("af-actions").hidden = !cred; $("af-fine").hidden = !cred;
+    $("af-swap-row").hidden = false;
+    $("af-demo").hidden = !(o.demo && cred);
+    $("af-pw").setAttribute("autocomplete", su || np ? "new-password" : "current-password");
+    $("af-pw").placeholder = su || np ? S["auth.password.hint"] : ""; /* phones hide the hint line below the field, the placeholder says the same */
+    if (cred) {
+      $("af-swap-text").textContent = su ? S["auth.haveAccount"] : S["auth.noAccount"];
+      $("af-swap").textContent = su ? S["auth.login"] : S["auth.welcome.signup"];
+    } else {
+      $("af-swap-text").textContent = "";
+      $("af-swap").textContent = st ? S["auth.sent.resend"] : S["auth.backToLogin"];
+      $("af-swap-row").hidden = np;
+    }
   }
   function friendly(e) {
     var m = ((e && e.message) || "").toLowerCase();
@@ -75,9 +98,35 @@ export function createAuthForm(o) {
   }
 
   $("af-back").addEventListener("click", o.onBack);
-  $("af-swap").addEventListener("click", function () { setMode(mode === "login" ? "signup" : "login"); $("af-title").focus(); });
+  $("af-swap").addEventListener("click", function () {
+    if (mode === "sent") { sendReset(true); return; }
+    setMode(mode === "login" ? "signup" : mode === "signup" ? "login" : "login"); $("af-title").focus();
+  });
+  $("af-forgot").addEventListener("click", function () { setMode("reset"); $("af-title").focus(); });
+  function sendReset(again) {
+    var email = again ? sentEmail : $("af-email").value.trim();
+    if (!EMAIL_RE.test(email)) { setFieldError(el, "af-email", S["auth.err.email"]); return; }
+    var btn = $("af-submit"); btn.disabled = true;
+    o.auth.resetPassword(email).then(function () {
+      sentEmail = email;
+      if (again) { clear(); showMessage($("af-info"), S["auth.sent.resent"]); }
+      else { setMode("sent"); $("af-title").focus(); }
+    }).catch(function (e) { if (again) showMessage($("af-err"), friendly(e)); else altFail(e); })
+      .then(function () { btn.disabled = false; });
+  }
   el.querySelector("form").addEventListener("submit", function (ev) {
     ev.preventDefault(); clear();
+    if (mode === "reset") { sendReset(false); return; }
+    if (mode === "sent") { setMode("login"); $("af-title").focus(); return; }
+    if (mode === "newpw") {
+      var np1 = $("af-pw").value;
+      if (np1.length < 8) { setFieldError(el, "af-pw", S["auth.err.pwShort"]); return; }
+      if (np1 !== $("af-pw2").value) { setFieldError(el, "af-pw2", S["auth.err.pwMismatch"]); return; }
+      var nb = $("af-submit"); nb.disabled = true;
+      o.auth.updatePassword(np1).then(function () { $("af-pw").value = ""; $("af-pw2").value = ""; o.onAuthed(); })
+        .catch(function (e) { showMessage($("af-err"), friendly(e)); }).then(function () { nb.disabled = false; });
+      return;
+    }
     var email = $("af-email").value.trim(), pw = $("af-pw").value, name = $("af-name").value.trim(), ok = true;
     if (!EMAIL_RE.test(email)) { setFieldError(el, "af-email", S["auth.err.email"]); ok = false; }
     if (!pw) { setFieldError(el, "af-pw", S["auth.err.pwRequired"]); ok = false; }
