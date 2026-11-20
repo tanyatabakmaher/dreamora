@@ -34,7 +34,7 @@ export function createAppHeader(o) {
   }
   setUnread(0);
   /* The page title sticks right under this bar on phones (where the bar itself is fixed): it needs the bar's height. */
-  function measure() { if (el.offsetHeight) document.documentElement.style.setProperty("--appbar-h", el.offsetHeight + "px"); }
+  function measure() { var h = el.getBoundingClientRect().height; if (h) document.documentElement.style.setProperty("--appbar-h", h + "px"); }
   var ro = typeof ResizeObserver === "function" ? new ResizeObserver(measure) : null;
   if (ro) ro.observe(el); else window.addEventListener("resize", measure);
   function setProfile(p) {

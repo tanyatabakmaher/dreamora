@@ -4,7 +4,8 @@
 .add-btn { white-space: nowrap; }
 /* Mobile only: the title and the add button share one row (title at the start, compact button at the end). */
 @media (max-width: 639px) {
-  .titlebar { top: var(--appbar-h, 61px); flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-8); }
+  /* 1px under the bar (which is above it) so a fractional bar height never leaves a gap */
+  .titlebar { top: calc(var(--appbar-h, 61px) - 1px); flex-direction: row; align-items: center; justify-content: space-between; gap: var(--space-8); }
   .titlebar h1 { min-width: 0; }
   .titlebar .add-btn { display: none; }
 }
