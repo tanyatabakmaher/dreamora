@@ -7,7 +7,7 @@
 .iv-top { display: flex; align-items: center; gap: var(--space-12); }
 .iv-tot { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .iv-tl { font-size: 11px; color: var(--color-text-secondary); }
-.iv-big { font-size: 30px; font-weight: 800; line-height: 1.15; direction: ltr; unicode-bidi: isolate; text-align: start; }
+.iv-big { font-size: 30px; font-weight: 800; line-height: 1.15; direction: ltr; unicode-bidi: isolate; text-align: right; }
 .iv-big { color: var(--text-primary); }
 .iv-none { color: var(--color-text-muted); }
 .iv-empty .bh-track { stroke-dasharray: 3 5; }
