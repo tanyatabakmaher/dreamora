@@ -180,7 +180,7 @@ export function createInvestDialog(o) {
   /* ---- history ---- */
   function paintHistory() {
     var n = view ? view.periods.length : 0;
-    $("#inv-tab-history").textContent = S["inv.tab.history"] + (n ? " · " + n : "");
+    $("#inv-tab-history").textContent = S["inv.tab.history"];
     var host = $("#inv-hist");
     if (!view) { host.innerHTML = '<p class="inv-empty">' + esc(S["inv.hist.none"]) + "</p>"; return; }
     host.innerHTML = '<div class="inv-hist">' + view.periods.map(function (p) {
