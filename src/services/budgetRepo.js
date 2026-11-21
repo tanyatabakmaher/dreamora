@@ -9,7 +9,9 @@ function clean(b) {
   var oldS = n(b.income) === 0 && n(b.expenses) === 0 && n(b.saving) > 0;
   var mode = b.mode === "s" || b.mode === "ie" ? b.mode : oldS ? "s" : "ie";
   var manual = b.savingManual !== undefined ? n(b.savingManual) : b.saving_manual !== undefined ? n(b.saving_manual) : oldS ? n(b.saving) : 0;
-  return { pool: n(b.pool), income: n(b.income), expenses: n(b.expenses), saving: n(b.saving), mode: mode, savingManual: manual };
+  /* investTrack / investSince: where the unallocated money is invested and since when. Read and kept by the local repo only for now; toRow() leaves them out until the database has columns for them. */
+  var inv = { investTrack: typeof b.investTrack === "string" ? b.investTrack : "", investSince: typeof b.investSince === "string" ? b.investSince : "" };
+  return { pool: n(b.pool), income: n(b.income), expenses: n(b.expenses), saving: n(b.saving), mode: mode, savingManual: manual, investTrack: inv.investTrack, investSince: inv.investSince };
 }
 function toRow(b) { var c = clean(b); return { pool: c.pool, income: c.income, expenses: c.expenses, saving: c.saving, mode: c.mode, saving_manual: c.savingManual }; }
 

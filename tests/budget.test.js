@@ -1,4 +1,4 @@
-import { allocate, summarize, freeAmount, investedEstimate, stretchPlan, budgetGoals } from "../src/lib/budget.js";
+import { allocate, summarize, freeAmount, investedEstimate, stretchPlan, budgetGoals, investmentView } from "../src/lib/budget.js";
 let fail = 0;
 function check(name, cond, info) {
   if (!cond) { fail++; console.log("FAIL", name, info === undefined ? "" : info); }
@@ -50,5 +50,18 @@ al = allocate({ pool: 6000, saving: 5000 }, goals, today);
 check("pool 6,000: first full 5,000, second gets 1,000, third 0", al.rows[0].initialGot === 5000 && al.rows[1].initialGot === 1000 && al.rows[2].initialGot === 0, al.rows.map((r) => r.initialGot).join());
 check("initial shortfall is separate from the deposit shortfall", !al.rows[1].depositShort && al.rows[1].initialShort);
 check("totals", al.depositNeed === 2300 && al.depositGot === 2300 && al.initialNeed === 10000 && al.initialGot === 6000);
+// investment row: the unallocated money grown in its track since a date
+const today2 = new Date(2026, 10, 21);
+check("investment: no track or no date means no view", investmentView({}, 40000, today2) === null && investmentView({ investTrack: "equity" }, 40000, today2) === null && investmentView({ investTrack: "equity", investSince: "oops" }, 40000, today2) === null);
+let iv = investmentView({ investTrack: "equity", investSince: "2025-05-21" }, 40000, today2);
+const exp = 40000 * Math.pow(1 + 8.4 / 100 / 12, 18);
+check("investment: 40,000 in the equity track for 18 months (net 8.4%)", iv && iv.netPct === 8.4 && Math.abs(iv.value - exp) < 0.01 && Math.abs(iv.earned - (exp - 40000)) < 0.01, iv && iv.value);
+check("investment: earned share of the value", iv && Math.abs(iv.earnedSharePct - (exp - 40000) / exp * 100) < 1e-9);
+iv = investmentView({ investTrack: "equity", investSince: "2027-01-01" }, 40000, today2);
+check("investment: a start date in the future earns nothing", iv && iv.value === 40000 && iv.earned === 0 && iv.earnedSharePct === 0);
+iv = investmentView({ investTrack: "deposit", investSince: "2026-05-21" }, 0, today2);
+check("investment: nothing unallocated, nothing earned", iv && iv.value === 0 && iv.earned === 0);
+iv = investmentView({ investTrack: "custom", investSince: "2025-11-21" }, 1000, today2);
+check("investment: custom track has no default return and earns 0", iv && iv.netPct === 0 && iv.value === 1000);
 console.log(fail ? fail + " FAILED" : "all passed");
 process.exit(fail ? 1 : 0);

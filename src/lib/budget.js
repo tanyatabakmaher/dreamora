@@ -1,8 +1,8 @@
 /* budget.js - pure budget logic ("התקציב שלי"). No UI, no storage.
    One savings pool: the goals' monthly deposits are compared with the monthly amount the user plans to save.
    Money that is not allocated to a goal earns nothing; the "if invested" figure is only an estimate. */
-import { TRACKS } from "../data/tracks.js";
-import { computeGoal, netReturnPct, monthsToGoal, addMonths, parseISODate } from "./calc.js";
+import { TRACKS, trackById } from "../data/tracks.js";
+import { computeGoal, netReturnPct, monthsToGoal, addMonths, parseISODate, balanceAfter, completedMonths } from "./calc.js";
 
 function num(v) { var n = Number(v); return isFinite(n) && n > 0 ? n : 0; }
 
@@ -56,6 +56,18 @@ export function summarize(b, goals, today) {
 export function investedEstimate(amount) {
   var t = TRACKS[0], net = netReturnPct(t.defaultReturnPct, t.defaultFeePct);
   return { netPct: net, perYear: Math.round(num(amount) * net / 100) };
+}
+
+/* The money that is not allocated to a goal, invested in a track since a date ("השקעה" row of the summary).
+   b = { investTrack, investSince (ISO date) }; base = the unallocated amount. Returns null when no track or date is set.
+   No deposits are added: value = base grown at the track's net yearly return for the full months since the start date. An estimate, never promised. */
+export function investmentView(b, base, today) {
+  if (!b || !b.investTrack || !b.investSince) return null;
+  var start = parseISODate(b.investSince);
+  if (!start || isNaN(start.getTime())) return null;
+  var t = trackById(b.investTrack), net = netReturnPct(t.defaultReturnPct || 0, t.defaultFeePct), amount = num(base);
+  var value = balanceAfter(amount, 0, net, completedMonths(start, today)), earned = Math.max(0, value - amount);
+  return { trackId: t.id, label: t.labelHe, netPct: net, base: amount, value: value, earned: earned, since: b.investSince, earnedSharePct: value > 0 ? earned / value * 100 : 0 };
 }
 
 /* If only `saving` per month is available: every goal gets the same share of its planned deposit, and the new target date follows.

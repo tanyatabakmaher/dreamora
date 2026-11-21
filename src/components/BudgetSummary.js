@@ -1,7 +1,7 @@
 import { fromHTML, esc } from "../lib/dom.js";
 import { S } from "../strings.js";
 import { money, todayDate } from "../lib/format.js";
-import { summarize } from "../lib/budget.js";
+import { summarize, investmentView } from "../lib/budget.js";
 import { PencilIcon } from "./ui/Icons.js";
 
 /* A short budget overview above the goal list: how the money and the monthly saving compare with what the goals need.
@@ -72,16 +72,35 @@ export function createBudgetSummary(o) {
       var left = "";
       return '<div class="bs-nrow"><div class="bs-nrow-top">' + dot(cls) + "<span>" + esc(label) + "</span>" + top + '</div><div class="bs-bar ' + cls + '"><i style="width:' + pct(need, have).toFixed(0) + '%"></i></div><div class="bs-nline">' + line + "</div>" + left + "</div>";
     };
+    /* the money that is not allocated to a goal: invested in a track (value and what it earned) or still waiting for a track */
+    var inv = s.unallocated > 0 ? investmentView(budget, s.unallocated, todayDate()) : null;
+    var rowInvest = function () {
+      if (s.unallocated <= 0) return "";
+      var btn = '<button type="button" class="bs-pill bs-invbtn v" aria-label="' + esc(S["bs.invest.aria"]) + '">';
+      var top, bar, line;
+      if (!inv) {
+        top = btn + esc(S["bs.invest.set"]) + "</button>"; bar = '<i style="width:0%"></i>'; line = fill(S["bs.invest.idle"], { amount: money(s.unallocated) });
+      } else {
+        var sh = Math.max(0, Math.min(100, inv.earnedSharePct));
+        top = btn + esc(fill(S["bs.invest.chip"], { track: inv.label.replace(/^מסלול /, ""), pct: inv.netPct })) + "</button>";
+        bar = '<i class="p" style="width:' + (100 - sh).toFixed(1) + '%"></i><i class="e" style="width:' + sh.toFixed(1) + '%"></i>';
+        line = fill(S["bs.invest.line"], { value: money(inv.value), earned: money(inv.earned) });
+      }
+      return '<div class="bs-nrow bs-invrow"><div class="bs-nrow-top">' + dot("v") + "<span>" + esc(S["bs.invest"]) + "</span>" + top + '</div><div class="bs-bar v">' + bar + '</div><div class="bs-nline">' + esc(line) + "</div></div>";
+    };
     el.innerHTML = '<div class="bs-card"><div class="bs-panel">' +
       /* wide screens */
-      '<div class="bs-wide">' + ring(104, 9, "bsw") + '<div class="bs-wtitle"><div class="bs-head"><b>' + esc(S["bs.title"]) + "</b>" + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + "</div></div>" +
+      '<div class="bs-wide">' + ring(92, 8, "bsw") + '<div class="bs-wtitle"><div class="bs-head"><b>' + esc(S["bs.title"]) + "</b>" + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + "</div></div>" +
         '<div class="bs-wsep"></div><div class="bs-wm">' + rowNarrow("i", S["bs.initial"], budget.pool, s.allocated, "bs.left.initial") + '</div><div class="bs-wm">' + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + "</div>" +
+        (s.unallocated > 0 ? '<div class="bs-wm">' + rowInvest() + "</div>" : "") +
         (goals.length ? '<div class="bs-wsep"></div><div class="bs-wgoals">' + pins(goals) + "</div>" : "") + "</div>" +
       /* narrow screens */
       '<div class="bs-narrow"><div class="bs-top">' + ring(84, 8, "bsn") + '<div class="bs-topt"><div class="bs-head"><b>' + esc(S["bs.title"]) + '</b>' + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + '</div>' + pins(goals) + "</div></div>" +
-        '<div class="bs-nrows">' + rowNarrow("i", S["bs.initial"], budget.pool, s.allocated, "bs.left.initial") + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + "</div></div>" +
+        '<div class="bs-nrows">' + rowNarrow("i", S["bs.initial"], budget.pool, s.allocated, "bs.left.initial") + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + rowInvest() + "</div></div>" +
       "</div></div>";
     Array.prototype.forEach.call(el.querySelectorAll(".bs-edit"), function (b) { b.addEventListener("click", function () { o.onOpen(this); }); });
+    /* the investment chip opens the investment setup when the host provides it (o.onInvest); until then nothing happens */
+    Array.prototype.forEach.call(el.querySelectorAll(".bs-invbtn"), function (b) { b.addEventListener("click", function () { if (o.onInvest) o.onInvest(this); }); });
   }
 
   function load() {
