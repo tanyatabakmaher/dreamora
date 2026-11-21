@@ -102,7 +102,8 @@ export function investmentView(b, base, today, deposit) {
   var amount = num(base), dep = num(deposit), value = amount, months = 0, rows = [];
   periods.forEach(function (p, i) {
     var net = periodNetPct(p), end = p.until || today, k = completedMonths(p.since, end);
-    value = balanceAfter(value, dep, net, k); months += k;
+    /* the monthly deposit is counted only in the current period (from its start date on): earlier periods are not known to have had any deposit, so they only grow the starting amount */
+    var cur = !p.until; value = balanceAfter(value, cur ? dep : 0, net, k); if (cur) months += k;
     rows.push({ trackId: p.trackId, label: trackById(p.trackId).labelHe, netPct: net, since: p.since, until: p.until, months: k, current: i === periods.length - 1 });
   });
   var last = rows[rows.length - 1], invested = amount + dep * months, earned = Math.max(0, value - invested);
