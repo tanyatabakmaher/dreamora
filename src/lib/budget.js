@@ -58,8 +58,13 @@ export function investedEstimate(amount) {
   return { netPct: net, perYear: Math.round(num(amount) * net / 100) };
 }
 
-/* What is left of the monthly saving after the goals' deposits: it goes to the investment each month. */
-export function investDeposit(s) { return Math.max(0, num(s.saving) - num(s.required)); }
+/* What is left of the monthly saving after the goals' deposits: the most that can go to the investment each month. */
+export function investRoom(s) { return Math.max(0, num(s.saving) - num(s.required)); }
+/* The monthly amount that goes to the investment: what the user chose (b.investMonthly), never more than what is left; all of what is left when nothing was chosen. */
+export function investDeposit(s, b) {
+  var room = investRoom(s);
+  return b && b.investMonthly !== null && b.investMonthly !== undefined ? Math.min(num(b.investMonthly), room) : room;
+}
 
 /* The investment as a list of periods, oldest first: each past period is { trackId, since, until, ret, fee } (b.investHistory, ISO dates),
    the current one starts at b.investSince and has no end. ret / fee are the user's own yearly return and fee for that period, or null for the track's defaults. */

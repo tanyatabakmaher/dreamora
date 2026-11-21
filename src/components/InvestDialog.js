@@ -4,17 +4,17 @@ import { TRACKS, trackById } from "../data/tracks.js";
 import { netReturnPct, toISODate, parseISODate } from "../lib/calc.js";
 import { money, todayDate, fmtDate, durText } from "../lib/format.js";
 import { heat, mmYYYY } from "../lib/heat.js";
-import { summarize, investmentView, investDeposit } from "../lib/budget.js";
+import { summarize, investmentView, investDeposit, investRoom } from "../lib/budget.js";
 import { Field, setFieldError } from "./ui/Field.js";
 import { Button } from "./ui/Button.js";
-import { CalendarIcon } from "./ui/Icons.js";
+import { CalendarIcon, CoinsIcon } from "./ui/Icons.js";
 import { createModal } from "./ui/Modal.js";
 import { showToast } from "./ui/Toast.js";
 import { createBudgetHero } from "./BudgetHero.js";
 
 /* "ההשקעה שלי": the dialog behind the investment row of the budget summary. The money that is not allocated to a goal (plus what is left of the monthly saving after the goals) is invested in a track since a date.
-   Top: the budget picture fading into the sheet, a panel with two rings (outer: put in vs. interest earned, inner: the monthly deposit out of the monthly saving) and three coloured lines.
-   Below, two tabs: "track" (the same track list as the goal flow: risk tag, bar with the net yearly return, average monthly interest on the side, open row = return - fee for this investment only; then the start date)
+   Top: the budget picture fading into the sheet, a panel with the total value big next to two rings (outer: put in vs. interest earned, inner: the monthly deposit out of the monthly saving) and three coloured columns (put in, interest, per month).
+   Below, two tabs: "track" (the same track list as the goal flow: risk tag, bar with the net yearly return, average monthly interest on the side, open row = return - fee for this investment only; then the monthly deposit with a - / + stepper (up to what is left of the saving after the goals) and the start date)
    and "history" (the periods in the tracks the user went through). Switching to another track keeps the previous one as a past period.
    o.budgetRepo, o.goals() -> the goals, o.onSaved(budget). open(openerEl). */
 function fill(t, m) { return Object.keys(m).reduce(function (s, k) { return s.split("{" + k + "}").join(m[k]); }, t); }
@@ -58,7 +58,9 @@ export function createInvestDialog(o) {
     '<button type="button" role="tab" id="inv-tab-history" data-tab="history" aria-selected="false"></button></div>' +
     '<section class="inv-pane" id="inv-pane-track"><h3 class="inv-sl">' + esc(S["inv.tracks"]) + "</h3>" +
     '<div class="pln-tracks" id="inv-tracks" role="radiogroup" aria-label="' + esc(S["inv.tracks"]) + '"></div><div class="err" id="inv-track-err" role="alert"></div>' +
-    '<div class="inv-led"><label class="inv-fl" for="inv-date"><span class="inv-ic" aria-hidden="true">' + CalendarIcon() + '</span><span class="inv-fl-t">' + esc(S["inv.date"]) + "</span>" +
+    '<div class="inv-led"><div class="inv-fl inv-dep"><span class="inv-ic mn" aria-hidden="true">' + CoinsIcon() + '</span><span class="inv-fl-t">' + esc(S["inv.l.monthly"]) + '<small id="inv-room"></small></span>' +
+    '<bdi class="inv-depval" id="inv-depval"></bdi><span class="inv-step"><button type="button" id="inv-dep-minus" aria-label="' + esc(S["inv.dep.less"]) + '">\u2212</button><button type="button" id="inv-dep-plus" aria-label="' + esc(S["inv.dep.more"]) + '">+</button></span></div>' +
+    '<label class="inv-fl" for="inv-date"><span class="inv-ic" aria-hidden="true">' + CalendarIcon() + '</span><span class="inv-fl-t">' + esc(S["inv.date"]) + "</span>" +
     '<input class="inv-date" id="inv-date" type="date" aria-label="' + esc(S["inv.date.aria"]) + '"></label></div><div class="err" id="inv-date-err" role="alert"></div>' +
     '<div class="inv-actions">' + Button({ id: "inv-save", label: S["inv.save"], block: true }) + "</div></section>" +
     '<section class="inv-pane" id="inv-pane-history" hidden><h3 class="inv-sl">' + esc(S["inv.hist.title"]) + '</h3><div id="inv-hist"></div></section></div>');
@@ -71,21 +73,28 @@ export function createInvestDialog(o) {
   root.insertBefore(hero.el, root.firstChild);
   var panel = hero.el.querySelector(".bh-panel");
 
-  var budget = null, today = todayDate(), st = null, view = null, sum = null, deposit = 0, saving = false;
+  var STEP = 50, budget = null, today = todayDate(), st = null, view = null, sum = null, room = 0, saving = false;
 
-  function line(cls, label, html) { return '<div class="bh-line"><span class="bh-dot ' + cls + '"></span><span class="bh-lbl">' + esc(label) + '</span><div class="bh-left">' + html + "</div></div>"; }
-  function b(cls, amount) { return '<b class="iv-' + cls + '">' + esc(money(amount)) + "</b>"; }
-  /* Rings: outer = what was put in (blue) vs. interest earned (gold) of today's value; inner = this month's deposit out of the monthly saving (mint). */
+  function col(cls, label, amount) { return '<div class="iv-col"><span class="iv-cl"><i class="bh-dot ' + cls + '"></i>' + esc(label) + '</span><b class="iv-' + (cls === "i" ? "bl" : cls === "e" ? "gd" : "mn") + '">' + esc(money(amount)) + "</b></div>"; }
+  /* Total value big, the two rings beside it (outer = put in (blue) vs. interest earned (gold) of today's value, inner = the monthly deposit out of the monthly saving (mint)), then three columns. Follows the stepper live. */
   function paintHero() {
-    var value = view ? view.value : sum.unallocated, put = view ? view.invested : sum.unallocated, earned = view ? view.earned : 0;
-    var ep = pctOf(earned, value);
-    panel.hidden = false;
-    panel.innerHTML = '<div class="bh-ring">' + rings(78, [{ p: 100 - ep, cls: "bh-i" }, { p: ep, cls: "bh-e" }], [{ p: pctOf(deposit, sum.saving), cls: "bh-m" }]) + "</div>" +
-      '<div class="bh-lines">' +
-      line("e", view ? S["inv.l.value"] : S["inv.l.valueIdle"], b("gd", value)) +
-      line("i", S["inv.l.put"], b("bl", put) + (view ? ' <span class="iv-gd">' + esc(S["inv.l.plus"]) + "</span> " + b("gd", earned) : "")) +
-      line("m", S["inv.l.monthly"], fill(S["inv.l.monthlyOf"], { amount: b("mn", deposit), total: esc(money(sum.saving)) })) + "</div>";
+    view = sum.unallocated > 0 || budget.investTrack ? investmentView(budget, sum.unallocated, today, st.deposit) : null;
+    var value = view ? view.value : sum.unallocated, put = view ? view.invested : sum.unallocated, earned = view ? view.earned : 0, ep = pctOf(earned, value);
+    var sub = view ? mmYYYY(parseISODate(budget.investSince)) + " · " + view.label : S["inv.l.valueIdle"];
+    panel.hidden = false; panel.classList.add("iv-pan");
+    panel.innerHTML = '<div class="iv-top"><div class="bh-ring">' + rings(70, [{ p: 100 - ep, cls: "bh-i" }, { p: ep, cls: "bh-e" }], [{ p: pctOf(st.deposit, sum.saving), cls: "bh-m" }]) + "</div>" +
+      '<div class="iv-tot"><span class="iv-tl">' + esc(S["inv.l.value"]) + '</span><b class="iv-gd iv-big">' + esc(money(value)) + '</b><span class="iv-ts">' + esc(sub) + "</span></div></div>" +
+      '<div class="iv-cols">' + col("i", S["inv.l.put"], put) + col("e", S["inv.l.interest"], earned) + col("m", S["inv.l.perMonth"], st.deposit) + "</div>";
+    paintDeposit();
   }
+  function paintDeposit() {
+    $("#inv-depval").textContent = money(st.deposit);
+    $("#inv-room").textContent = room > 0 ? fill(S["inv.dep.room"], { amount: money(room) }) : S["inv.dep.none"];
+    $("#inv-dep-minus").disabled = st.deposit <= 0; $("#inv-dep-plus").disabled = st.deposit >= room;
+  }
+  function stepDeposit(dir) { st.deposit = Math.max(0, Math.min(room, (Math.round(st.deposit / STEP) + dir) * STEP)); if (dir > 0 && st.deposit < room && room - st.deposit < STEP) st.deposit = room; paintHero(); }
+  $("#inv-dep-minus").addEventListener("click", function () { stepDeposit(-1); });
+  $("#inv-dep-plus").addEventListener("click", function () { stepDeposit(1); });
 
   /* ---- tracks ---- */
   function rowNet(t) {
@@ -193,6 +202,7 @@ export function createInvestDialog(o) {
       hist.push({ trackId: budget.investTrack, since: budget.investSince, until: d, ret: budget.investRet === undefined ? null : budget.investRet, fee: budget.investFee === undefined ? null : budget.investFee });
     }
     next.investTrack = id; next.investSince = d; next.investRet = ret; next.investFee = fee; next.investHistory = hist;
+    next.investMonthly = st.deposit >= room ? null : st.deposit; /* null = all that is left of the saving */
     saving = true; var btn = $("#inv-save"); btn.disabled = true;
     o.budgetRepo.save(next).then(function () {
       showToast(S["inv.saved"], "success"); modal.close(); if (o.onSaved) o.onSaved(next);
@@ -205,9 +215,8 @@ export function createInvestDialog(o) {
   function init() {
     today = todayDate();
     sum = summarize(budget, o.goals ? o.goals() : [], today);
-    deposit = investDeposit(sum);
-    view = sum.unallocated > 0 || budget.investTrack ? investmentView(budget, sum.unallocated, today, deposit) : null;
-    st = { trackId: budget.investTrack || null, openId: null, edits: {}, dateISO: budget.investSince || toISODate(today), dateTouched: false };
+    room = investRoom(sum);
+    st = { deposit: investDeposit(sum, budget), trackId: budget.investTrack || null, openId: null, edits: {}, dateISO: budget.investSince || toISODate(today), dateTouched: false };
     if (budget.investTrack && (budget.investRet !== null && budget.investRet !== undefined || budget.investFee !== null && budget.investFee !== undefined)) {
       var t = trackById(budget.investTrack);
       st.edits[t.id] = { ret: budget.investRet !== null && budget.investRet !== undefined ? budget.investRet : t.defaultReturnPct, fee: budget.investFee !== null && budget.investFee !== undefined ? budget.investFee : t.defaultFeePct };

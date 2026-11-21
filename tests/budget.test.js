@@ -1,4 +1,4 @@
-import { allocate, summarize, freeAmount, investedEstimate, stretchPlan, budgetGoals, investmentView, investDeposit, investPeriods } from "../src/lib/budget.js";
+import { allocate, summarize, freeAmount, investedEstimate, stretchPlan, budgetGoals, investmentView, investDeposit, investRoom, investPeriods } from "../src/lib/budget.js";
 let fail = 0;
 function check(name, cond, info) {
   if (!cond) { fail++; console.log("FAIL", name, info === undefined ? "" : info); }
@@ -78,6 +78,8 @@ check("history: a past period grows at its own track, then the current one", iv 
 check("history: periods newest first, only the last is current", iv && iv.periods.length === 2 && iv.periods[0].trackId === "equity" && iv.periods[0].current && iv.periods[1].trackId === "deposit" && !iv.periods[1].current && iv.periods[1].months === 6);
 iv = investmentView({ investTrack: "custom", investSince: "2025-11-21", investRet: 6, investFee: 1 }, 1000, today2, 0);
 check("own return and fee for a period", iv && iv.netPct === 5 && Math.abs(iv.value - grow(1000, 5, 12, 0)) < 0.01);
-check("investDeposit = saving minus what the goals need, never below 0", investDeposit({ saving: 6000, required: 5024 }) === 976 && investDeposit({ saving: 1000, required: 1500 }) === 0);
+check("investRoom = saving minus what the goals need, never below 0", investRoom({ saving: 6000, required: 5024 }) === 976 && investRoom({ saving: 1000, required: 1500 }) === 0);
+const rs = { saving: 6000, required: 5024 };
+check("investDeposit: all the room when nothing was chosen, the chosen amount when lower, never above the room", investDeposit(rs, {}) === 976 && investDeposit(rs, { investMonthly: null }) === 976 && investDeposit(rs, { investMonthly: 400 }) === 400 && investDeposit(rs, { investMonthly: 5000 }) === 976 && investDeposit(rs, { investMonthly: 0 }) === 0);
 console.log(fail ? fail + " FAILED" : "all passed");
 process.exit(fail ? 1 : 0);

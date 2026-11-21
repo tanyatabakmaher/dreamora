@@ -73,7 +73,7 @@ export function createBudgetSummary(o) {
       return '<div class="bs-nrow"><div class="bs-nrow-top">' + dot(cls) + "<span>" + esc(label) + "</span>" + top + '</div><div class="bs-bar ' + cls + '"><i style="width:' + pct(need, have).toFixed(0) + '%"></i></div><div class="bs-nline">' + line + "</div>" + left + "</div>";
     };
     /* the money that is not allocated to a goal: invested in a track (value and what it earned) or still waiting for a track */
-    var inv = s.unallocated > 0 ? investmentView(budget, s.unallocated, todayDate(), investDeposit(s)) : null;
+    var inv = s.unallocated > 0 ? investmentView(budget, s.unallocated, todayDate(), investDeposit(s, budget)) : null;
     var rowInvest = function () {
       if (s.unallocated <= 0) return "";
       var btn = '<button type="button" class="bs-pill bs-invbtn v" aria-label="' + esc(S["bs.invest.aria"]) + '">';
