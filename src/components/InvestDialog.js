@@ -199,12 +199,13 @@ export function createInvestDialog(o) {
   $(".inv-seg").addEventListener("click", function (ev) { var bt = ev.target.closest("button[data-tab]"); if (bt) setTab(bt.dataset.tab); });
 
   /* ---- save ---- */
-  /* The budget as it would be saved with the track and start date picked now (without the deposit): another track from a later date turns the one before it into a past period, a date on or before the current start replaces it. */
+  /* The budget as it would be saved with the track and start date picked now (without the deposit): another track from a later date turns the one before it into a past period, a date on or before the current start replaces it, and a start date typed on or after the current one drops the earlier periods. */
   function compose(id, d) {
     var t = trackById(id), hist = (budget.investHistory || []).slice(), e = st.edits[id], ret = null, fee = null;
     if (e) { ret = "ret" in e ? e.ret : t.defaultReturnPct; fee = "fee" in e ? (e.fee === "" ? 0 : e.fee) : t.defaultFeePct; }
     var next = Object.assign({}, budget);
-    if (budget.investTrack && budget.investTrack !== id && d > budget.investSince) {
+    if (st.dateTouched && budget.investSince && d >= budget.investSince) hist = []; /* the start date was moved later: what happened before it does not count and is dropped from the history */
+    else if (budget.investTrack && budget.investTrack !== id && d > budget.investSince) {
       hist.push({ trackId: budget.investTrack, since: budget.investSince, until: d, ret: budget.investRet === undefined ? null : budget.investRet, fee: budget.investFee === undefined ? null : budget.investFee });
     }
     next.investTrack = id; next.investSince = d; next.investRet = ret; next.investFee = fee; next.investHistory = hist;

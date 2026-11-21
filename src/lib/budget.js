@@ -94,7 +94,7 @@ export function periodNetPct(p) {
 
 /* The money that is not allocated to a goal, invested in tracks since a date ("השקעה" row of the summary and the investment dialog).
    b = { investTrack, investSince (ISO date), investRet, investFee, investHistory }; base = the unallocated amount at the start; deposit = the monthly amount added to it (default 0).
-   Only the current period counts (from its start date, at its own net yearly return, each completed month adds the deposit); past periods are a record of dates. Returns null when no track or date is set. An estimate, never promised.
+   Each period grows at its own track's net yearly return; only the current period adds the monthly deposit (past periods are not assumed to have had one). Returns null when no track or date is set. An estimate, never promised.
    Result: { trackId, label, netPct, base, value, earned, since, earnedSharePct, invested, months, periods: [{ trackId, label, netPct, since, until, months, current }] } (periods newest first). */
 export function investmentView(b, base, today, deposit) {
   var periods = investPeriods(b);
@@ -102,8 +102,8 @@ export function investmentView(b, base, today, deposit) {
   var amount = num(base), dep = num(deposit), value = amount, months = 0, rows = [];
   periods.forEach(function (p, i) {
     var net = periodNetPct(p), end = p.until || today, k = completedMonths(p.since, end);
-    /* past periods are only a record (dates and months): the value counts from the current start date, at the current track's own return */
-    var cur = !p.until; if (cur) { value = balanceAfter(value, dep, net, k); months += k; }
+    /* a past period grows the amount at its own track's return (no monthly deposit is assumed for it); the current one adds the deposit each completed month */
+    var cur = !p.until; value = balanceAfter(value, cur ? dep : 0, net, k); if (cur) months += k;
     rows.push({ trackId: p.trackId, label: trackById(p.trackId).labelHe, netPct: net, since: p.since, until: p.until, months: k, current: i === periods.length - 1 });
   });
   var last = rows[rows.length - 1], invested = amount + dep * months, earned = Math.max(0, value - invested);
