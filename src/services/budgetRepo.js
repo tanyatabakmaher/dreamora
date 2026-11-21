@@ -5,13 +5,17 @@ import { getClient } from "./supabaseClient.js";
 var KEY = "savings_budget_v1";
 var INV_KEYS = ["investTrack", "investSince", "investRet", "investFee", "investHistory", "investMonthly"];
 function clean(b) {
+  /* a database row uses snake_case names */
+  if (b.invest_track !== undefined || b.invest_since !== undefined || b.invest_history !== undefined) {
+    b = Object.assign({}, b, { investTrack: b.invest_track || "", investSince: b.invest_since || "", investRet: b.invest_ret, investFee: b.invest_fee, investMonthly: b.invest_monthly, investHistory: b.invest_history });
+  }
   function n(v) { v = Number(v); return isFinite(v) && v > 0 ? v : 0; }
   /* mode: "s" = the user types the monthly deposit, "ie" = income minus expenses. An older record without a mode is read from its numbers. */
   var oldS = n(b.income) === 0 && n(b.expenses) === 0 && n(b.saving) > 0;
   var mode = b.mode === "s" || b.mode === "ie" ? b.mode : oldS ? "s" : "ie";
   var manual = b.savingManual !== undefined ? n(b.savingManual) : b.saving_manual !== undefined ? n(b.saving_manual) : oldS ? n(b.saving) : 0;
   /* Investment of the unallocated money: investTrack / investSince = the current track and its start date (ISO), investRet / investFee = the user's own yearly return and fee for it (null = the track's defaults),
-     investHistory = earlier periods [{ trackId, since, until, ret, fee }], investMonthly = the monthly amount the user chose for it (null = all that is left of the saving). Read and kept by the local repo only for now; toRow() leaves them out until the database has columns for them. */
+     investHistory = earlier periods [{ trackId, since, until, ret, fee }], investMonthly = the monthly amount the user chose for it (null = all that is left of the saving). Stored in the invest_* columns of the budgets table (supabase/013_budget_investment.sql). */
   function opt(v) { v = Number(v); return v === null || v === undefined || !isFinite(v) || v < 0 ? null : v; }
   function iso(v) { return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : ""; }
   var hist = Array.isArray(b.investHistory) ? b.investHistory.filter(function (h) { return h && typeof h.trackId === "string" && iso(h.since) && iso(h.until); })
@@ -24,7 +28,16 @@ function clean(b) {
     investTrack: inv.investTrack, investSince: inv.investSince, investRet: inv.investRet, investFee: inv.investFee, investHistory: inv.investHistory,
     investMonthly: b.investMonthly === null || b.investMonthly === undefined ? null : opt(b.investMonthly) };
 }
-function toRow(b) { var c = clean(b); return { pool: c.pool, income: c.income, expenses: c.expenses, saving: c.saving, mode: c.mode, saving_manual: c.savingManual }; }
+/* The investment columns are written only when the caller passes them (the budget page does not know about them, and an upsert without them leaves them as they are). */
+function toRow(b) {
+  var c = clean(b), row = { pool: c.pool, income: c.income, expenses: c.expenses, saving: c.saving, mode: c.mode, saving_manual: c.savingManual };
+  if (b.investTrack !== undefined || b.investSince !== undefined) {
+    row.invest_track = c.investTrack || null; row.invest_since = c.investSince || null; row.invest_ret = c.investRet; row.invest_fee = c.investFee;
+    row.invest_monthly = c.investMonthly; row.invest_history = c.investHistory;
+  }
+  return row;
+}
+var COLS = "pool,income,expenses,saving,mode,saving_manual,invest_track,invest_since,invest_ret,invest_fee,invest_monthly,invest_history";
 
 export function createLocalBudgetRepo() {
   return {
@@ -49,7 +62,7 @@ export function createRemoteBudgetRepo(config) {
   function ok(r) { if (r.error) throw r.error; return r; }
   return {
     load: function () {
-      return client().then(function (c) { return c.from("budgets").select("pool,income,expenses,saving,mode,saving_manual").maybeSingle(); })
+      return client().then(function (c) { return c.from("budgets").select(COLS).maybeSingle(); })
         .then(ok).then(function (r) { return r.data ? clean(r.data) : null; });
     },
     save: function (b) {
