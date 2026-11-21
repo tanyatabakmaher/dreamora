@@ -82,7 +82,9 @@ check("investRoom = saving minus what the goals need, never below 0", investRoom
 const rs = { saving: 6000, required: 5024 };
 check("investDeposit: all the room when nothing was chosen, the chosen amount when lower, never above the room", investDeposit(rs, {}) === 976 && investDeposit(rs, { investMonthly: null }) === 976 && investDeposit(rs, { investMonthly: 400 }) === 400 && investDeposit(rs, { investMonthly: 5000 }) === 976 && investDeposit(rs, { investMonthly: 0 }) === 0);
 const sj = summarize({ pool: 80000, income: 0, expenses: 0, saving: 6000, investTrack: "equity", investSince: "2025-11-21" }, [g("x", { targetAmount: 200000, initialAmount: 40000, monthlyDeposit: 5024 })], today2);
-check("poolTotal = pool plus the interest the unallocated money earned", sj.interest > 0 && Math.abs(sj.poolTotal - (80000 + sj.interest)) < 1e-6 && sj.unallocated === 40000, sj.interest);
+const ivj = investmentView({ investTrack: "equity", investSince: "2025-11-21" }, 40000, today2, 976);
+check("poolTotal = pool plus what the unallocated money grew by (deposits and interest)", sj.interest > 0 && Math.abs(sj.poolTotal - (80000 + ivj.value - 40000)) < 1e-6 && sj.unallocated === 40000, sj.interest);
+check("what is left of the total after the goals' starting amounts is the investment's value", Math.abs((sj.poolTotal - sj.allocated) - ivj.value) < 1e-6);
 check("the goals' starting amounts are compared with the total including interest", summarize({ pool: 40000, income: 0, expenses: 0, saving: 6000, investTrack: "equity", investSince: "2025-11-21" }, [g("y", { targetAmount: 200000, initialAmount: 40500, monthlyDeposit: 100 })], today2).poolShort === 0 && summarize({ pool: 40000, income: 0, expenses: 0, saving: 6000 }, [g("y", { targetAmount: 200000, initialAmount: 40500, monthlyDeposit: 100 })], today2).poolShort === 500);
 check("no track: poolTotal is the pool itself", summarize({ pool: 1000, income: 0, expenses: 0, saving: 0 }, [], today2).poolTotal === 1000);
 console.log(fail ? fail + " FAILED" : "all passed");
