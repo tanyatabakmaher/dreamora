@@ -74,17 +74,30 @@ export function createInvestDialog(o) {
 
   var STEP = 50, budget = null, today = todayDate(), st = null, view = null, sum = null, room = 0, saving = false;
 
-  function col(cls, label, amount) { return '<div class="iv-col"><span class="iv-cl"><i class="bh-dot ' + cls + '"></i>' + esc(label) + '</span><b class="iv-' + (cls === "i" ? "bl" : cls === "e" ? "gd" : "mn") + '">' + esc(money(amount)) + "</b></div>"; }
+  function col(cls, label, amount, none) { return '<div class="iv-col"><span class="iv-cl"><i class="bh-dot ' + cls + '"></i>' + esc(label) + '</span><b class="iv-' + (cls === "i" ? "bl" : cls === "e" ? "gd" : "mn") + (none ? " iv-none" : "") + '">' + (none ? "—" : esc(money(amount))) + "</b></div>"; }
+  /* what the money earns in a month at a net yearly return (on today's value, or on the free money before a track is chosen) */
+  function monthlyInterest(net) { var base = view ? view.value : sum.unallocated; return Math.round(base * net / 12 / 100); }
+  /* the live chip in the panel: the track picked right now (even before saving) with its risk tag and the interest it would earn per month */
+  function paintChip() {
+    var el = $(".iv-chip"); if (!el) return;
+    var t = st.trackId ? trackById(st.trackId) : null, net = t ? rowNet(t) : null;
+    el.classList.toggle("empty", !t);
+    if (!t) { el.innerHTML = '<span class="iv-chip-n">' + esc(S["inv.chip.empty"]) + '</span><span class="iv-chip-ar" aria-hidden="true">\u2193</span>'; return; }
+    el.innerHTML = '<span class="iv-chip-n">' + esc(t.labelHe) + "</span>" +
+      (t.risk ? '<span class="pln-risk r-' + t.risk + '"><span class="pln-sig" aria-hidden="true"><i></i><i></i><i></i></span>' + esc(S["plan.risk." + t.risk]) + "</span>" : "") +
+      '<span class="iv-chip-m">' + (net === null ? "—" : "<bdi dir=\"ltr\">+" + esc(money(monthlyInterest(net))) + "</bdi> <small>" + esc(S["inv.track.perMonth"]) + "</small>") + "</span>";
+  }
   /* Total value big, the two rings beside it (outer = put in (blue) vs. interest earned (gold) of today's value, inner = the monthly deposit out of the monthly saving (mint)), then three columns. Follows the stepper live. */
   function paintHero() {
     view = sum.unallocated > 0 || budget.investTrack ? investmentView(budget, sum.unallocated, today, st.deposit) : null;
     var value = view ? view.value : sum.unallocated, put = view ? view.invested : sum.unallocated, earned = view ? view.earned : 0, ep = pctOf(earned, value);
     var sub = view ? mmYYYY(parseISODate(budget.investSince)) + " · " + view.label : S["inv.l.valueIdle"];
     panel.hidden = false; panel.classList.add("iv-pan");
-    panel.innerHTML = '<div class="iv-top"><div class="bh-ring">' + rings(70, [{ p: 100 - ep, cls: "bh-i" }, { p: ep, cls: "bh-e" }], [{ p: pctOf(st.deposit, sum.saving), cls: "bh-m" }]) + "</div>" +
-      '<div class="iv-tot"><span class="iv-tl">' + esc(S["inv.l.value"]) + '</span><b class="iv-gd iv-big">' + esc(money(value)) + '</b><span class="iv-ts">' + esc(sub) + "</span></div></div>" +
-      '<div class="iv-cols">' + col("i", S["inv.l.put"], put) + col("e", S["inv.l.interest"], earned) + col("m", S["inv.l.perMonth"], st.deposit) + "</div>";
-    paintDeposit();
+    panel.innerHTML = '<div class="iv-top"><div class="bh-ring' + (view ? "" : " iv-empty") + '">' + rings(70, [{ p: 100 - ep, cls: "bh-i" }, { p: ep, cls: "bh-e" }], [{ p: pctOf(st.deposit, sum.saving), cls: "bh-m" }]) + "</div>" +
+      '<div class="iv-tot"><span class="iv-tl">' + esc(S["inv.l.value"]) + '</span><b class="iv-big">' + esc(money(value)) + '</b><span class="iv-ts">' + esc(sub) + "</span></div></div>" +
+      '<div class="iv-chip"></div>' +
+      '<div class="iv-cols">' + col("i", S["inv.l.put"], put) + col("e", S["inv.l.interest"], earned, !view) + col("m", S["inv.l.perMonth"], st.deposit) + "</div>";
+    paintDeposit(); if ($("#inv-tracks").firstChild) paintTracks(); else paintChip();
   }
   function paintDeposit() {
     $("#inv-depval").textContent = money(st.deposit);
@@ -111,7 +124,7 @@ export function createInvestDialog(o) {
       var head = el.querySelector(".pln-trackhead");
       head.setAttribute("aria-checked", String(sel)); head.setAttribute("aria-expanded", String(open));
       el.querySelector(".pln-panel").hidden = !open;
-      el.querySelector(".pln-amtnum").textContent = net === null ? S["plan.none"] : (net / 12).toFixed(2) + "%";
+      el.querySelector(".pln-amtnum").textContent = net === null ? S["plan.none"] : money(monthlyInterest(net));
       var w = net === null || mx <= 0 ? 0 : Math.max(3, net / mx * 100), col = net === null ? "" : heat(mx > 0 ? (1 - net / mx) * 60 : 0);
       var fillEl = el.querySelector(".pln-bartrack i"); fillEl.style.width = w + "%"; fillEl.style.background = col;
       var lbl = el.querySelector(".pln-barlbl"), inside = w >= 38;
@@ -124,6 +137,7 @@ export function createInvestDialog(o) {
       el.querySelector(".pln-netchip").textContent = net === null ? "—" : fill(S["plan.netTag"], { pct: String(net) });
       el.querySelector(".pln-eqfoot").hidden = !e;
     });
+    paintChip();
   }
   function buildTracks() {
     $("#inv-tracks").innerHTML = TRACKS.map(trackRowHtml).join("");
@@ -222,7 +236,7 @@ export function createInvestDialog(o) {
     }
     saving = false; $("#inv-save").disabled = false; $("#inv-track-err").textContent = ""; $("#inv-date-err").textContent = "";
     $("#inv-date").max = toISODate(today);
-    buildTracks(); paintTracks(); setDate(st.dateISO); paintHero(); paintHistory(); setTab("track");
+    buildTracks(); setDate(st.dateISO); paintHero(); paintHistory(); setTab("track");
   }
   return {
     open: function (openerEl) {
