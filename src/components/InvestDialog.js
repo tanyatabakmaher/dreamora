@@ -72,11 +72,11 @@ export function createInvestDialog(o) {
   root.insertBefore(hero.el, root.firstChild);
   var panel = hero.el.querySelector(".bh-panel");
 
-  var STEP = 50, budget = null, today = todayDate(), st = null, view = null, sum = null, room = 0, saving = false;
+  var rowBase = 0, STEP = 50, budget = null, today = todayDate(), st = null, view = null, sum = null, room = 0, saving = false;
 
   function col(k, label, amount, none) { return '<div class="iv-col"><span class="iv-cl"><i class="iv-d ' + k + '"></i>' + esc(label) + '</span><b class="iv-c ' + k + (none ? " none" : "") + '">' + (none ? "—" : esc(money(amount))) + "</b></div>"; }
   /* what the money earns in a month at a net yearly return (on today's value, or on the free money before a track is chosen) */
-  function monthlyInterest(net) { var base = view ? view.value : sum.unallocated; return Math.round(base * net / 12 / 100); }
+  function monthlyInterest(net) { var base = rowBase; return Math.round(base * net / 12 / 100); }
   /* the live part under the ring: the track picked right now (even before saving) as a pill, and the interest it earns per month */
   function paintPill() {
     var pill = $("#iv-pill"), cap = $("#iv-cap"); if (!pill) return;
@@ -88,7 +88,10 @@ export function createInvestDialog(o) {
   }
   /* One ring (put in = blue, interest earned = gold) with today's value in its middle, the picked track under it, then three columns: put in, interest, monthly deposit (mint). Follows the stepper and the picked track live. */
   function paintHero() {
-    view = sum.unallocated > 0 || budget.investTrack ? investmentView(budget, sum.unallocated, today, st.deposit) : null;
+    var sv = budget.investTrack ? investmentView(budget, sum.unallocated, today, st.deposit) : null;
+    rowBase = sv ? sv.value : sum.unallocated; /* the rows show what each track would earn per month on the saved value, so they do not jump around with the picked date */
+    var draft = draftBudget();
+    view = sum.unallocated > 0 || draft.investTrack ? investmentView(draft, sum.unallocated, today, st.deposit) : null;
     var value = view ? view.value : sum.unallocated, put = view ? view.invested : 0, earned = view ? view.earned : 0, ep = pctOf(earned, value);
     panel.hidden = false; panel.classList.add("iv-pan");
     panel.innerHTML = '<div class="iv-top"><div class="bh-ring iv-ring' + (view ? "" : " iv-empty") + '">' + rings(64, view ? [{ p: 100 - ep, cls: "iv-ri" }, { p: ep, cls: "iv-re" }] : [], null, 8) + "</div>" +
@@ -153,7 +156,7 @@ export function createInvestDialog(o) {
     if (ev.target.closest(".pln-reset")) {
       delete st.edits[id];
       $("#inv-ret-" + id).value = t.defaultReturnPct === null ? "" : t.defaultReturnPct; $("#inv-fee-" + id).value = t.defaultFeePct;
-      paintTracks(); return;
+      paintHero(); return;
     }
     if (!ev.target.closest(".pln-trackhead")) return;
     /* pressing a row selects it and opens it; pressing the open row only closes it */
@@ -163,7 +166,7 @@ export function createInvestDialog(o) {
       /* a new track starts today unless the user picked a date; going back to the current track brings back its own start */
       if (!st.dateTouched) setDate(budget.investTrack && id === budget.investTrack ? budget.investSince : toISODate(today));
     }
-    paintTracks();
+    paintHero();
   });
   $("#inv-tracks").addEventListener("input", function (ev) {
     var m = /^inv-(ret|fee)-(.+)$/.exec(ev.target.id || ""); if (!m) return;
@@ -171,19 +174,19 @@ export function createInvestDialog(o) {
     if (m[1] === "ret") e.ret = val === "" ? null : Number(val); else e.fee = val === "" ? "" : Number(val);
     var sameRet = "ret" in e ? e.ret === t.defaultReturnPct : true, sameFee = "fee" in e ? (e.fee === "" ? 0 : e.fee) === t.defaultFeePct : true;
     if (sameRet && sameFee) delete st.edits[id];
-    paintTracks();
+    paintHero();
     if (rowNet(t) === null && val !== "") setFieldError(root, "inv-" + m[1] + "-" + id, m[1] === "ret" ? S["error.returnRange"] : S["error.feeRange"]);
     else { setFieldError(root, "inv-ret-" + id, ""); setFieldError(root, "inv-fee-" + id, ""); }
   });
-  $("#inv-date").addEventListener("input", function () { st.dateISO = this.value; st.dateTouched = true; $("#inv-date-err").textContent = ""; });
+  $("#inv-date").addEventListener("input", function () { st.dateISO = this.value; st.dateTouched = true; $("#inv-date-err").textContent = ""; paintHero(); });
 
   /* ---- history ---- */
   function paintHistory() {
-    var n = view ? view.periods.length : 0;
+    var hv = sum.unallocated > 0 || budget.investTrack ? investmentView(budget, sum.unallocated, today, st.deposit) : null, n = hv ? hv.periods.length : 0;
     $("#inv-tab-history").textContent = S["inv.tab.history"];
     var host = $("#inv-hist");
-    if (!view) { host.innerHTML = '<p class="inv-empty">' + esc(S["inv.hist.none"]) + "</p>"; return; }
-    host.innerHTML = '<div class="inv-hist">' + view.periods.map(function (p) {
+    if (!hv) { host.innerHTML = '<p class="inv-empty">' + esc(S["inv.hist.none"]) + "</p>"; return; }
+    host.innerHTML = '<div class="inv-hist">' + hv.periods.map(function (p) {
       var when = mmYYYY(p.since) + " " + esc(p.until ? S["inv.hist.to"] + " " + mmYYYY(p.until) : S["inv.hist.until"]);
       return '<div class="inv-hr' + (p.current ? " cur" : "") + '"><div class="inv-hr-a"><span>' + esc(p.label) + "</span></div>" +
         '<div class="inv-hr-b">' + when + (p.months > 0 ? " · " + esc(durText(p.months)) : "") + "</div></div>";
@@ -196,6 +199,27 @@ export function createInvestDialog(o) {
   $(".inv-seg").addEventListener("click", function (ev) { var bt = ev.target.closest("button[data-tab]"); if (bt) setTab(bt.dataset.tab); });
 
   /* ---- save ---- */
+  /* The budget as it would be saved with the track and start date picked now (without the deposit): another track from a later date turns the one before it into a past period, a date on or before the current start replaces it. */
+  function compose(id, d) {
+    var t = trackById(id), hist = (budget.investHistory || []).slice(), e = st.edits[id], ret = null, fee = null;
+    if (e) { ret = "ret" in e ? e.ret : t.defaultReturnPct; fee = "fee" in e ? (e.fee === "" ? 0 : e.fee) : t.defaultFeePct; }
+    var next = Object.assign({}, budget);
+    if (budget.investTrack && budget.investTrack !== id && d > budget.investSince) {
+      hist.push({ trackId: budget.investTrack, since: budget.investSince, until: d, ret: budget.investRet === undefined ? null : budget.investRet, fee: budget.investFee === undefined ? null : budget.investFee });
+    }
+    next.investTrack = id; next.investSince = d; next.investRet = ret; next.investFee = fee; next.investHistory = hist;
+    return next;
+  }
+  function dateOk(d) {
+    var hist = budget.investHistory || [], floor = hist.length ? hist[hist.length - 1].until : "";
+    return !!d && !!parseISODate(d) && d <= toISODate(today) && !(floor && d < floor);
+  }
+  /* what the hero shows: the saved investment, or the one that picking a track / date / return / fee here would make (while they are valid) */
+  function draftBudget() {
+    var id = st.trackId;
+    if (!id || rowNet(trackById(id)) === null || !dateOk(st.dateISO)) return budget;
+    return compose(id, st.dateISO);
+  }
   function save() {
     if (saving) return;
     var id = st.trackId; $("#inv-track-err").textContent = ""; $("#inv-date-err").textContent = "";
@@ -206,14 +230,7 @@ export function createInvestDialog(o) {
     var floor = hist.length ? hist[hist.length - 1].until : "";
     if (!d || !parseISODate(d) || d > todayISO) { $("#inv-date-err").textContent = S["inv.err.date"]; return; }
     if (floor && d < floor) { $("#inv-date-err").textContent = fill(S["inv.err.dateFloor"], { date: fmtDate(parseISODate(floor)) }); return; }
-    var e = st.edits[id], ret = null, fee = null;
-    if (e) { ret = "ret" in e ? e.ret : t.defaultReturnPct; fee = "fee" in e ? (e.fee === "" ? 0 : e.fee) : t.defaultFeePct; }
-    var next = Object.assign({}, budget);
-    /* another track from a later date: the one before it becomes a past period (a date on or before its start simply replaces it) */
-    if (budget.investTrack && budget.investTrack !== id && d > budget.investSince) {
-      hist.push({ trackId: budget.investTrack, since: budget.investSince, until: d, ret: budget.investRet === undefined ? null : budget.investRet, fee: budget.investFee === undefined ? null : budget.investFee });
-    }
-    next.investTrack = id; next.investSince = d; next.investRet = ret; next.investFee = fee; next.investHistory = hist;
+    var next = compose(id, d);
     next.investMonthly = st.deposit >= room ? null : st.deposit; /* null = all that is left of the saving */
     saving = true; var btn = $("#inv-save"); btn.disabled = true;
     o.budgetRepo.save(next).then(function () {
