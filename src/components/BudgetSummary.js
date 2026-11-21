@@ -61,7 +61,7 @@ export function createBudgetSummary(o) {
     var headline = depGap > 0 ? fill(S["bs.head.month"], { gap: money(depGap) }) : iniGap > 0 ? fill(S["bs.head.initial"], { gap: money(iniGap) }) : S["bs.head.ok"];
     var bad = depGap > 0 || iniGap > 0;
     var ring = function (size, sw, id) {
-      return '<div class="bs-ringbox">' + rings(left(s.poolTotal, s.allocated), left(s.saving, s.required), size, sw, id) +
+      return '<div class="bs-ringbox">' + rings(left(s.totalWithInterest, s.heldByGoals), left(s.saving, s.required), size, sw, id) +
         '<div class="bs-center' + (bad ? " bad" : "") + '" aria-hidden="true">' + (bad ? "!" : "✓") + "</div></div>";
     };
     var edit = '<button type="button" class="bs-edit" aria-label="' + esc(S["bs.editAria"]) + '">' + PencilIcon() + "</button>";
@@ -102,12 +102,12 @@ export function createBudgetSummary(o) {
     el.innerHTML = '<div class="bs-card"><div class="bs-panel">' +
       /* wide screens */
       '<div class="bs-wide">' + ring(92, 8, "bsw") + '<div class="bs-wtitle"><div class="bs-head"><b>' + esc(S["bs.title"]) + "</b>" + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + "</div></div>" +
-        '<div class="bs-wsep"></div><div class="bs-wm">' + rowNarrow("i", S["bs.initial"], s.poolTotal, s.allocated, "bs.left.initial") + '</div><div class="bs-wm">' + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + "</div>" +
+        '<div class="bs-wsep"></div><div class="bs-wm">' + rowNarrow("i", S["bs.initial"], s.totalWithInterest, s.heldByGoals, "bs.left.initial") + '</div><div class="bs-wm">' + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + "</div>" +
         (canInv ? '<div class="bs-wm">' + rowInvest() + "</div>" : "") +
         (goals.length ? '<div class="bs-wsep"></div><div class="bs-wgoals">' + pins(goals) + "</div>" : "") + "</div>" +
       /* narrow screens */
       '<div class="bs-narrow"><div class="bs-top">' + ring(84, 8, "bsn") + '<div class="bs-topt"><div class="bs-head"><b>' + esc(S["bs.title"]) + '</b>' + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + '</div>' + pins(goals) + "</div></div>" +
-        '<div class="bs-nrows">' + rowNarrow("i", S["bs.initial"], s.poolTotal, s.allocated, "bs.left.initial") + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + rowInvest() + "</div></div>" +
+        '<div class="bs-nrows">' + rowNarrow("i", S["bs.initial"], s.totalWithInterest, s.heldByGoals, "bs.left.initial") + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + rowInvest() + "</div></div>" +
       "</div></div>";
     bind();
   }
