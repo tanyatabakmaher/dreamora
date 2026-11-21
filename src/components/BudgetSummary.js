@@ -42,10 +42,10 @@ function pill(ok, text) { return '<span class="bs-pill ' + (ok ? "ok" : "gap") +
 
 export function createBudgetSummary(o) {
   var el = fromHTML('<section class="bs" hidden aria-label="' + esc(S["bs.title"]) + '"></section>');
-  var budget, loaded = false, goals = [], seq = 0;
+  var budget, loaded = false, goals = [], goalsKnown = false, seq = 0; /* goalsKnown: the goals list has arrived (until then the card stays hidden, so it does not flash the investment row alone) */
 
   function render() {
-    if (!loaded) { el.hidden = true; return; }
+    if (!loaded || !goalsKnown) { el.hidden = true; return; }
     if (!budget) { /* no budget yet: a single invitation */
       el.hidden = false;
       el.innerHTML = '<div class="bs-card"><div class="bs-panel bs-invite"><span>' + esc(S["bs.none"]) + '</span><button type="button" class="bs-edit" id="bs-open">' + esc(S["bs.set"]) + "</button></div></div>";
@@ -116,5 +116,5 @@ export function createBudgetSummary(o) {
     var mine = ++seq;
     o.budgetRepo.load().then(function (b) { if (mine !== seq) return; budget = b; loaded = true; render(); }).catch(function () { loaded = false; render(); });
   }
-  return { el: el, load: load, update: function (g) { goals = g || []; render(); }, destroy: function () { seq++; el.remove(); } };
+  return { el: el, load: load, update: function (g) { goals = g || []; goalsKnown = true; render(); }, destroy: function () { seq++; el.remove(); } };
 }
