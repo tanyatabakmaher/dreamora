@@ -98,14 +98,14 @@ export function createBudgetScreen(o) {
   el.insertBefore(header.el, el.firstChild);
   o.auth.getProfile().then(function (p) { profile = p; header.setProfile(p); }).catch(function () {});
   o.notifRepo.load().then(function (n) { notifications = n; refreshBell(); }).catch(function () {});
-  var goals = [], arranging = false, destroyed = false;
-  var invest = createInvestDialog({ budgetRepo: o.budgetRepo, goals: function () { return goals; }, onSaved: function (b) { form.setValues(b); render(); } });
+  var goals = [], arranging = false, destroyed = false, saved = null; /* saved = the stored budget: it carries the investment fields the form does not edit */
+  var invest = createInvestDialog({ budgetRepo: o.budgetRepo, goals: function () { return goals; }, onSaved: function (b) { saved = b; form.setValues(b); render(); } });
   var form = createBudgetForm({ uid: "bd", onChange: function () { render(); } });
   q("#bd-form").appendChild(form.el);
   function values() { return form.values(); }
 
   function render() {
-    var b = values(), today = todayDate(), s = summarize(b, goals, today);
+    var b = values(), today = todayDate(), s = summarize(Object.assign({}, saved || {}, b), goals, today);
     form.paint(s);
     var h = '<div class="card-lite bd-sum ' + s.status + '"><h2>' + esc(S["bd.sum.title"]) + "</h2>";
     if (s.status === "empty") h += "<p>" + esc(S["bd.sum.none"]) + "</p>";
@@ -146,7 +146,7 @@ export function createBudgetScreen(o) {
   render();
   Promise.all([o.budgetRepo.load(), o.repo.load()]).then(function (r) {
     if (destroyed) return;
-    var b = r[0]; goals = r[1] || [];
+    var b = r[0]; goals = r[1] || []; saved = b;
     if (b) form.setValues(b);
     render();
   }).catch(function () { if (!destroyed) showToast(S["bd.loadFailed"]); });
