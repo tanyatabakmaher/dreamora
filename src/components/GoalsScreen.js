@@ -70,6 +70,7 @@ export function createGoalsScreen(o) {
     },
     onProfile: function (opener) { profileDialog.open(profile, opener); },
     onBudget: function () { if (o.onBudget) o.onBudget(); },
+    onSavings: function (opener) { if (invest) invest.open(opener); },
     onLogout: function () { o.onLogout(); }
   });
   el.insertBefore(header.el, el.firstChild);

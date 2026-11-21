@@ -141,6 +141,7 @@ export const S = {
   "menu.logout": "התנתקות",
   "menu.goals": "המטרות שלי",
   "menu.budget": "התקציב שלי",
+  "menu.savings": "החיסכון שלי",
   "bd.title": "התקציב שלי",
   "bd.subtitle": "מזינים הכנסה והוצאות, או רק כמה חוסכים בחודש. אתם בוחרים",
   "bd.back": "→ חזרה למטרות",
@@ -189,8 +190,8 @@ export const S = {
   "bs.invest.line": "שווי {value} · צבר {earned}",
   "bs.invest.chip": "{track} · {pct}%",
   "bs.invest.aria": "השקעה, פתיחה",
-  /* the investment dialog ("ההשקעה שלי") */
-  "inv.title": "ההשקעה שלי",
+  /* the investment dialog ("החיסכון שלי") */
+  "inv.title": "החיסכון שלי",
   "inv.l.value": "שווי היום",
   "inv.l.put": "מושקע", "inv.l.interest": "ריבית", "inv.l.perMonth": "בחודש",
   "inv.l.monthly": "הפקדה חודשית", "inv.dep.room": "עד {amount}, מה שנשאר מהחיסכון אחרי המטרות", "inv.dep.none": "אין מה שנשאר מהחיסכון אחרי המטרות", "inv.dep.less": "פחות", "inv.dep.more": "יותר",

@@ -7,6 +7,7 @@ import { Button } from "./ui/Button.js";
 import { createAppHeader } from "./AppHeader.js";
 import { createProfileDialog } from "./ProfileDialog.js";
 import { createNotificationsScreen } from "./NotificationsScreen.js";
+import { createInvestDialog } from "./InvestDialog.js";
 import { markRead, markAllRead, unreadCount } from "../lib/notifications.js";
 import { showToast } from "./ui/Toast.js";
 
@@ -91,12 +92,14 @@ export function createBudgetScreen(o) {
       notifScreen.open(notifications, todayDate(), opener, Math.max(0, Math.round(header.el.getBoundingClientRect().bottom)));
     },
     onProfile: function (opener) { profileDialog.open(profile, opener); },
+    onSavings: function (opener) { invest.open(opener); },
     onLogout: function () { o.onLogout(); }
   });
   el.insertBefore(header.el, el.firstChild);
   o.auth.getProfile().then(function (p) { profile = p; header.setProfile(p); }).catch(function () {});
   o.notifRepo.load().then(function (n) { notifications = n; refreshBell(); }).catch(function () {});
   var goals = [], arranging = false, destroyed = false;
+  var invest = createInvestDialog({ budgetRepo: o.budgetRepo, goals: function () { return goals; }, onSaved: function (b) { form.setValues(b); render(); } });
   var form = createBudgetForm({ uid: "bd", onChange: function () { render(); } });
   q("#bd-form").appendChild(form.el);
   function values() { return form.values(); }
