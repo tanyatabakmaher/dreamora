@@ -40,13 +40,18 @@ export function summarize(b, goals, today) {
   var allocated = mine.reduce(function (s, g) { return s + num(g.initialAmount); }, 0);
   var income = num(b.income), expenses = num(b.expenses), saving = num(b.saving), pool = num(b.pool);
   var free = income - expenses, gap = required - saving;
-  var poolShort = Math.max(0, allocated - pool);
+  /* the interest the unallocated money has earned so far in its track is part of what the user has: the total (poolTotal) is what everything else compares the goals' starting amounts with */
+  var base = Math.max(0, pool - allocated), room = Math.max(0, saving - required);
+  var deposit = b.investMonthly !== null && b.investMonthly !== undefined ? Math.min(num(b.investMonthly), room) : room;
+  var iv = b.investTrack ? investmentView(b, base, today, deposit) : null;
+  var interest = iv ? iv.earned : 0, poolTotal = pool + interest;
+  var poolShort = Math.max(0, allocated - poolTotal);
   var status = mine.length === 0 ? "empty" : gap <= 0 && poolShort <= 0 ? "fits" : "over"; /* over: the monthly deposits or the starting amounts do not fit */
   return {
-    goals: mine, alloc: allocate(b, goals, today), required: required, free: free, saving: saving, gap: gap, status: status,
+    goals: mine, alloc: allocate(Object.assign({}, b, { pool: poolTotal }), goals, today), required: required, free: free, saving: saving, gap: gap, status: status,
     savingTooHigh: saving > Math.max(free, 0),
     savingRatePct: income > 0 ? Math.round(saving / income * 1000) / 10 : null,
-    allocated: allocated, unallocated: Math.max(0, pool - allocated), poolShort: poolShort,
+    allocated: allocated, unallocated: base, interest: interest, poolTotal: poolTotal, poolShort: poolShort,
     /* one tap fix: raise the saving to the required amount when the free money covers it */
     raiseTo: gap > 0 && required <= free ? required : null
   };

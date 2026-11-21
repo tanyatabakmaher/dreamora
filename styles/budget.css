@@ -187,6 +187,7 @@ button.bs-invbtn:focus-visible { outline: 2px solid var(--accent-mint-strong); o
   .bs-wgoals { margin-inline-start: auto; }
 }
 .bs-narrow { display: none; }
+.bs-solo .bs-nrows { border-top: 1px solid rgba(56, 80, 97, 0.8); }
 /* narrow: ring + headline, then a table with the column names once */
 @media (max-width: 639px) {
   .bs-wide { display: none; }

@@ -138,7 +138,7 @@ export function createGoalsScreen(o) {
   function avail(excludeId) {
     if (!budgetData) return null;
     var s = summarize(budgetData, goals.filter(function (x) { return x.id !== excludeId; }), todayDate());
-    return { pool: Number(budgetData.pool) || 0, usedInitial: s.allocated, saving: s.saving, usedMonthly: s.required };
+    return { pool: s.poolTotal, usedInitial: s.allocated, saving: s.saving, usedMonthly: s.required };
   }
   var form = createGoalForm({
     avail: avail,
