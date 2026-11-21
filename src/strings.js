@@ -171,7 +171,7 @@ export const S = {
   "bs.left.month": "נשארו {amount} בחודש",
   "bs.none": "עוד לא הגדרתם תקציב, כך תראו אם המטרות מתכנסות",
   "bs.set": "הגדירו תקציב",
-  "bs.initial": "סכום התחלתי",
+  "bs.initial": "סכום פנוי",
   "bs.monthly": "הפקדה חודשית",
   "bs.covered": "✓ מכוסה",
   "bs.lack": "חסרים {gap}",
