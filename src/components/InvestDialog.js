@@ -56,14 +56,14 @@ export function createInvestDialog(o) {
     '<div class="inv-seg" role="tablist"><i aria-hidden="true"></i>' +
     '<button type="button" role="tab" id="inv-tab-track" data-tab="track" aria-selected="true">' + esc(S["inv.tab.track"]) + "</button>" +
     '<button type="button" role="tab" id="inv-tab-history" data-tab="history" aria-selected="false"></button></div>' +
-    '<section class="inv-pane" id="inv-pane-track"><h3 class="inv-sl">' + esc(S["inv.tracks"]) + "</h3>" +
+    '<div class="inv-panes"><section class="inv-pane" id="inv-pane-track"><h3 class="inv-sl">' + esc(S["inv.tracks"]) + "</h3>" +
     '<div class="pln-tracks" id="inv-tracks" role="radiogroup" aria-label="' + esc(S["inv.tracks"]) + '"></div><div class="err" id="inv-track-err" role="alert"></div>' +
     '<div class="inv-led"><div class="inv-fl inv-dep"><span class="inv-ic mn" aria-hidden="true">' + CoinsIcon() + '</span><span class="inv-fl-t">' + esc(S["inv.l.monthly"]) + '<small id="inv-room"></small></span>' +
     '<bdi class="inv-depval" id="inv-depval"></bdi><span class="inv-step"><button type="button" id="inv-dep-minus" aria-label="' + esc(S["inv.dep.less"]) + '">\u2212</button><button type="button" id="inv-dep-plus" aria-label="' + esc(S["inv.dep.more"]) + '">+</button></span></div>' +
     '<label class="inv-fl" for="inv-date"><span class="inv-ic" aria-hidden="true">' + CalendarIcon() + '</span><span class="inv-fl-t">' + esc(S["inv.date"]) + "</span>" +
     '<input class="inv-date" id="inv-date" type="date" aria-label="' + esc(S["inv.date.aria"]) + '"></label></div><div class="err" id="inv-date-err" role="alert"></div>' +
     '<div class="inv-actions">' + Button({ id: "inv-save", label: S["inv.save"], block: true }) + "</div></section>" +
-    '<section class="inv-pane" id="inv-pane-history" hidden><h3 class="inv-sl">' + esc(S["inv.hist.title"]) + '</h3><div id="inv-hist"></div></section></div>');
+    '<section id="inv-pane-history" class="inv-pane off" inert><h3 class="inv-sl">' + esc(S["inv.hist.title"]) + '</h3><div id="inv-hist"></div></section></div></div>');
   var $ = function (sel) { return root.querySelector(sel); };
   var modal = createModal({ sheet: root });
   /* picture + title row (the panel is filled in by paintHero) */
@@ -180,7 +180,7 @@ export function createInvestDialog(o) {
   /* ---- history ---- */
   function paintHistory() {
     var n = view ? view.periods.length : 0;
-    $("#inv-tab-history").textContent = S["inv.tab.history"] + (n ? " · " + n : "");
+    $("#inv-tab-history").textContent = S["inv.tab.history"];
     var host = $("#inv-hist");
     if (!view) { host.innerHTML = '<p class="inv-empty">' + esc(S["inv.hist.none"]) + "</p>"; return; }
     host.innerHTML = '<div class="inv-hist">' + view.periods.map(function (p) {
@@ -191,7 +191,7 @@ export function createInvestDialog(o) {
   }
   function setTab(t) {
     root.dataset.tab = t;
-    ["track", "history"].forEach(function (k) { $("#inv-pane-" + k).hidden = k !== t; $("#inv-tab-" + k).setAttribute("aria-selected", String(k === t)); });
+    ["track", "history"].forEach(function (k) { var pane = $("#inv-pane-" + k); pane.classList.toggle("off", k !== t); if (k !== t) pane.setAttribute("inert", ""); else pane.removeAttribute("inert"); $("#inv-tab-" + k).setAttribute("aria-selected", String(k === t)); });
   }
   $(".inv-seg").addEventListener("click", function (ev) { var bt = ev.target.closest("button[data-tab]"); if (bt) setTab(bt.dataset.tab); });
 
