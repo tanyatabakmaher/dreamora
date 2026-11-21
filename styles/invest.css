@@ -1,28 +1,28 @@
 /* "ההשקעה שלי" dialog (InvestDialog): hero panel colours, tabs, start-date row and the history timeline. The track list itself uses the planflow styles. */
-.iv-ri { stroke: var(--accent-gold); } .iv-re { stroke: color-mix(in srgb, var(--accent-gold) 45%, #fff); } .iv-rm { stroke: var(--accent-mint-strong); }
+.sheet.inv { background: var(--bg-app); }
+.iv-ri { stroke: var(--aurora-4); } .iv-re { stroke: var(--accent-gold); }
 .iv-pan .bh-rings circle { stroke-linecap: round; }
-.iv-empty .bh-track { stroke-dasharray: 3 6; }
-.iv-mn { color: var(--accent-mint-strong); }
-/* hero panel: same language as the budget summary card (rings and total, then rows with a dot, a pill or value, a bar and a line) */
+.iv-empty .bh-track { stroke-dasharray: 3 6; stroke: rgba(143, 163, 176, 0.5); }
+/* hero panel: one ring (put in = blue, interest = gold) with today's value in the middle, the live track pill, then three columns */
 .bh-panel.iv-pan { flex-direction: column; align-items: stretch; gap: 0; padding: 14px 16px; }
-.iv-top { display: flex; align-items: center; gap: var(--space-12); }
-.iv-tot { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.iv-cen { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; }
+.iv-ring { position: relative; width: 124px; height: 124px; margin-bottom: 6px; }
+.iv-mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
 .iv-tl { font-size: 11px; color: var(--color-text-secondary); }
-.iv-big { font-size: 28px; font-weight: 800; line-height: 1.15; direction: ltr; unicode-bidi: isolate; text-align: right; color: var(--text-primary); }
-.iv-ts { font-size: 11px; color: var(--color-text-secondary); }
-.iv-hl { height: 1px; margin: 12px 0; background: rgba(56, 80, 97, 0.8); }
-.iv-rw { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
-.iv-sp { flex: 1; }
-.iv-num { direction: ltr; unicode-bidi: isolate; }
-.iv-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
-.iv-dot.g { background: var(--accent-gold); } .iv-dot.m { background: var(--accent-mint-strong); }
-.iv-pill { display: inline-block; max-width: 70%; overflow: hidden; text-overflow: ellipsis; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; background: color-mix(in srgb, var(--accent-gold) 20%, transparent); color: var(--accent-gold); }
+.iv-big { font-size: 21px; font-weight: 800; direction: ltr; unicode-bidi: isolate; color: var(--accent-mint); }
+.iv-pill { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; background: color-mix(in srgb, var(--accent-mint-strong) 20%, transparent); color: var(--accent-mint); }
 .iv-pill.e { background: transparent; border: 1px dashed rgba(143, 163, 176, 0.7); color: var(--color-text-secondary); font-weight: 400; }
-.iv-bar { display: flex; height: 7px; margin: 6px 0 4px; border-radius: 99px; background: rgba(51, 75, 99, 0.85); overflow: hidden; }
-.iv-bar i { display: block; height: 100%; }
-.iv-bar i.g { background: var(--accent-gold); } .iv-bar i.g.dim { background: color-mix(in srgb, var(--accent-gold) 35%, transparent); }
-.iv-bar i.l { background: color-mix(in srgb, var(--accent-gold) 45%, #fff); } .iv-bar i.m { background: var(--accent-mint-strong); border-radius: 99px; }
-.iv-cap { font-size: 11px; color: var(--color-text-secondary); }
+.iv-cap { font-size: 12px; color: var(--color-text-secondary); }
+.iv-cap.on { font-size: 15px; font-weight: 800; color: var(--accent-gold); }
+.iv-hl { height: 1px; margin: 12px 0; background: rgba(56, 80, 97, 0.8); }
+.iv-cols { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; }
+.iv-col { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.iv-col + .iv-col { border-inline-start: 1px solid rgba(56, 80, 97, 0.8); }
+.iv-cl { display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
+.iv-d { width: 7px; height: 7px; border-radius: 50%; }
+.iv-d.i { background: var(--aurora-4); } .iv-d.e { background: var(--accent-gold); } .iv-d.m { background: var(--accent-mint-strong); }
+.iv-c { font-size: 15px; font-weight: 800; direction: ltr; unicode-bidi: isolate; }
+.iv-c.i { color: var(--aurora-4); } .iv-c.e { color: var(--accent-gold); } .iv-c.m { color: var(--accent-mint-strong); } .iv-c.none { color: var(--color-text-muted); }
 
 .inv-seg { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; margin: var(--space-4) 0 var(--space-16); border-radius: 999px; background: rgba(10, 20, 31, 0.7); }
 .inv-seg i { position: absolute; top: 4px; bottom: 4px; inset-inline-start: 4px; width: calc(50% - 4px); border-radius: 999px; background: var(--accent-gold); box-shadow: 0 4px 14px color-mix(in srgb, var(--accent-gold) 28%, transparent); transition: transform .25s ease; }

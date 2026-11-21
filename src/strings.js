@@ -189,10 +189,11 @@ export const S = {
   "bs.invest.aria": "השקעה, פתיחה",
   /* the investment dialog ("ההשקעה שלי") */
   "inv.title": "ההשקעה שלי",
-  "inv.l.value": "שווי ההשקעה היום", "inv.l.valueIdle": "כסף פנוי, עוד לא במסלול",
+  "inv.l.value": "שווי היום",
   "inv.l.put": "מושקע", "inv.l.interest": "ריבית", "inv.l.perMonth": "בחודש",
   "inv.l.monthly": "הפקדה חודשית", "inv.dep.room": "עד {amount}, מה שנשאר מהחיסכון אחרי המטרות", "inv.dep.none": "אין מה שנשאר מהחיסכון אחרי המטרות", "inv.dep.less": "פחות", "inv.dep.more": "יותר",
-  "inv.l.free": "כסף פנוי", "inv.sub.idle": "עוד לא במסלול", "inv.sub.since": "מאז {date}", "inv.row.invest": "השקעה", "inv.row.deposit": "הפקדה חודשית", "inv.pill.choose": "בחרו מסלול", "inv.pill.net": "{name} · {pct}% נטו", "inv.cap.interest": "ריבית {amount}", "inv.cap.month": "+{amount} בחודש", "inv.cap.idle": "הכסף מחכה למסלול", "inv.cap.of": "מתוך {amount} חיסכון", "inv.tab.track": "מסלול", "inv.tab.history": "היסטוריה",
+  "inv.l.free": "כסף פנוי", "inv.l.deposit": "הפקדה", "inv.pill.choose": "בחרו מסלול", "inv.pill.net": "{name} · {pct}% נטו", "inv.cap.month": "+{amount} בחודש", "inv.cap.idle": "והכסף יתחיל לצבור",
+  "inv.tab.track": "מסלול", "inv.tab.history": "היסטוריה",
   "inv.tracks": "בחירת מסלול",
   "inv.track.net": "{pct}% נטו בשנה", "inv.track.perMonth": "בחודש",
   "inv.track.local": "השינוי חל על ההשקעה הזו בלבד",
