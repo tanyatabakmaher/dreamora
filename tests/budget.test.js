@@ -73,8 +73,8 @@ const hb = { investTrack: "equity", investSince: "2025-05-21", investHistory: [{
 check("history: periods are read oldest first", investPeriods(hb).map((p) => p.trackId).join() === "deposit,money_market,equity" || investPeriods(hb).map((p) => p.trackId).join() === "money_market,deposit,equity");
 const hb2 = { investTrack: "equity", investSince: "2025-05-21", investHistory: [{ trackId: "deposit", since: "2024-11-21", until: "2025-05-21", ret: null, fee: null }] };
 iv = investmentView(hb2, 10000, today2, 500);
-let expH = grow(grow(10000, 3.25, 6, 500), 8.4, 18, 500);
-check("history: a past period grows at its own track, then the current one", iv && Math.abs(iv.value - expH) < 0.01 && iv.months === 24, iv && iv.value);
+let expH = grow(10000, 8.4, 18, 500);
+check("history: past periods are only a record: the value counts from the current start date", iv && Math.abs(iv.value - expH) < 0.01 && iv.months === 18, iv && iv.value);
 check("history: periods newest first, only the last is current", iv && iv.periods.length === 2 && iv.periods[0].trackId === "equity" && iv.periods[0].current && iv.periods[1].trackId === "deposit" && !iv.periods[1].current && iv.periods[1].months === 6);
 iv = investmentView({ investTrack: "custom", investSince: "2025-11-21", investRet: 6, investFee: 1 }, 1000, today2, 0);
 check("own return and fee for a period", iv && iv.netPct === 5 && Math.abs(iv.value - grow(1000, 5, 12, 0)) < 0.01);
@@ -89,3 +89,5 @@ check("the goals' starting amounts are compared with the total including interes
 check("no track: poolTotal is the pool itself", summarize({ pool: 1000, income: 0, expenses: 0, saving: 0 }, [], today2).poolTotal === 1000);
 console.log(fail ? fail + " FAILED" : "all passed");
 process.exit(fail ? 1 : 0);
+
+check("a past period (even a long one) adds nothing: the value counts from the new start date", (function(){ const v=investmentView({ investTrack: "equity", investSince: "2026-11-21", investHistory: [{ trackId: "bonds", since: "2025-05-20", until: "2026-11-21", ret: null, fee: null }] }, 40000, new Date(2026,10,21), 976); return v && v.invested === 40000 && v.months === 0 && v.value === 40000; })());
