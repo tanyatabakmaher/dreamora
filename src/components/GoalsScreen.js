@@ -8,6 +8,7 @@ import { createGoalPlanFlow } from "./GoalPlanFlow.js";
 import { createGoalStartChooser } from "./GoalStartChooser.js";
 import { createConfirm } from "./ConfirmDialog.js";
 import { createBudgetSummary } from "./BudgetSummary.js";
+import { createInvestDialog } from "./InvestDialog.js";
 import { summarize } from "../lib/budget.js";
 import { createAppHeader } from "./AppHeader.js";
 import { createProfileDialog } from "./ProfileDialog.js";
@@ -82,7 +83,8 @@ export function createGoalsScreen(o) {
     onDelete: function (g, opener) { if (g) removeGoal(g, opener); }
   });
   /* The budget overview sits between the title and the list; it re-renders whenever the list does. */
-  var summary = createBudgetSummary({ budgetRepo: o.budgetRepo, onOpen: function () { if (o.onBudget) o.onBudget(); } });
+  var invest = o.budgetRepo ? createInvestDialog({ budgetRepo: o.budgetRepo, goals: function () { return goals; }, onSaved: function () { summary.load(); loadBudget(); } }) : null;
+  var summary = createBudgetSummary({ budgetRepo: o.budgetRepo, onOpen: function () { if (o.onBudget) o.onBudget(); }, onInvest: function (opener) { if (invest) invest.open(opener); } });
   var listRender = list.render;
   list.render = function (g) { listRender.call(list, g); summary.update(g); };
   el.querySelector(".wrap").appendChild(summary.el);
@@ -176,5 +178,5 @@ export function createGoalsScreen(o) {
     reloadGoals();
   }
   if (o.sharing) document.addEventListener("visibilitychange", onVisible);
-  return { el: el, destroy: function () { document.removeEventListener("visibilitychange", onVisible); notifScreen.destroy(); chooser.destroy(); planFlow.destroy(); form.destroy(); confirm.destroy(); profileDialog.destroy(); summary.destroy(); header.destroy(); el.remove(); } };
+  return { el: el, destroy: function () { document.removeEventListener("visibilitychange", onVisible); notifScreen.destroy(); chooser.destroy(); planFlow.destroy(); form.destroy(); confirm.destroy(); profileDialog.destroy(); summary.destroy(); if (invest) invest.destroy(); header.destroy(); el.remove(); } };
 }

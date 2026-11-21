@@ -1,0 +1,38 @@
+/* "ההשקעה שלי" dialog (InvestDialog): hero panel colours, tabs, start-date row and the history timeline. The track list itself uses the planflow styles. */
+.bh-e { stroke: var(--accent-gold); }
+.bh-dot.e { background: var(--accent-gold); }
+.iv-gd { color: var(--accent-gold); } .iv-bl { color: var(--aurora-4); } .iv-mn { color: var(--accent-mint-strong); }
+.inv .bh-left { color: var(--color-text-secondary); }
+.inv .bh-left .iv-gd, .inv .bh-left .iv-bl, .inv .bh-left .iv-mn { font-weight: 800; }
+.inv .bh-lines { gap: 6px; }
+
+.inv-seg { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; margin: var(--space-4) 0 var(--space-16); border-radius: 999px; background: rgba(10, 20, 31, 0.7); }
+.inv-seg i { position: absolute; top: 4px; bottom: 4px; inset-inline-start: 4px; width: calc(50% - 4px); border-radius: 999px; background: var(--accent-gold); box-shadow: 0 4px 14px color-mix(in srgb, var(--accent-gold) 28%, transparent); transition: transform .25s ease; }
+/* the page is right-to-left: the second tab is to the left of the first */
+.inv[data-tab="history"] .inv-seg i { transform: translateX(-100%); }
+.inv-seg button { position: relative; z-index: 1; min-height: 40px; padding: 6px; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--color-text-secondary); cursor: pointer; transition: color .2s; }
+.inv-seg button[aria-selected="true"] { color: var(--bg-app); }
+.inv-seg button:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; border-radius: 999px; }
+
+.inv-pane[hidden] { display: none; }
+.inv-sl { margin: 0 0 var(--space-8); font-size: 13px; font-weight: 500; color: var(--color-text-secondary); }
+.inv .pln-tracks { margin-bottom: var(--space-4); }
+.iv-amt { color: var(--aurora-3); }
+.inv-led { margin-top: var(--space-16); padding: 2px 16px; border-radius: 20px; background: rgba(10, 20, 31, 0.58); }
+.inv-fl { display: flex; align-items: center; gap: 12px; min-height: 60px; cursor: pointer; }
+.inv-ic { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 11px; color: var(--aurora-3); background: color-mix(in srgb, var(--aurora-3) 14%, transparent); }
+.inv-ic svg { width: 18px; height: 18px; }
+.inv-fl-t { flex: 1; min-width: 0; font-size: 13px; color: var(--color-text-secondary); }
+.inv-date { width: 9.5em; min-height: 36px; padding: 0; border: 0; background: transparent; color: var(--text-primary); font: inherit; font-size: 18px; font-weight: 700; text-align: end; direction: ltr; color-scheme: dark; outline: none; }
+.inv-fl:focus-within { box-shadow: 0 1px 0 0 var(--accent-gold); }
+.inv-actions { margin-top: var(--space-16); }
+
+.inv-hist { position: relative; padding-inline-start: 22px; }
+.inv-hist::before { content: ""; position: absolute; inset-inline-start: 6px; top: 12px; bottom: 12px; width: 2px; background: var(--color-border); }
+.inv-hr { position: relative; padding: 6px 0 12px; }
+.inv-hr::before { content: ""; position: absolute; inset-inline-start: -22px; top: 12px; width: 12px; height: 12px; border-radius: 50%; background: var(--color-border); border: 2px solid var(--color-surface); box-sizing: content-box; margin-inline-start: 0; }
+.inv-hr.cur::before { background: var(--accent-gold); }
+.inv-hr-a { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 600; }
+.inv-hr-a b { font-size: 15px; color: var(--aurora-3); direction: ltr; unicode-bidi: isolate; }
+.inv-hr-b { font-size: 12px; color: var(--color-text-muted); }
+.inv-empty { margin: var(--space-12) 0 0; font-size: 13px; color: var(--color-text-muted); line-height: 1.5; }

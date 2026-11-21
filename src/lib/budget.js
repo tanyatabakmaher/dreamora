@@ -58,16 +58,45 @@ export function investedEstimate(amount) {
   return { netPct: net, perYear: Math.round(num(amount) * net / 100) };
 }
 
-/* The money that is not allocated to a goal, invested in a track since a date ("השקעה" row of the summary).
-   b = { investTrack, investSince (ISO date) }; base = the unallocated amount. Returns null when no track or date is set.
-   No deposits are added: value = base grown at the track's net yearly return for the full months since the start date. An estimate, never promised. */
-export function investmentView(b, base, today) {
-  if (!b || !b.investTrack || !b.investSince) return null;
-  var start = parseISODate(b.investSince);
-  if (!start || isNaN(start.getTime())) return null;
-  var t = trackById(b.investTrack), net = netReturnPct(t.defaultReturnPct || 0, t.defaultFeePct), amount = num(base);
-  var value = balanceAfter(amount, 0, net, completedMonths(start, today)), earned = Math.max(0, value - amount);
-  return { trackId: t.id, label: t.labelHe, netPct: net, base: amount, value: value, earned: earned, since: b.investSince, earnedSharePct: value > 0 ? earned / value * 100 : 0 };
+/* What is left of the monthly saving after the goals' deposits: it goes to the investment each month. */
+export function investDeposit(s) { return Math.max(0, num(s.saving) - num(s.required)); }
+
+/* The investment as a list of periods, oldest first: each past period is { trackId, since, until, ret, fee } (b.investHistory, ISO dates),
+   the current one starts at b.investSince and has no end. ret / fee are the user's own yearly return and fee for that period, or null for the track's defaults. */
+export function investPeriods(b) {
+  if (!b || !b.investTrack || !b.investSince) return [];
+  var out = [];
+  (b.investHistory || []).forEach(function (h) {
+    var a = parseISODate(h.since), z = parseISODate(h.until);
+    if (a && z && !isNaN(a.getTime()) && !isNaN(z.getTime())) out.push({ trackId: h.trackId, since: a, until: z, ret: h.ret === undefined ? null : h.ret, fee: h.fee === undefined ? null : h.fee });
+  });
+  var cur = parseISODate(b.investSince);
+  if (!cur || isNaN(cur.getTime())) return [];
+  out.push({ trackId: b.investTrack, since: cur, until: null, ret: b.investRet === undefined ? null : b.investRet, fee: b.investFee === undefined ? null : b.investFee });
+  return out;
+}
+/* Net yearly return of one period (the user's own numbers when set, the track's defaults otherwise). */
+export function periodNetPct(p) {
+  var t = trackById(p.trackId);
+  var gross = p.ret !== null && p.ret !== undefined ? p.ret : (t.defaultReturnPct || 0), fee = p.fee !== null && p.fee !== undefined ? p.fee : t.defaultFeePct;
+  return netReturnPct(gross, fee);
+}
+
+/* The money that is not allocated to a goal, invested in tracks since a date ("השקעה" row of the summary and the investment dialog).
+   b = { investTrack, investSince (ISO date), investRet, investFee, investHistory }; base = the unallocated amount at the start; deposit = the monthly amount added to it (default 0).
+   Each period grows at its own track's net yearly return; every completed month adds the deposit. Returns null when no track or date is set. An estimate, never promised.
+   Result: { trackId, label, netPct, base, value, earned, since, earnedSharePct, invested, months, periods: [{ trackId, label, netPct, since, until, months, current }] } (periods newest first). */
+export function investmentView(b, base, today, deposit) {
+  var periods = investPeriods(b);
+  if (!periods.length) return null;
+  var amount = num(base), dep = num(deposit), value = amount, months = 0, rows = [];
+  periods.forEach(function (p, i) {
+    var net = periodNetPct(p), end = p.until || today, k = completedMonths(p.since, end);
+    value = balanceAfter(value, dep, net, k); months += k;
+    rows.push({ trackId: p.trackId, label: trackById(p.trackId).labelHe, netPct: net, since: p.since, until: p.until, months: k, current: i === periods.length - 1 });
+  });
+  var last = rows[rows.length - 1], invested = amount + dep * months, earned = Math.max(0, value - invested);
+  return { trackId: last.trackId, label: last.label, netPct: last.netPct, base: amount, value: value, earned: earned, since: b.investSince, earnedSharePct: value > 0 ? earned / value * 100 : 0, invested: invested, months: months, periods: rows.slice().reverse() };
 }
 
 /* If only `saving` per month is available: every goal gets the same share of its planned deposit, and the new target date follows.

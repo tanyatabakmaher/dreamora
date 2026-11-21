@@ -1,4 +1,4 @@
-import { allocate, summarize, freeAmount, investedEstimate, stretchPlan, budgetGoals, investmentView } from "../src/lib/budget.js";
+import { allocate, summarize, freeAmount, investedEstimate, stretchPlan, budgetGoals, investmentView, investDeposit, investPeriods } from "../src/lib/budget.js";
 let fail = 0;
 function check(name, cond, info) {
   if (!cond) { fail++; console.log("FAIL", name, info === undefined ? "" : info); }
@@ -63,5 +63,21 @@ iv = investmentView({ investTrack: "deposit", investSince: "2026-05-21" }, 0, to
 check("investment: nothing unallocated, nothing earned", iv && iv.value === 0 && iv.earned === 0);
 iv = investmentView({ investTrack: "custom", investSince: "2025-11-21" }, 1000, today2);
 check("investment: custom track has no default return and earns 0", iv && iv.netPct === 0 && iv.value === 1000);
+// investment with a monthly deposit and a history of tracks
+const grow = (v, net, k, dep) => { const i = net / 100 / 12; for (let m = 0; m < k; m++) v = v * (1 + i) + dep; return v; };
+iv = investmentView({ investTrack: "equity", investSince: "2025-05-21" }, 40000, today2, 976);
+let expD = grow(40000, 8.4, 18, 976);
+check("investment + deposit: 40,000 and 976 a month for 18 months", iv && Math.abs(iv.value - expD) < 0.01 && iv.invested === 40000 + 976 * 18 && Math.abs(iv.earned - (expD - iv.invested)) < 0.01, iv && [iv.value, iv.invested, iv.earned].join());
+check("investment + deposit: months counted", iv && iv.months === 18 && iv.periods.length === 1 && iv.periods[0].current);
+const hb = { investTrack: "equity", investSince: "2025-05-21", investHistory: [{ trackId: "money_market", since: "2024-11-21", until: "2025-05-21", ret: null, fee: null }, { trackId: "deposit", since: "2024-05-21", until: "2024-11-21", ret: null, fee: null }] };
+check("history: periods are read oldest first", investPeriods(hb).map((p) => p.trackId).join() === "deposit,money_market,equity" || investPeriods(hb).map((p) => p.trackId).join() === "money_market,deposit,equity");
+const hb2 = { investTrack: "equity", investSince: "2025-05-21", investHistory: [{ trackId: "deposit", since: "2024-11-21", until: "2025-05-21", ret: null, fee: null }] };
+iv = investmentView(hb2, 10000, today2, 500);
+let expH = grow(grow(10000, 3.25, 6, 500), 8.4, 18, 500);
+check("history: a past period grows at its own track, then the current one", iv && Math.abs(iv.value - expH) < 0.01 && iv.months === 24, iv && iv.value);
+check("history: periods newest first, only the last is current", iv && iv.periods.length === 2 && iv.periods[0].trackId === "equity" && iv.periods[0].current && iv.periods[1].trackId === "deposit" && !iv.periods[1].current && iv.periods[1].months === 6);
+iv = investmentView({ investTrack: "custom", investSince: "2025-11-21", investRet: 6, investFee: 1 }, 1000, today2, 0);
+check("own return and fee for a period", iv && iv.netPct === 5 && Math.abs(iv.value - grow(1000, 5, 12, 0)) < 0.01);
+check("investDeposit = saving minus what the goals need, never below 0", investDeposit({ saving: 6000, required: 5024 }) === 976 && investDeposit({ saving: 1000, required: 1500 }) === 0);
 console.log(fail ? fail + " FAILED" : "all passed");
 process.exit(fail ? 1 : 0);
