@@ -84,16 +84,16 @@ export function createInvestDialog(o) {
     pill.classList.toggle("e", !t);
     pill.textContent = !t ? S["inv.pill.choose"] : net === null ? t.labelHe : fill(S["inv.pill.net"], { name: t.labelHe, pct: String(net) });
     cap.classList.toggle("on", !!t && net !== null);
-    cap.innerHTML = t && net !== null ? '<bdi dir="ltr">' + esc(fill(S["inv.cap.month"], { amount: money(monthlyInterest(net)) })) + "</bdi>" : esc(S["inv.cap.idle"]);
+    cap.innerHTML = t && net !== null ? '<bdi dir="ltr">+' + esc(money(monthlyInterest(net))) + "</bdi> " + esc(S["inv.cap.perMonth"]) : esc(S["inv.cap.idle"]);
   }
   /* One ring (put in = blue, interest earned = gold) with today's value in its middle, the picked track under it, then three columns: put in, interest, monthly deposit (mint). Follows the stepper and the picked track live. */
   function paintHero() {
     view = sum.unallocated > 0 || budget.investTrack ? investmentView(budget, sum.unallocated, today, st.deposit) : null;
     var value = view ? view.value : sum.unallocated, put = view ? view.invested : 0, earned = view ? view.earned : 0, ep = pctOf(earned, value);
     panel.hidden = false; panel.classList.add("iv-pan");
-    panel.innerHTML = '<div class="iv-cen"><div class="bh-ring iv-ring' + (view ? "" : " iv-empty") + '">' + rings(124, view ? [{ p: 100 - ep, cls: "iv-ri" }, { p: ep, cls: "iv-re" }] : [], null, 10) +
-      '<div class="iv-mid"><span class="iv-tl">' + esc(view ? S["inv.l.value"] : S["inv.l.free"]) + '</span><b class="iv-big">' + esc(money(value)) + "</b></div></div>" +
-      '<span class="iv-pill" id="iv-pill"></span><span class="iv-cap" id="iv-cap"></span></div>' +
+    panel.innerHTML = '<div class="iv-top"><div class="bh-ring iv-ring' + (view ? "" : " iv-empty") + '">' + rings(64, view ? [{ p: 100 - ep, cls: "iv-ri" }, { p: ep, cls: "iv-re" }] : [], null, 8) + "</div>" +
+      '<div class="iv-tot"><span class="iv-tl">' + esc(view ? S["inv.l.value"] : S["inv.l.free"]) + '</span><b class="iv-big">' + esc(money(value)) + "</b></div></div>" +
+      '<div class="iv-sub"><span class="iv-pill" id="iv-pill"></span><span class="iv-cap" id="iv-cap"></span></div>' +
       '<div class="iv-hl"></div>' +
       '<div class="iv-cols">' + col("i", S["inv.l.put"], put) + col("e", S["inv.l.interest"], earned, !view) + col("m", S["inv.l.deposit"], st.deposit) + "</div>";
     paintDeposit(); if ($("#inv-tracks").firstChild) paintTracks(); else paintPill();
