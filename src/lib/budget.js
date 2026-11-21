@@ -54,8 +54,8 @@ export function summarize(b, goals, today) {
     savingTooHigh: saving > Math.max(free, 0),
     savingRatePct: income > 0 ? Math.round(saving / income * 1000) / 10 : null,
     allocated: allocated, unallocated: base, interest: interest, goalInterest: goalInterest, interestTotal: interest + goalInterest, accrued: accrued,
-    /* the summary's free-amount line: all the money (starting amounts, the investment's growth and the goals' interest) and what the goals hold of it; the difference is the investment's value */
-    totalWithInterest: poolTotal + goalInterest, heldByGoals: allocated + goalInterest, poolTotal: poolTotal, poolShort: poolShort,
+    /* the summary's free-amount line: all the money saved so far (the same number as `accrued`: the goals' balances plus the investment) and what the goals hold of it (their balances); the difference is the investment's value */
+    totalWithInterest: accrued, heldByGoals: goalBalance, poolTotal: poolTotal, poolShort: poolShort,
     /* one tap fix: raise the saving to the required amount when the free money covers it */
     raiseTo: gap > 0 && required <= free ? required : null
   };
