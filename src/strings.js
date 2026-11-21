@@ -156,6 +156,7 @@ export const S = {
   "bd.donut.over": "חורג מהחיסכון",
   "bd.donut.free": "פנוי",
   "bd.tri.have": "נצבר עד היום",
+  "bd.tri.note": "מתוך זה {amount} ריבית",
   "bd.tri.total": "סה\"כ להפקדה בחודש",
   "bd.tri.left": "נשאר להפקדות",
   "bd.income": "הכנסה חודשית",
