@@ -81,7 +81,7 @@ export function createBudgetForm(o) {
     else if (over) t.innerHTML = '<span class="bd-donut-big neg">!</span><span class="bd-donut-label neg">' + esc(S["bd.donut.over"]) + "</span>";
     else t.innerHTML = '<span class="bd-donut-big">' + Math.round(pct) + '%</span><span class="bd-donut-label ok">' + esc(S["bd.donut.free"]) + "</span>";
     var tri = q(".bd-tri"); tri.hidden = !has || empty;
-    if (!tri.hidden) tri.innerHTML = '<div><small>' + esc(S["bd.tri.have"]) + '</small><b class="num">' + esc(money(b.pool)) + "</b></div><div><small>" + esc(S["bd.tri.total"]) + '</small><b class="num">' + esc(money(b.saving)) +
+    if (!tri.hidden) tri.innerHTML = '<div><small>' + esc(S["bd.tri.have"]) + '</small><b class="num">' + esc(money(s.interestTotal)) + "</b></div><div><small>" + esc(S["bd.tri.total"]) + '</small><b class="num">' + esc(money(b.saving)) +
       "</b></div><div><small>" + esc(S["bd.tri.left"]) + '</small><b class="num ' + (over ? "neg" : "ok") + '">' + esc(money(left)) + "</b></div>";
     q(".bd-rr-val").textContent = money(b.saving);
   }

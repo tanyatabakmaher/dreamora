@@ -44,14 +44,14 @@ export function summarize(b, goals, today) {
   var base = Math.max(0, pool - allocated), room = Math.max(0, saving - required);
   var deposit = b.investMonthly !== null && b.investMonthly !== undefined ? Math.min(num(b.investMonthly), room) : room;
   var iv = b.investTrack ? investmentView(b, base, today, deposit) : null;
-  var interest = iv ? iv.earned : 0, poolTotal = pool + (iv ? Math.max(0, iv.value - base) : 0);
+  var interest = iv ? iv.earned : 0, goalInterest = mine.reduce(function (t, g) { return t + computeGoal(g, today).interest; }, 0), poolTotal = pool + (iv ? Math.max(0, iv.value - base) : 0);
   var poolShort = Math.max(0, allocated - poolTotal);
   var status = mine.length === 0 ? "empty" : gap <= 0 && poolShort <= 0 ? "fits" : "over"; /* over: the monthly deposits or the starting amounts do not fit */
   return {
     goals: mine, alloc: allocate(Object.assign({}, b, { pool: poolTotal }), goals, today), required: required, free: free, saving: saving, gap: gap, status: status,
     savingTooHigh: saving > Math.max(free, 0),
     savingRatePct: income > 0 ? Math.round(saving / income * 1000) / 10 : null,
-    allocated: allocated, unallocated: base, interest: interest, poolTotal: poolTotal, poolShort: poolShort,
+    allocated: allocated, unallocated: base, interest: interest, goalInterest: goalInterest, interestTotal: interest + goalInterest, poolTotal: poolTotal, poolShort: poolShort,
     /* one tap fix: raise the saving to the required amount when the free money covers it */
     raiseTo: gap > 0 && required <= free ? required : null
   };

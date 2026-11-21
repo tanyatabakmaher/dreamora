@@ -91,3 +91,5 @@ console.log(fail ? fail + " FAILED" : "all passed");
 process.exit(fail ? 1 : 0);
 
 check("a past period grows at its own track without any deposit", (function(){ const v=investmentView({ investTrack: "equity", investSince: "2026-11-21", investHistory: [{ trackId: "bonds", since: "2025-05-20", until: "2026-11-21", ret: null, fee: null }] }, 40000, new Date(2026,10,21), 976); return v && v.invested === 40000 && v.months === 0 && Math.abs(v.value - grow(40000, 4.4, 18, 0)) < 0.01; })());
+
+check("interestTotal = the investment interest plus the goals' interest", (function(){ const sx = summarize({ pool: 80000, income: 0, expenses: 0, saving: 6000, investTrack: "equity", investSince: "2025-11-21" }, [g("x", { targetAmount: 200000, initialAmount: 40000, monthlyDeposit: 5024 })], today2); return sx.goalInterest > 0 && sx.interest > 0 && Math.abs(sx.interestTotal - (sx.interest + sx.goalInterest)) < 0.001; })());
