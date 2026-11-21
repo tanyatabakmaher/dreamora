@@ -81,5 +81,9 @@ check("own return and fee for a period", iv && iv.netPct === 5 && Math.abs(iv.va
 check("investRoom = saving minus what the goals need, never below 0", investRoom({ saving: 6000, required: 5024 }) === 976 && investRoom({ saving: 1000, required: 1500 }) === 0);
 const rs = { saving: 6000, required: 5024 };
 check("investDeposit: all the room when nothing was chosen, the chosen amount when lower, never above the room", investDeposit(rs, {}) === 976 && investDeposit(rs, { investMonthly: null }) === 976 && investDeposit(rs, { investMonthly: 400 }) === 400 && investDeposit(rs, { investMonthly: 5000 }) === 976 && investDeposit(rs, { investMonthly: 0 }) === 0);
+const sj = summarize({ pool: 80000, income: 0, expenses: 0, saving: 6000, investTrack: "equity", investSince: "2025-11-21" }, [g("x", { targetAmount: 200000, initialAmount: 40000, monthlyDeposit: 5024 })], today2);
+check("poolTotal = pool plus the interest the unallocated money earned", sj.interest > 0 && Math.abs(sj.poolTotal - (80000 + sj.interest)) < 1e-6 && sj.unallocated === 40000, sj.interest);
+check("the goals' starting amounts are compared with the total including interest", summarize({ pool: 40000, income: 0, expenses: 0, saving: 6000, investTrack: "equity", investSince: "2025-11-21" }, [g("y", { targetAmount: 200000, initialAmount: 40500, monthlyDeposit: 100 })], today2).poolShort === 0 && summarize({ pool: 40000, income: 0, expenses: 0, saving: 6000 }, [g("y", { targetAmount: 200000, initialAmount: 40500, monthlyDeposit: 100 })], today2).poolShort === 500);
+check("no track: poolTotal is the pool itself", summarize({ pool: 1000, income: 0, expenses: 0, saving: 0 }, [], today2).poolTotal === 1000);
 console.log(fail ? fail + " FAILED" : "all passed");
 process.exit(fail ? 1 : 0);

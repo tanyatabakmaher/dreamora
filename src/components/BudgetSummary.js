@@ -1,7 +1,7 @@
 import { fromHTML, esc } from "../lib/dom.js";
 import { S } from "../strings.js";
 import { money, todayDate } from "../lib/format.js";
-import { summarize, investmentView, investDeposit } from "../lib/budget.js";
+import { summarize, investmentView, investDeposit, investRoom } from "../lib/budget.js";
 import { PencilIcon } from "./ui/Icons.js";
 
 /* A short budget overview above the goal list: how the money and the monthly saving compare with what the goals need.
@@ -53,14 +53,15 @@ export function createBudgetSummary(o) {
       return;
     }
     var s = summarize(budget, goals, todayDate());
-    if (s.status === "empty") { el.hidden = true; return; }
+    var canInv = s.unallocated > 0 || investRoom(s) > 0 || !!budget.investTrack; /* there is money (or a monthly amount) to invest */
+    if (s.status === "empty" && !canInv) { el.hidden = true; return; }
     el.hidden = false;
     var depGap = Math.max(0, s.gap), iniGap = s.poolShort;
     var bad0 = depGap > 0 || iniGap > 0;
     var headline = depGap > 0 ? fill(S["bs.head.month"], { gap: money(depGap) }) : iniGap > 0 ? fill(S["bs.head.initial"], { gap: money(iniGap) }) : S["bs.head.ok"];
     var bad = depGap > 0 || iniGap > 0;
     var ring = function (size, sw, id) {
-      return '<div class="bs-ringbox">' + rings(left(budget.pool, s.allocated), left(s.saving, s.required), size, sw, id) +
+      return '<div class="bs-ringbox">' + rings(left(s.poolTotal, s.allocated), left(s.saving, s.required), size, sw, id) +
         '<div class="bs-center' + (bad ? " bad" : "") + '" aria-hidden="true">' + (bad ? "!" : "✓") + "</div></div>";
     };
     var edit = '<button type="button" class="bs-edit" aria-label="' + esc(S["bs.editAria"]) + '">' + PencilIcon() + "</button>";
@@ -73,13 +74,13 @@ export function createBudgetSummary(o) {
       return '<div class="bs-nrow"><div class="bs-nrow-top">' + dot(cls) + "<span>" + esc(label) + "</span>" + top + '</div><div class="bs-bar ' + cls + '"><i style="width:' + pct(need, have).toFixed(0) + '%"></i></div><div class="bs-nline">' + line + "</div>" + left + "</div>";
     };
     /* the money that is not allocated to a goal: invested in a track (value and what it earned) or still waiting for a track */
-    var inv = s.unallocated > 0 ? investmentView(budget, s.unallocated, todayDate(), investDeposit(s, budget)) : null;
+    var inv = canInv ? investmentView(budget, s.unallocated, todayDate(), investDeposit(s, budget)) : null;
     var rowInvest = function () {
-      if (s.unallocated <= 0) return "";
+      if (!canInv) return "";
       var btn = '<button type="button" class="bs-pill bs-invbtn v" aria-label="' + esc(S["bs.invest.aria"]) + '">';
       var top, bar, line;
       if (!inv) {
-        top = btn + esc(S["bs.invest.set"]) + "</button>"; bar = '<i style="width:0%"></i>'; line = fill(S["bs.invest.idle"], { amount: money(s.unallocated) });
+        top = btn + esc(S["bs.invest.set"]) + "</button>"; bar = '<i style="width:0%"></i>'; line = s.unallocated > 0 ? fill(S["bs.invest.idle"], { amount: money(s.unallocated) }) : fill(S["bs.invest.idleSave"], { amount: money(investRoom(s)) });
       } else {
         var sh = Math.max(0, Math.min(100, inv.earnedSharePct));
         top = btn + esc(fill(S["bs.invest.chip"], { track: inv.label.replace(/^מסלול /, ""), pct: inv.netPct })) + "</button>";
@@ -88,19 +89,27 @@ export function createBudgetSummary(o) {
       }
       return '<div class="bs-nrow bs-invrow"><div class="bs-nrow-top">' + dot("v") + "<span>" + esc(S["bs.invest"]) + "</span>" + top + '</div><div class="bs-bar v">' + bar + '</div><div class="bs-nline">' + esc(line) + "</div></div>";
     };
+    var bind = function () {
+      Array.prototype.forEach.call(el.querySelectorAll(".bs-edit"), function (b) { b.addEventListener("click", function () { o.onOpen(this); }); });
+      /* the investment chip opens the investment setup when the host provides it (o.onInvest); until then nothing happens */
+      Array.prototype.forEach.call(el.querySelectorAll(".bs-invbtn"), function (b) { b.addEventListener("click", function () { if (o.onInvest) o.onInvest(this); }); });
+    };
+    /* no goals yet but there is money to invest: the card holds the investment row alone */
+    if (s.status === "empty") {
+      el.innerHTML = '<div class="bs-card"><div class="bs-panel bs-solo"><div class="bs-head"><b>' + esc(S["bs.title"]) + "</b>" + edit + '</div><div class="bs-nrows">' + rowInvest() + "</div></div></div>";
+      bind(); return;
+    }
     el.innerHTML = '<div class="bs-card"><div class="bs-panel">' +
       /* wide screens */
       '<div class="bs-wide">' + ring(92, 8, "bsw") + '<div class="bs-wtitle"><div class="bs-head"><b>' + esc(S["bs.title"]) + "</b>" + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + "</div></div>" +
-        '<div class="bs-wsep"></div><div class="bs-wm">' + rowNarrow("i", S["bs.initial"], budget.pool, s.allocated, "bs.left.initial") + '</div><div class="bs-wm">' + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + "</div>" +
-        (s.unallocated > 0 ? '<div class="bs-wm">' + rowInvest() + "</div>" : "") +
+        '<div class="bs-wsep"></div><div class="bs-wm">' + rowNarrow("i", S["bs.initial"], s.poolTotal, s.allocated, "bs.left.initial") + '</div><div class="bs-wm">' + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + "</div>" +
+        (canInv ? '<div class="bs-wm">' + rowInvest() + "</div>" : "") +
         (goals.length ? '<div class="bs-wsep"></div><div class="bs-wgoals">' + pins(goals) + "</div>" : "") + "</div>" +
       /* narrow screens */
       '<div class="bs-narrow"><div class="bs-top">' + ring(84, 8, "bsn") + '<div class="bs-topt"><div class="bs-head"><b>' + esc(S["bs.title"]) + '</b>' + edit + '</div><div class="bs-headline' + (bad ? " bad" : "") + '">' + esc(headline) + '</div>' + pins(goals) + "</div></div>" +
-        '<div class="bs-nrows">' + rowNarrow("i", S["bs.initial"], budget.pool, s.allocated, "bs.left.initial") + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + rowInvest() + "</div></div>" +
+        '<div class="bs-nrows">' + rowNarrow("i", S["bs.initial"], s.poolTotal, s.allocated, "bs.left.initial") + rowNarrow("m", S["bs.monthly"], s.saving, s.required, "bs.left.month") + rowInvest() + "</div></div>" +
       "</div></div>";
-    Array.prototype.forEach.call(el.querySelectorAll(".bs-edit"), function (b) { b.addEventListener("click", function () { o.onOpen(this); }); });
-    /* the investment chip opens the investment setup when the host provides it (o.onInvest); until then nothing happens */
-    Array.prototype.forEach.call(el.querySelectorAll(".bs-invbtn"), function (b) { b.addEventListener("click", function () { if (o.onInvest) o.onInvest(this); }); });
+    bind();
   }
 
   function load() {

@@ -184,6 +184,7 @@ export const S = {
   "bs.invest": "השקעה",
   "bs.invest.set": "בחירת מסלול",
   "bs.invest.idle": "{amount} פנויים, בלי מסלול",
+  "bs.invest.idleSave": "אפשר להפקיד {amount} בחודש, בלי מסלול",
   "bs.invest.line": "שווי {value} · צבר {earned}",
   "bs.invest.chip": "{track} · {pct}%",
   "bs.invest.aria": "השקעה, פתיחה",
