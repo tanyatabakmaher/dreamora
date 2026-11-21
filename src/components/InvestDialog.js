@@ -6,7 +6,7 @@ import { money, todayDate, fmtDate, durText } from "../lib/format.js";
 import { heat, mmYYYY } from "../lib/heat.js";
 import { summarize, investmentView, investDeposit, investRoom } from "../lib/budget.js";
 import { Field, setFieldError } from "./ui/Field.js";
-import { Button } from "./ui/Button.js";
+import { Button, IconButton } from "./ui/Button.js";
 import { CalendarIcon, CoinsIcon } from "./ui/Icons.js";
 import { createModal } from "./ui/Modal.js";
 import { showToast } from "./ui/Toast.js";
@@ -52,7 +52,7 @@ function trackRowHtml(t) {
 
 export function createInvestDialog(o) {
   var root = fromHTML('<div class="sheet planflow inv" data-tab="track" role="dialog" aria-modal="true" aria-labelledby="inv-title">' +
-    '<div class="pln-top"><button type="button" class="pln-icon" id="inv-close" aria-label="' + esc(S["form.close"]) + '">✕</button></div>' +
+    '<div class="sheet-head"><h2 id="inv-title">' + esc(S["inv.title"]) + "</h2>" + IconButton({ id: "inv-close", label: S["form.close"], glyph: "\u2715" }) + "</div>" +
     '<div class="inv-seg" role="tablist"><i aria-hidden="true"></i>' +
     '<button type="button" role="tab" id="inv-tab-track" data-tab="track" aria-selected="true">' + esc(S["inv.tab.track"]) + "</button>" +
     '<button type="button" role="tab" id="inv-tab-history" data-tab="history" aria-selected="false"></button></div>' +
@@ -68,8 +68,7 @@ export function createInvestDialog(o) {
   var modal = createModal({ sheet: root });
   /* picture + title row (the panel is filled in by paintHero) */
   var hero = createBudgetHero();
-  hero.top.appendChild($(".pln-top"));
-  hero.top.appendChild(fromHTML('<h2 class="bh-title" id="inv-title">' + esc(S["inv.title"]) + "</h2>"));
+  hero.top.appendChild($(".sheet-head")); /* title and close on one row, like the other popups */
   root.insertBefore(hero.el, root.firstChild);
   var panel = hero.el.querySelector(".bh-panel");
 
