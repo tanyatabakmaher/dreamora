@@ -20,8 +20,8 @@ import { createBudgetHero } from "./BudgetHero.js";
 function fill(t, m) { return Object.keys(m).reduce(function (s, k) { return s.split("{" + k + "}").join(m[k]); }, t); }
 function pctOf(v, total) { return total > 0 ? Math.max(0, Math.min(100, v / total * 100)) : 0; }
 
-function rings(size, outer, inner) {
-  var sw = 8, h = size / 2, r1 = (size - sw) / 2, r2 = r1 - sw - 3;
+function rings(size, outer, inner, sw) {
+  sw = sw || 8; var h = size / 2, r1 = (size - sw) / 2, r2 = r1 - sw - 3;
   function arc(r, parts) {
     var c = 2 * Math.PI * r, off = 0, out = '<circle cx="' + h + '" cy="' + h + '" r="' + r + '" fill="none" class="bh-track" stroke-width="' + sw + '"/>';
     parts.forEach(function (p) {
@@ -32,7 +32,7 @@ function rings(size, outer, inner) {
     });
     return out;
   }
-  return '<svg class="bh-rings" viewBox="0 0 ' + size + " " + size + '" width="' + size + '" height="' + size + '" aria-hidden="true">' + arc(r1, outer) + arc(r2, inner) + "</svg>";
+  return '<svg class="bh-rings" viewBox="0 0 ' + size + " " + size + '" width="' + size + '" height="' + size + '" aria-hidden="true">' + arc(r1, outer) + (inner ? arc(r2, inner) : "") + "</svg>";
 }
 function trackRowHtml(t) {
   return '<div class="pln-track" data-id="' + t.id + '"><button type="button" class="pln-trackhead" role="radio" aria-checked="false" aria-expanded="false">' +
@@ -74,36 +74,28 @@ export function createInvestDialog(o) {
 
   var STEP = 50, budget = null, today = todayDate(), st = null, view = null, sum = null, room = 0, saving = false;
 
+  function col(k, label, amount, none) { return '<div class="iv-col"><span class="iv-cl"><i class="iv-d ' + k + '"></i>' + esc(label) + '</span><b class="iv-c ' + k + (none ? " none" : "") + '">' + (none ? "—" : esc(money(amount))) + "</b></div>"; }
   /* what the money earns in a month at a net yearly return (on today's value, or on the free money before a track is chosen) */
   function monthlyInterest(net) { var base = view ? view.value : sum.unallocated; return Math.round(base * net / 12 / 100); }
-  /* the live part of the "investment" row: the track picked right now (even before saving) as a pill, and under the bar the interest it earns per month */
+  /* the live part under the ring: the track picked right now (even before saving) as a pill, and the interest it earns per month */
   function paintPill() {
     var pill = $("#iv-pill"), cap = $("#iv-cap"); if (!pill) return;
     var t = st.trackId ? trackById(st.trackId) : null, net = t ? rowNet(t) : null;
     pill.classList.toggle("e", !t);
     pill.textContent = !t ? S["inv.pill.choose"] : net === null ? t.labelHe : fill(S["inv.pill.net"], { name: t.labelHe, pct: String(net) });
-    var parts = [];
-    if (view && view.earned > 0) parts.push(fill(S["inv.cap.interest"], { amount: money(view.earned) }));
-    if (t && net !== null) parts.push(fill(S["inv.cap.month"], { amount: money(monthlyInterest(net)) }));
-    cap.innerHTML = parts.length ? parts.map(function (x) { return "<bdi>" + esc(x) + "</bdi>"; }).join(" · ") : esc(S["inv.cap.idle"]);
+    cap.classList.toggle("on", !!t && net !== null);
+    cap.innerHTML = t && net !== null ? '<bdi dir="ltr">' + esc(fill(S["inv.cap.month"], { amount: money(monthlyInterest(net)) })) + "</bdi>" : esc(S["inv.cap.idle"]);
   }
-  /* Same look as the budget summary card: the rings and the total value on top, then two rows (investment: gold = put in, light gold = interest; monthly deposit: mint) each with a dot, a pill or value, a bar and a line under it. Follows the stepper and the picked track live. */
+  /* One ring (put in = blue, interest earned = gold) with today's value in its middle, the picked track under it, then three columns: put in, interest, monthly deposit (mint). Follows the stepper and the picked track live. */
   function paintHero() {
     view = sum.unallocated > 0 || budget.investTrack ? investmentView(budget, sum.unallocated, today, st.deposit) : null;
-    var value = view ? view.value : sum.unallocated, earned = view ? view.earned : 0, ep = pctOf(earned, value);
-    var sub = view ? fill(S["inv.sub.since"], { date: mmYYYY(parseISODate(budget.investSince)) }) : S["inv.sub.idle"];
-    var dp = pctOf(st.deposit, sum.saving);
+    var value = view ? view.value : sum.unallocated, put = view ? view.invested : 0, earned = view ? view.earned : 0, ep = pctOf(earned, value);
     panel.hidden = false; panel.classList.add("iv-pan");
-    panel.innerHTML = '<div class="iv-top"><div class="bh-ring' + (view ? "" : " iv-empty") + '">' + rings(76, [{ p: view ? 100 - ep : 0, cls: "iv-ri" }, { p: ep, cls: "iv-re" }], [{ p: dp, cls: "iv-rm" }]) + "</div>" +
-      '<div class="iv-tot"><span class="iv-tl">' + esc(view ? S["inv.l.value"] : S["inv.l.free"]) + '</span><b class="iv-big">' + esc(money(value)) + '</b><span class="iv-ts">' + esc(sub) + "</span></div></div>" +
+    panel.innerHTML = '<div class="iv-cen"><div class="bh-ring iv-ring' + (view ? "" : " iv-empty") + '">' + rings(124, view ? [{ p: 100 - ep, cls: "iv-ri" }, { p: ep, cls: "iv-re" }] : [], null, 10) +
+      '<div class="iv-mid"><span class="iv-tl">' + esc(view ? S["inv.l.value"] : S["inv.l.free"]) + '</span><b class="iv-big">' + esc(money(value)) + "</b></div></div>" +
+      '<span class="iv-pill" id="iv-pill"></span><span class="iv-cap" id="iv-cap"></span></div>' +
       '<div class="iv-hl"></div>' +
-      '<div class="iv-rw"><i class="iv-dot g"></i><span>' + esc(S["inv.row.invest"]) + '</span><span class="iv-sp"></span><span class="iv-pill" id="iv-pill"></span></div>' +
-      '<div class="iv-bar">' + (view ? '<i class="g" style="width:' + (100 - ep).toFixed(1) + '%"></i><i class="l" style="width:' + ep.toFixed(1) + '%"></i>' : '<i class="g dim" style="width:100%"></i>') + "</div>" +
-      '<div class="iv-cap" id="iv-cap"></div>' +
-      '<div class="iv-hl"></div>' +
-      '<div class="iv-rw"><i class="iv-dot m"></i><span>' + esc(S["inv.row.deposit"]) + '</span><span class="iv-sp"></span><b class="iv-mn iv-num">' + esc(money(st.deposit)) + "</b></div>" +
-      '<div class="iv-bar"><i class="m" style="width:' + dp.toFixed(1) + '%"></i></div>' +
-      '<div class="iv-cap">' + esc(fill(S["inv.cap.of"], { amount: money(sum.saving) })) + "</div>";
+      '<div class="iv-cols">' + col("i", S["inv.l.put"], put) + col("e", S["inv.l.interest"], earned, !view) + col("m", S["inv.l.deposit"], st.deposit) + "</div>";
     paintDeposit(); if ($("#inv-tracks").firstChild) paintTracks(); else paintPill();
   }
   function paintDeposit() {
@@ -193,7 +185,7 @@ export function createInvestDialog(o) {
     if (!view) { host.innerHTML = '<p class="inv-empty">' + esc(S["inv.hist.none"]) + "</p>"; return; }
     host.innerHTML = '<div class="inv-hist">' + view.periods.map(function (p) {
       var when = mmYYYY(p.since) + " " + esc(p.until ? S["inv.hist.to"] + " " + mmYYYY(p.until) : S["inv.hist.until"]);
-      return '<div class="inv-hr' + (p.current ? " cur" : "") + '"><div class="inv-hr-a"><span>' + esc(p.label) + '</span><b>' + esc((p.netPct / 12).toFixed(2)) + "%</b></div>" +
+      return '<div class="inv-hr' + (p.current ? " cur" : "") + '"><div class="inv-hr-a"><span>' + esc(p.label) + "</span></div>" +
         '<div class="inv-hr-b">' + when + (p.months > 0 ? " · " + esc(durText(p.months)) : "") + "</div></div>";
     }).join("") + "</div>" + (n < 2 ? '<p class="inv-empty">' + esc(S["inv.hist.empty"]) + "</p>" : "");
   }
