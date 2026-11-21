@@ -192,7 +192,7 @@ export const S = {
   "inv.l.value": "שווי ההשקעה היום", "inv.l.valueIdle": "כסף פנוי, עוד לא במסלול",
   "inv.l.put": "מושקע", "inv.l.interest": "ריבית", "inv.l.perMonth": "בחודש",
   "inv.l.monthly": "הפקדה חודשית", "inv.dep.room": "עד {amount}, מה שנשאר מהחיסכון אחרי המטרות", "inv.dep.none": "אין מה שנשאר מהחיסכון אחרי המטרות", "inv.dep.less": "פחות", "inv.dep.more": "יותר",
-  "inv.tab.track": "מסלול", "inv.tab.history": "היסטוריה",
+  "inv.chip.empty": "בחרו מסלול כדי שהכסף יתחיל לצבור", "inv.tab.track": "מסלול", "inv.tab.history": "היסטוריה",
   "inv.tracks": "בחירת מסלול",
   "inv.track.net": "{pct}% נטו בשנה", "inv.track.perMonth": "בחודש",
   "inv.track.local": "השינוי חל על ההשקעה הזו בלבד",
