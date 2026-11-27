@@ -131,7 +131,7 @@ export function createBudgetScreen(o) {
     q("#bd-sum").innerHTML = h + "</div>";
     var ab = q("#bd-arrange"); if (ab) ab.addEventListener("click", function () { arranging = !arranging; render(); });
     var n = q("#bd-notice");
-    if (s.unallocated > 0) {
+    if (s.unallocated > 0 && !(saved && saved.investTrack)) { /* the offer to invest is only for money that has no track yet */
       var e = investedEstimate(s.unallocated);
       n.innerHTML = '<div class="bd-notice"><b>' + esc(S["bd.notice.title"]) + "</b><p>" + esc(fill(S["bd.notice.text"], { amount: money(s.unallocated), gain: money(e.perYear), pct: e.netPct })) + "</p></div>";
     } else n.innerHTML = "";
