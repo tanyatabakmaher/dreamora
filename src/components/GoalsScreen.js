@@ -78,6 +78,8 @@ export function createGoalsScreen(o) {
   var goals = [], loaded = false; /* loaded: the first goals load has finished (until then the list shows the loader) */
   var list = createGoalList({
     canShare: function () { return !!o.sharing; },
+    canDiscover: function () { return !!o.repo.searchPublicOthers; },
+    searchOthers: function (q) { return o.repo.searchPublicOthers(q); },
     viewer: function () { return { name: profile.name, photo: profile.photo }; },
     onAdd: function (opener) { chooser.open(opener, opener.dataset.mode || null); },
     onEdit: function (g, opener) { if (g) { loadBudget(); form.open(g, opener); } },
