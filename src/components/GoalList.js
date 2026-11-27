@@ -30,7 +30,7 @@ export function createGoalList(o) {
     var today = todayDate();
     var showFilter = (o.canShare && o.canShare()) || goals.some(isShared) || goals.some(function (g) { return g.isPublic; }) || others.length > 0;
     if (!showFilter) filter = "all";
-    var shown = filter === "public" ? filterGoals(goals, "public").concat(others) : filterGoals(goals, filter);
+    var shown = filter === "public" ? others : filterGoals(goals, filter); /* "public" = other people's public goals only (the user's own public goals are in "all") */
     var chips = showFilter ? '<div class="filter-row" role="group" aria-label="' + S["filter.aria"] + '">' + ["all", "private", "shared", "public"].map(function (k) {
       return '<button type="button" class="filter-chip' + (filter === k ? " on" : "") + '" data-filter="' + k + '" aria-pressed="' + String(filter === k) + '">' + (FILTER_ICONS[k] ? '<span class="filter-ico" aria-hidden="true">' + FILTER_ICONS[k]() + "</span>" : "") + S["filter." + k] + "</button>";
     }).join("") + "</div>" : "";
