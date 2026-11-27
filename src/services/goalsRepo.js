@@ -90,6 +90,11 @@ export function createRemoteRepo(config) {
           return withSharing(goals);
         });
     },
+    /* Public goals of other users whose name contains the text (up to 30; the database does the matching and never returns the caller's own goals). */
+    searchPublicOthers: function (q) {
+      return client().then(function (c) { return c.rpc("search_public_goals", { p_query: q, p_limit: 30 }); }).then(ok)
+        .then(function (r) { return (r.data || []).map(fromPublicRow).filter(validGoal); });
+    },
     /* Up to 10 random public goals of other users (the database picks them; a new draw on every call). */
     loadPublicOthers: function () {
       return client().then(function (c) { return c.rpc("get_random_public_goals", { p_limit: 10 }); }).then(ok)
